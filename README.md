@@ -1,18 +1,18 @@
-# oaiprom - CLI for OpenAI Platform Management API
+# openai-orgs - CLI for OpenAI Platform Management API
 
-`oaiprom` is a command-line interface (CLI) tool for interacting with the OpenAI Platform Administration APIs. It provides various commands to manage projects, users, API keys, service accounts, invites, and more.
+`openai-orgs` is a command-line interface (CLI) tool for interacting with the OpenAI Platform Administration APIs. It provides various commands to manage projects, users, API keys, service accounts, invites, and more.
 
 ## Installation
 
-To install `oaiprom`, make sure you have Go installed on your system, then run:
+To install `openai-orgs`, make sure you have Go installed on your system, then run:
 
 ```
-  go install github.com/klauern/oaiprom/cmd/oaiprom@latest
+go install github.com/klauern/openai-orgs/cmd/openai-orgs@latest
 ```
 
 ## Configuration
 
-Before using `oaiprom`, you need to set up your OpenAI API key:
+Before using `openai-orgs`, you need to set up your OpenAI API key:
 
 1. Log in to your OpenAI account at https://platform.openai.com/
 2. Navigate to the API keys section
@@ -25,7 +25,7 @@ export OPENAI_API_KEY=your_api_key_here
 
 ## Usage
 
-`oaiprom` uses subcommands to organize its functionality. Here are the main commands:
+`openai-orgs` uses subcommands to organize its functionality. Here are the main commands:
 
 - `audit-logs`: Manage audit logs
 - `invites`: Manage organization invites
@@ -38,8 +38,8 @@ export OPENAI_API_KEY=your_api_key_here
 To see available subcommands and options for each command, use the `--help` flag:
 
 ```bash
-oaiprom --help
-oaiprom <command> --help
+openai-orgs --help
+openai-orgs <command> --help
 ```
 
 ### Examples
@@ -47,25 +47,25 @@ oaiprom <command> --help
 1. List all users in the organization:
 
 ```bash
-oaiprom users list
+openai-orgs users list
 ```
 
 2. Create a new project:
 
 ```bash
-oaiprom projects create --name "My New Project"
+openai-orgs projects create --name "My New Project"
 ```
 
 3. List project API keys:
 
 ```bash
-oaiprom project-api-keys list --project-id <project_id>
+openai-orgs project-api-keys list --project-id <project_id>
 ```
 
 4. Create an invite:
 
 ```bash
-oaiprom invites create --email user@example.com --role member
+openai-orgs invites create --email user@example.com --role member
 ```
 
 ## Default Settings
@@ -80,7 +80,7 @@ If an error occurs during command execution, the CLI will display an error messa
 
 ## Contributing
 
-Contributions to `oaiprom` are welcome! Please submit issues and pull requests on the GitHub repository.
+Contributions to `openai-orgs` are welcome! Please submit issues and pull requests on the GitHub repository.
 
 ## License
 

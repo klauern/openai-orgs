@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/klauern/oaiprom"
+	"github.com/klauern/openai-orgs"
 	"github.com/urfave/cli/v2"
 )
 
@@ -132,7 +132,7 @@ func deleteProjectUserCommand() *cli.Command {
 }
 
 func listProjectUsers(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	projectID := c.String("project-id")
 	limit := c.Int("limit")
@@ -159,7 +159,7 @@ func listProjectUsers(c *cli.Context) error {
 }
 
 func createProjectUser(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	projectID := c.String("project-id")
 	userID := c.String("user-id")
@@ -182,7 +182,7 @@ func createProjectUser(c *cli.Context) error {
 }
 
 func retrieveProjectUser(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	projectID := c.String("project-id")
 	userID := c.String("user-id")
@@ -205,11 +205,11 @@ func retrieveProjectUser(c *cli.Context) error {
 }
 
 func modifyProjectUser(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	projectID := c.String("project-id")
 	userID := c.String("user-id")
-	role := oaiprom.RoleType(c.String("role"))
+	role := openaiorgs.RoleType(c.String("role"))
 
 	user, err := client.ModifyProjectUser(projectID, userID, role)
 	if err != nil {
@@ -229,7 +229,7 @@ func modifyProjectUser(c *cli.Context) error {
 }
 
 func deleteProjectUser(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	projectID := c.String("project-id")
 	userID := c.String("user-id")

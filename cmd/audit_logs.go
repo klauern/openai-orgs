@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/klauern/oaiprom"
+	openaiorgs "github.com/klauern/openai-orgs"
 	"github.com/urfave/cli/v2"
 )
 
@@ -40,9 +40,9 @@ func AuditLogsCommand() *cli.Command {
 }
 
 func listAuditLogs(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
-	params := &oaiprom.AuditLogListParams{
+	params := &openaiorgs.AuditLogListParams{
 		Limit:  c.Int("limit"),
 		After:  c.String("after"),
 		Before: c.String("before"),
@@ -72,7 +72,7 @@ func listAuditLogs(c *cli.Context) error {
 	// Print the audit logs
 	for _, log := range response.Data {
 		fmt.Printf("ID: %s, Type: %s, Timestamp: %s\n", log.ID, log.Type, log.Timestamp)
-		payload, err := oaiprom.ParseAuditLogPayload(&log)
+		payload, err := openaiorgs.ParseAuditLogPayload(&log)
 		if err != nil {
 			fmt.Printf("Error parsing payload: %v\n", err)
 		} else {

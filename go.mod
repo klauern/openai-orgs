@@ -1,4 +1,4 @@
-module github.com/klauern/oaiprom
+module github.com/klauern/openai-orgs
 
 go 1.23.2
 

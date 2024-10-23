@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/klauern/oaiprom"
+	openaiorgs "github.com/klauern/openai-orgs"
 	"github.com/urfave/cli/v2"
 )
 
@@ -111,7 +111,7 @@ func archiveProjectCommand() *cli.Command {
 }
 
 func listProjects(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	limit := c.Int("limit")
 	after := c.String("after")
@@ -142,7 +142,7 @@ func listProjects(c *cli.Context) error {
 }
 
 func createProject(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	name := c.String("name")
 
@@ -163,7 +163,7 @@ func createProject(c *cli.Context) error {
 }
 
 func retrieveProject(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	id := c.String("id")
 
@@ -187,7 +187,7 @@ func retrieveProject(c *cli.Context) error {
 }
 
 func modifyProject(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	id := c.String("id")
 	name := c.String("name")
@@ -209,7 +209,7 @@ func modifyProject(c *cli.Context) error {
 }
 
 func archiveProject(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	id := c.String("id")
 

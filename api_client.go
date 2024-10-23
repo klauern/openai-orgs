@@ -1,4 +1,4 @@
-package oaiprom
+package openaiorgs
 
 import (
 	"encoding/json"

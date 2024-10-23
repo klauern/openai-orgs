@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/klauern/oaiprom"
+	openaiorgs "github.com/klauern/openai-orgs"
 	"github.com/urfave/cli/v2"
 )
 
@@ -65,7 +65,7 @@ func deleteInviteCommand() *cli.Command {
 }
 
 func listInvites(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	invites, err := client.ListInvites()
 	if err != nil {
@@ -94,10 +94,10 @@ func listInvites(c *cli.Context) error {
 }
 
 func createInvite(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	email := c.String("email")
-	role := oaiprom.RoleType(c.String("role"))
+	role := openaiorgs.RoleType(c.String("role"))
 
 	invite, err := client.CreateInvite(email, role)
 	if err != nil {
@@ -109,7 +109,7 @@ func createInvite(c *cli.Context) error {
 }
 
 func deleteInvite(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	id := c.String("id")
 

@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/klauern/oaiprom"
+	openaiorgs "github.com/klauern/openai-orgs"
 	"github.com/urfave/cli/v2"
 )
 
@@ -85,7 +85,7 @@ func deleteProjectApiKeyCommand() *cli.Command {
 }
 
 func listProjectApiKeys(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	projectID := c.String("project-id")
 	limit := c.Int("limit")
@@ -113,7 +113,7 @@ func listProjectApiKeys(c *cli.Context) error {
 }
 
 func retrieveProjectApiKey(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	projectID := c.String("project-id")
 	apiKeyID := c.String("api-key-id")
@@ -136,7 +136,7 @@ func retrieveProjectApiKey(c *cli.Context) error {
 }
 
 func deleteProjectApiKey(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	projectID := c.String("project-id")
 	apiKeyID := c.String("api-key-id")

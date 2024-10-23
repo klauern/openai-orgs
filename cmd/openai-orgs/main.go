@@ -4,14 +4,14 @@ import (
 	"log"
 	"os"
 
-	"github.com/klauern/oaiprom/cmd"
+	"github.com/klauern/openai-orgs/cmd"
 	"github.com/urfave/cli/v2"
 )
 
 func main() {
 	app := &cli.App{
-		Name:  "oaiprom",
-		Usage: "CLI for OpenAI Prometheus API",
+		Name:  "openai-orgs",
+		Usage: "CLI for OpenAI Platform Management API",
 		Commands: []*cli.Command{
 			cmd.AuditLogsCommand(),
 			cmd.InvitesCommand(),

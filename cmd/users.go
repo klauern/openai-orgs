@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/klauern/oaiprom"
+	openaiorgs "github.com/klauern/openai-orgs"
 	"github.com/urfave/cli/v2"
 )
 
@@ -91,7 +91,7 @@ func modifyUserRoleCommand() *cli.Command {
 }
 
 func listUsers(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	limit := c.Int("limit")
 	after := c.String("after")
@@ -117,7 +117,7 @@ func listUsers(c *cli.Context) error {
 }
 
 func retrieveUser(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	id := c.String("id")
 
@@ -139,7 +139,7 @@ func retrieveUser(c *cli.Context) error {
 }
 
 func deleteUser(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	id := c.String("id")
 
@@ -153,10 +153,10 @@ func deleteUser(c *cli.Context) error {
 }
 
 func modifyUserRole(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	id := c.String("id")
-	role := oaiprom.RoleType(c.String("role"))
+	role := openaiorgs.RoleType(c.String("role"))
 
 	err := client.ModifyUserRole(id, role)
 	if err != nil {

@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/klauern/oaiprom"
+	openaiorgs "github.com/klauern/openai-orgs"
 	"github.com/urfave/cli/v2"
 )
 
@@ -106,7 +106,7 @@ func deleteProjectServiceAccountCommand() *cli.Command {
 }
 
 func listProjectServiceAccounts(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	projectID := c.String("project-id")
 	limit := c.Int("limit")
@@ -132,7 +132,7 @@ func listProjectServiceAccounts(c *cli.Context) error {
 }
 
 func createProjectServiceAccount(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	projectID := c.String("project-id")
 	name := c.String("name")
@@ -154,7 +154,7 @@ func createProjectServiceAccount(c *cli.Context) error {
 }
 
 func retrieveProjectServiceAccount(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	projectID := c.String("project-id")
 	id := c.String("id")
@@ -176,7 +176,7 @@ func retrieveProjectServiceAccount(c *cli.Context) error {
 }
 
 func deleteProjectServiceAccount(c *cli.Context) error {
-	client := oaiprom.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
 
 	projectID := c.String("project-id")
 	id := c.String("id")
