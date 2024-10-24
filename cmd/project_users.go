@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/klauern/openai-orgs"
+	openaiorgs "github.com/klauern/openai-orgs"
 	"github.com/urfave/cli/v2"
 )
 
@@ -59,6 +59,11 @@ func createProjectUserCommand() *cli.Command {
 			&cli.StringFlag{
 				Name:     "user-id",
 				Usage:    "ID of the user to add to the project",
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     "role",
+				Usage:    "Role of the user in the project",
 				Required: true,
 			},
 		},
@@ -163,8 +168,9 @@ func createProjectUser(c *cli.Context) error {
 
 	projectID := c.String("project-id")
 	userID := c.String("user-id")
+	role := openaiorgs.RoleType(c.String("role"))
 
-	user, err := client.CreateProjectUser(projectID, userID)
+	user, err := client.CreateProjectUser(projectID, userID, role)
 	if err != nil {
 		return fmt.Errorf("failed to create project user: %w", err)
 	}

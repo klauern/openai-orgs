@@ -1,0 +1,33 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task: fmt
+      - task: lint
+      - task: install
+
+  build:
+    cmds:
+      - go build -v ./...
+
+  install:
+    cmds:
+      - task: build
+      - go install -v ./...
+
+  lint:
+    cmds:
+      - golangci-lint run
+
+  fmt:
+    cmds:
+      - gofmt -s -w -e .
+
+  test:
+    cmds:
+      - go test -v -cover -timeout=120s -parallel=10 ./...
+
+  testacc:
+    cmds:
+      - TF_ACC=1 go test -v -cover -timeout 120m ./...
