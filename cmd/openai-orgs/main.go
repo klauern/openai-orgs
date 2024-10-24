@@ -10,10 +10,13 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+var Version = "dev"
+
 func main() {
 	app := &cli.App{
-		Name:  "openai-orgs",
-		Usage: "CLI for OpenAI Platform Management API",
+		Name:    "openai-orgs",
+		Usage:   "CLI for OpenAI Platform Management API",
+		Version: Version,
 		Commands: []*cli.Command{
 			cmd.AuditLogsCommand(),
 			cmd.InvitesCommand(),
