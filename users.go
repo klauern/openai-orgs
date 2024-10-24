@@ -29,12 +29,7 @@ func (c *Client) ListUsers(limit int, after string) (*ListResponse[Users], error
 }
 
 func (c *Client) RetrieveUser(id string) (*Users, error) {
-	resp, err := Get[Users](c.client, UsersListEndpoint+"/"+id, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve user: %w", err)
-	}
-
-	return &resp.Data[0], nil
+	return GetSingle[Users](c.client, UsersListEndpoint+"/"+id)
 }
 
 func (c *Client) DeleteUser(id string) error {
