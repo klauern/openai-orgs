@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	openaiorgs "github.com/klauern/openai-orgs"
@@ -111,7 +110,7 @@ func archiveProjectCommand() *cli.Command {
 }
 
 func listProjects(c *cli.Context) error {
-	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
 
 	limit := c.Int("limit")
 	after := c.String("after")
@@ -142,7 +141,7 @@ func listProjects(c *cli.Context) error {
 }
 
 func createProject(c *cli.Context) error {
-	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
 
 	name := c.String("name")
 
@@ -163,7 +162,7 @@ func createProject(c *cli.Context) error {
 }
 
 func retrieveProject(c *cli.Context) error {
-	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
 
 	id := c.String("id")
 
@@ -187,7 +186,7 @@ func retrieveProject(c *cli.Context) error {
 }
 
 func modifyProject(c *cli.Context) error {
-	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
 
 	id := c.String("id")
 	name := c.String("name")
@@ -209,7 +208,7 @@ func modifyProject(c *cli.Context) error {
 }
 
 func archiveProject(c *cli.Context) error {
-	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
 
 	id := c.String("id")
 

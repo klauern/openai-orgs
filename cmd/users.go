@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	openaiorgs "github.com/klauern/openai-orgs"
@@ -91,7 +90,7 @@ func modifyUserRoleCommand() *cli.Command {
 }
 
 func listUsers(c *cli.Context) error {
-	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
 
 	limit := c.Int("limit")
 	after := c.String("after")
@@ -117,7 +116,7 @@ func listUsers(c *cli.Context) error {
 }
 
 func retrieveUser(c *cli.Context) error {
-	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
 
 	id := c.String("id")
 
@@ -139,7 +138,7 @@ func retrieveUser(c *cli.Context) error {
 }
 
 func deleteUser(c *cli.Context) error {
-	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
 
 	id := c.String("id")
 
@@ -153,7 +152,7 @@ func deleteUser(c *cli.Context) error {
 }
 
 func modifyUserRole(c *cli.Context) error {
-	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
 
 	id := c.String("id")
 	role := openaiorgs.RoleType(c.String("role"))

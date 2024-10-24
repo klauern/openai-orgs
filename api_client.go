@@ -7,6 +7,8 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
+const DefaultBaseURL = "https://api.openai.com/v1"
+
 type Client struct {
 	client  *resty.Client
 	BaseURL string
@@ -22,6 +24,9 @@ type ListResponse[T any] struct {
 
 func NewClient(baseURL, token string) *Client {
 	client := resty.New()
+	if baseURL == "" {
+		baseURL = DefaultBaseURL
+	}
 	client.SetBaseURL(baseURL)
 	client.SetAuthToken(token)
 	client.SetHeader("Content-Type", "application/json")

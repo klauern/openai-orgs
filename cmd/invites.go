@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	openaiorgs "github.com/klauern/openai-orgs"
@@ -65,7 +64,7 @@ func deleteInviteCommand() *cli.Command {
 }
 
 func listInvites(c *cli.Context) error {
-	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
 
 	invites, err := client.ListInvites()
 	if err != nil {
@@ -94,7 +93,7 @@ func listInvites(c *cli.Context) error {
 }
 
 func createInvite(c *cli.Context) error {
-	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
 
 	email := c.String("email")
 	role := openaiorgs.RoleType(c.String("role"))
@@ -109,7 +108,7 @@ func createInvite(c *cli.Context) error {
 }
 
 func deleteInvite(c *cli.Context) error {
-	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
 
 	id := c.String("id")
 

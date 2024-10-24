@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	openaiorgs "github.com/klauern/openai-orgs"
@@ -40,7 +39,7 @@ func AuditLogsCommand() *cli.Command {
 }
 
 func listAuditLogs(c *cli.Context) error {
-	client := openaiorgs.NewClient("https://api.openai.com/v1", os.Getenv("OPENAI_API_KEY"))
+	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
 
 	params := &openaiorgs.AuditLogListParams{
 		Limit:  c.Int("limit"),

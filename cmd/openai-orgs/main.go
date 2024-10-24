@@ -21,6 +21,13 @@ func main() {
 			cmd.ProjectServiceAccountsCommand(),
 			cmd.ProjectApiKeysCommand(),
 		},
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "api-key",
+				Usage:   "OpenAI API key (can be set via OPENAI_API_KEY environment variable)",
+				EnvVars: []string{"OPENAI_API_KEY"},
+			},
+		},
 	}
 
 	err := app.Run(os.Args)
