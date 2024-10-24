@@ -12,6 +12,10 @@ const (
 	RoleTypeMember RoleType = "member"
 )
 
+func (rt RoleType) String() string {
+	return string(rt)
+}
+
 type CustomTime time.Time
 
 func (ct *CustomTime) UnmarshalJSON(b []byte) error {
