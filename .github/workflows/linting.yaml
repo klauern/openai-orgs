@@ -1,0 +1,47 @@
+name: Go Linting
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  # Required: allow read access to the content for analysis.
+  contents: read
+  # Optional: allow read access to pull request. Use with `only-new-issues` option.
+  pull-requests: read
+  # Optional: allow write access to checks to allow the action to annotate code in the PR.
+  checks: write
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-mod-file-path: "go.mod"
+
+      - name: Golangci-lint
+        uses: golangci/golangci-lint-action@v6.1.1
+
+      - name: Run golangci-lint
+        run: golangci-lint run --timeout=5m
+
+      - name: Comment PR
+        uses: actions/github-script@v6
+        if: failure() && github.event_name == 'pull_request'
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ golangci-lint failed. Please check the [Actions tab](https://github.com/${{ github.repository }}/actions) for more details and fix the issues.'
+            })
