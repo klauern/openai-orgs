@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/go-resty/resty/v2"
+	"github.com/golang/mock/gomock"
 )
 
 func TestListProjectApiKeys(t *testing.T) {
@@ -17,14 +17,14 @@ func TestListProjectApiKeys(t *testing.T) {
 	client := &Client{client: mockClient}
 
 	tests := []struct {
-		name        string
-		projectID   string
-		limit       int
-		after       string
-		mockResp    *resty.Response
-		mockErr     error
-		expected    *ListResponse[ProjectApiKey]
-		expectErr   bool
+		name      string
+		projectID string
+		limit     int
+		after     string
+		mockResp  *resty.Response
+		mockErr   error
+		expected  *ListResponse[ProjectApiKey]
+		expectErr bool
 	}{
 		{
 			name:      "Successful ListProjectApiKeys request",
@@ -118,13 +118,13 @@ func TestRetrieveProjectApiKey(t *testing.T) {
 	client := &Client{client: mockClient}
 
 	tests := []struct {
-		name        string
-		projectID   string
-		apiKeyID    string
-		mockResp    *resty.Response
-		mockErr     error
-		expected    *ProjectApiKey
-		expectErr   bool
+		name      string
+		projectID string
+		apiKeyID  string
+		mockResp  *resty.Response
+		mockErr   error
+		expected  *ProjectApiKey
+		expectErr bool
 	}{
 		{
 			name:      "Successful RetrieveProjectApiKey request",
@@ -208,12 +208,12 @@ func TestDeleteProjectApiKey(t *testing.T) {
 	client := &Client{client: mockClient}
 
 	tests := []struct {
-		name        string
-		projectID   string
-		apiKeyID    string
-		mockResp    *resty.Response
-		mockErr     error
-		expectErr   bool
+		name      string
+		projectID string
+		apiKeyID  string
+		mockResp  *resty.Response
+		mockErr   error
+		expectErr bool
 	}{
 		{
 			name:      "Successful DeleteProjectApiKey request",

@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/go-resty/resty/v2"
+	"github.com/golang/mock/gomock"
 )
 
 func TestListProjects(t *testing.T) {
@@ -17,19 +17,19 @@ func TestListProjects(t *testing.T) {
 	client := &Client{client: mockClient}
 
 	tests := []struct {
-		name           string
-		limit          int
-		after          string
+		name            string
+		limit           int
+		after           string
 		includeArchived bool
-		mockResp       *resty.Response
-		mockErr        error
-		expected       *ListResponse[Project]
-		expectErr      bool
+		mockResp        *resty.Response
+		mockErr         error
+		expected        *ListResponse[Project]
+		expectErr       bool
 	}{
 		{
-			name:           "Successful ListProjects request",
-			limit:          10,
-			after:          "test-after-id",
+			name:            "Successful ListProjects request",
+			limit:           10,
+			after:           "test-after-id",
 			includeArchived: true,
 			mockResp: &resty.Response{
 				RawResponse: &http.Response{
@@ -51,17 +51,17 @@ func TestListProjects(t *testing.T) {
 			expectErr: false,
 		},
 		{
-			name:           "ListProjects request with error",
-			limit:          10,
-			after:          "test-after-id",
+			name:            "ListProjects request with error",
+			limit:           10,
+			after:           "test-after-id",
 			includeArchived: true,
-			mockErr:        fmt.Errorf("request error"),
-			expectErr:      true,
+			mockErr:         fmt.Errorf("request error"),
+			expectErr:       true,
 		},
 		{
-			name:           "ListProjects request with non-200 status code",
-			limit:          10,
-			after:          "test-after-id",
+			name:            "ListProjects request with non-200 status code",
+			limit:           10,
+			after:           "test-after-id",
 			includeArchived: true,
 			mockResp: &resty.Response{
 				RawResponse: &http.Response{
@@ -72,9 +72,9 @@ func TestListProjects(t *testing.T) {
 			expectErr: true,
 		},
 		{
-			name:           "ListProjects request with invalid JSON response",
-			limit:          10,
-			after:          "test-after-id",
+			name:            "ListProjects request with invalid JSON response",
+			limit:           10,
+			after:           "test-after-id",
 			includeArchived: true,
 			mockResp: &resty.Response{
 				RawResponse: &http.Response{

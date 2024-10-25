@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/go-resty/resty/v2"
+	"github.com/golang/mock/gomock"
 )
 
 func TestListProjectServiceAccounts(t *testing.T) {
@@ -17,14 +17,14 @@ func TestListProjectServiceAccounts(t *testing.T) {
 	client := &Client{client: mockClient}
 
 	tests := []struct {
-		name        string
-		projectID   string
-		limit       int
-		after       string
-		mockResp    *resty.Response
-		mockErr     error
-		expected    *ListResponse[ProjectServiceAccount]
-		expectErr   bool
+		name      string
+		projectID string
+		limit     int
+		after     string
+		mockResp  *resty.Response
+		mockErr   error
+		expected  *ListResponse[ProjectServiceAccount]
+		expectErr bool
 	}{
 		{
 			name:      "Successful ListProjectServiceAccounts request",
@@ -199,13 +199,13 @@ func TestRetrieveProjectServiceAccount(t *testing.T) {
 	client := &Client{client: mockClient}
 
 	tests := []struct {
-		name        string
-		projectID   string
-		accountID   string
-		mockResp    *resty.Response
-		mockErr     error
-		expected    *ProjectServiceAccount
-		expectErr   bool
+		name      string
+		projectID string
+		accountID string
+		mockResp  *resty.Response
+		mockErr   error
+		expected  *ProjectServiceAccount
+		expectErr bool
 	}{
 		{
 			name:      "Successful RetrieveProjectServiceAccount request",
@@ -284,12 +284,12 @@ func TestDeleteProjectServiceAccount(t *testing.T) {
 	client := &Client{client: mockClient}
 
 	tests := []struct {
-		name        string
-		projectID   string
-		accountID   string
-		mockResp    *resty.Response
-		mockErr     error
-		expectErr   bool
+		name      string
+		projectID string
+		accountID string
+		mockResp  *resty.Response
+		mockErr   error
+		expectErr bool
 	}{
 		{
 			name:      "Successful DeleteProjectServiceAccount request",

@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/go-resty/resty/v2"
+	"github.com/golang/mock/gomock"
 )
 
 func TestListProjectUsers(t *testing.T) {
@@ -17,14 +17,14 @@ func TestListProjectUsers(t *testing.T) {
 	client := &Client{client: mockClient}
 
 	tests := []struct {
-		name        string
-		projectID   string
-		limit       int
-		after       string
-		mockResp    *resty.Response
-		mockErr     error
-		expected    *ListResponse[ProjectUser]
-		expectErr   bool
+		name      string
+		projectID string
+		limit     int
+		after     string
+		mockResp  *resty.Response
+		mockErr   error
+		expected  *ListResponse[ProjectUser]
+		expectErr bool
 	}{
 		{
 			name:      "Successful ListProjectUsers request",
@@ -114,14 +114,14 @@ func TestCreateProjectUser(t *testing.T) {
 	client := &Client{client: mockClient}
 
 	tests := []struct {
-		name        string
-		projectID   string
-		userID      string
-		role        RoleType
-		mockResp    *resty.Response
-		mockErr     error
-		expected    *ProjectUser
-		expectErr   bool
+		name      string
+		projectID string
+		userID    string
+		role      RoleType
+		mockResp  *resty.Response
+		mockErr   error
+		expected  *ProjectUser
+		expectErr bool
 	}{
 		{
 			name:      "Successful CreateProjectUser request",
@@ -206,13 +206,13 @@ func TestRetrieveProjectUser(t *testing.T) {
 	client := &Client{client: mockClient}
 
 	tests := []struct {
-		name        string
-		projectID   string
-		userID      string
-		mockResp    *resty.Response
-		mockErr     error
-		expected    *ProjectUser
-		expectErr   bool
+		name      string
+		projectID string
+		userID    string
+		mockResp  *resty.Response
+		mockErr   error
+		expected  *ProjectUser
+		expectErr bool
 	}{
 		{
 			name:      "Successful RetrieveProjectUser request",
@@ -292,14 +292,14 @@ func TestModifyProjectUser(t *testing.T) {
 	client := &Client{client: mockClient}
 
 	tests := []struct {
-		name        string
-		projectID   string
-		userID      string
-		role        RoleType
-		mockResp    *resty.Response
-		mockErr     error
-		expected    *ProjectUser
-		expectErr   bool
+		name      string
+		projectID string
+		userID    string
+		role      RoleType
+		mockResp  *resty.Response
+		mockErr   error
+		expected  *ProjectUser
+		expectErr bool
 	}{
 		{
 			name:      "Successful ModifyProjectUser request",
@@ -384,12 +384,12 @@ func TestDeleteProjectUser(t *testing.T) {
 	client := &Client{client: mockClient}
 
 	tests := []struct {
-		name        string
-		projectID   string
-		userID      string
-		mockResp    *resty.Response
-		mockErr     error
-		expectErr   bool
+		name      string
+		projectID string
+		userID    string
+		mockResp  *resty.Response
+		mockErr   error
+		expectErr bool
 	}{
 		{
 			name:      "Successful DeleteProjectUser request",

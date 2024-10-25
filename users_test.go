@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/go-resty/resty/v2"
+	"github.com/golang/mock/gomock"
 )
 
 func TestListUsers(t *testing.T) {
@@ -168,7 +168,7 @@ func TestRetrieveUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockClient.EXPECT().R().Return(mockRequest).AnyTimes()
 			mockRequest.EXPECT().ExpectContentType("application/json").Return(mockRequest).AnyTimes()
-			mockRequest.EXPECT().Get(UsersListEndpoint + "/" + tt.userID).Return(tt.mockResp, tt.mockErr).AnyTimes()
+			mockRequest.EXPECT().Get(UsersListEndpoint+"/"+tt.userID).Return(tt.mockResp, tt.mockErr).AnyTimes()
 
 			result, err := client.RetrieveUser(tt.userID)
 			if (err != nil) != tt.expectErr {
@@ -229,7 +229,7 @@ func TestDeleteUser(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockClient.EXPECT().R().Return(mockRequest).AnyTimes()
-			mockRequest.EXPECT().Delete(UsersListEndpoint + "/" + tt.userID).Return(tt.mockResp, tt.mockErr).AnyTimes()
+			mockRequest.EXPECT().Delete(UsersListEndpoint+"/"+tt.userID).Return(tt.mockResp, tt.mockErr).AnyTimes()
 
 			err := client.DeleteUser(tt.userID)
 			if (err != nil) != tt.expectErr {
@@ -304,7 +304,7 @@ func TestModifyUserRole(t *testing.T) {
 			mockClient.EXPECT().R().Return(mockRequest).AnyTimes()
 			mockRequest.EXPECT().SetBody(gomock.Any()).Return(mockRequest).AnyTimes()
 			mockRequest.EXPECT().ExpectContentType("application/json").Return(mockRequest).AnyTimes()
-			mockRequest.EXPECT().Post(UsersListEndpoint + "/" + tt.userID).Return(tt.mockResp, tt.mockErr).AnyTimes()
+			mockRequest.EXPECT().Post(UsersListEndpoint+"/"+tt.userID).Return(tt.mockResp, tt.mockErr).AnyTimes()
 
 			err := client.ModifyUserRole(tt.userID, tt.role)
 			if (err != nil) != tt.expectErr {

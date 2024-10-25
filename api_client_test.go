@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/go-resty/resty/v2"
+	"github.com/golang/mock/gomock"
 )
 
 func TestNewClient(t *testing.T) {
@@ -39,12 +39,12 @@ func TestGetSingle(t *testing.T) {
 	client := &Client{client: mockClient}
 
 	tests := []struct {
-		name       string
-		endpoint   string
-		mockResp   *resty.Response
-		mockErr    error
-		expected   *TestStruct
-		expectErr  bool
+		name      string
+		endpoint  string
+		mockResp  *resty.Response
+		mockErr   error
+		expected  *TestStruct
+		expectErr bool
 	}{
 		{
 			name:     "Successful GET request",
