@@ -31,3 +31,8 @@ tasks:
   testacc:
     cmds:
       - TF_ACC=1 go test -v -cover -timeout 120m ./...
+
+  test-coverage:
+    cmds:
+      - go test -coverprofile=coverage.out ./...
+      - go tool cover -html=coverage.out
