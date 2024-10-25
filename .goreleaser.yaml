@@ -8,6 +8,8 @@
 
 version: 2
 
+project_name: openai-orgs
+
 before:
   hooks:
     # You may remove this if you don't use go modules.
@@ -24,6 +26,7 @@ builds:
       - darwin
     ldflags:
       - -s -w -X main.Version={{.Version}}
+    main: ./cmd/openai-orgs/main.go
 
 archives:
   - format: tar.gz
