@@ -15,6 +15,7 @@ func InvitesCommand() *cli.Command {
 		Subcommands: []*cli.Command{
 			listInvitesCommand(),
 			createInviteCommand(),
+			retrieveInviteCommand(),
 			deleteInviteCommand(),
 		},
 	}
@@ -60,6 +61,21 @@ func deleteInviteCommand() *cli.Command {
 			},
 		},
 		Action: deleteInvite,
+	}
+}
+
+func retrieveInviteCommand() *cli.Command {
+	return &cli.Command{
+		Name:  "retrieve",
+		Usage: "Retrieve an invite",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "id",
+				Usage:    "ID of the invite to retrieve",
+				Required: true,
+			},
+		},
+		Action: retrieveInvite,
 	}
 }
 
@@ -118,5 +134,20 @@ func deleteInvite(c *cli.Context) error {
 	}
 
 	fmt.Printf("Invite with ID %s has been deleted\n", id)
+	return nil
+}
+
+func retrieveInvite(c *cli.Context) error {
+	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+
+	id := c.String("id")
+
+	invite, err := client.RetrieveInvite(id)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve invite: %w", err)
+	}
+
+	fmt.Printf("Invite retrieved: ID: %s, Email: %s, Role: %s, Status: %s, Created At: %s, Expires At: %s, Accepted At: %s\n",
+		invite.ID, invite.Email, invite.Role, invite.Status, invite.CreatedAt.String(), invite.ExpiresAt.String(), invite.AcceptedAt.String())
 	return nil
 }
