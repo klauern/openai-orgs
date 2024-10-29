@@ -8,14 +8,14 @@ import (
 )
 
 type Invite struct {
-	ObjectType string      `json:"object"`
-	ID         string      `json:"id"`
-	Email      string      `json:"email"`
-	Role       string      `json:"role"`
-	Status     string      `json:"status"`
-	CreatedAt  CustomTime  `json:"created_at"`
-	ExpiresAt  CustomTime  `json:"expires_at"`
-	AcceptedAt *CustomTime `json:"accepted_at,omitempty"`
+	ObjectType string       `json:"object"`
+	ID         string       `json:"id"`
+	Email      string       `json:"email"`
+	Role       string       `json:"role"`
+	Status     string       `json:"status"`
+	CreatedAt  UnixSeconds  `json:"created_at"`
+	ExpiresAt  UnixSeconds  `json:"expires_at"`
+	AcceptedAt *UnixSeconds `json:"accepted_at,omitempty"`
 }
 
 const InviteListEndpoint = "/organization/invites"

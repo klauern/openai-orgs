@@ -5,12 +5,12 @@ import "fmt"
 const ProjectApiKeysListEndpoint = "/organization/projects/%s/api_keys"
 
 type ProjectApiKey struct {
-	Object        string     `json:"object"`
-	RedactedValue string     `json:"redacted_value"`
-	Name          string     `json:"name"`
-	CreatedAt     CustomTime `json:"created_at"`
-	ID            string     `json:"id"`
-	Owner         Owner      `json:"owner"`
+	Object        string      `json:"object"`
+	RedactedValue string      `json:"redacted_value"`
+	Name          string      `json:"name"`
+	CreatedAt     UnixSeconds `json:"created_at"`
+	ID            string      `json:"id"`
+	Owner         Owner       `json:"owner"`
 }
 
 type Owner struct {

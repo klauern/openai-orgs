@@ -3,12 +3,12 @@ package openaiorgs
 import "fmt"
 
 type Project struct {
-	Object     string      `json:"object"`
-	ID         string      `json:"id"`
-	Name       string      `json:"name"`
-	CreatedAt  CustomTime  `json:"created_at"`
-	ArchivedAt *CustomTime `json:"archived_at,omitempty"`
-	Status     string      `json:"status"`
+	Object     string       `json:"object"`
+	ID         string       `json:"id"`
+	Name       string       `json:"name"`
+	CreatedAt  UnixSeconds  `json:"created_at"`
+	ArchivedAt *UnixSeconds `json:"archived_at,omitempty"`
+	Status     string       `json:"status"`
 }
 
 const ProjectsListEndpoint = "/organization/projects"
