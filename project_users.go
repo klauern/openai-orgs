@@ -3,12 +3,12 @@ package openaiorgs
 import "fmt"
 
 type ProjectUser struct {
-	Object  string     `json:"object"`
-	ID      string     `json:"id"`
-	Name    string     `json:"name"`
-	Email   string     `json:"email"`
-	Role    string     `json:"role"`
-	AddedAt CustomTime `json:"added_at"`
+	Object  string      `json:"object"`
+	ID      string      `json:"id"`
+	Name    string      `json:"name"`
+	Email   string      `json:"email"`
+	Role    string      `json:"role"`
+	AddedAt UnixSeconds `json:"added_at"`
 }
 
 const ProjectUsersListEndpoint = "/organization/projects/%s/users"
