@@ -147,7 +147,12 @@ func retrieveInvite(c *cli.Context) error {
 		return fmt.Errorf("failed to retrieve invite: %w", err)
 	}
 
+	acceptedAt := "N/A"
+	if invite.AcceptedAt != nil {
+		acceptedAt = invite.AcceptedAt.String()
+	}
+
 	fmt.Printf("Invite retrieved: ID: %s, Email: %s, Role: %s, Status: %s, Created At: %s, Expires At: %s, Accepted At: %s\n",
-		invite.ID, invite.Email, invite.Role, invite.Status, invite.CreatedAt.String(), invite.ExpiresAt.String(), invite.AcceptedAt.String())
+			invite.ID, invite.Email, invite.Role, invite.Status, invite.CreatedAt.String(), invite.ExpiresAt.String(), acceptedAt)
 	return nil
 }
