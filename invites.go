@@ -58,16 +58,12 @@ func (c *Client) CreateInvite(email string, role RoleType) (*Invite, error) {
 }
 
 func (c *Client) RetrieveInvite(id string) (*Invite, error) {
-	resp, err := Get[Invite](c.client, InviteListEndpoint+"/"+id, nil)
+	resp, err := GetSingle[Invite](c.client, InviteListEndpoint+"/"+id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve invite: %w", err)
 	}
 
-	if len(resp.Data) == 0 {
-		return nil, fmt.Errorf("no invite found with id: %s", id)
-	}
-
-	return &resp.Data[0], nil
+	return resp, nil
 }
 
 func (c *Client) DeleteInvite(id string) error {
