@@ -42,7 +42,7 @@ func (h *testHelper) mockResponse(method, endpoint string, statusCode int, respo
 }
 
 // mockListResponse is a helper for mocking paginated list responses
-func (h *testHelper) mockListResponse(method, endpoint string, items interface{}) {
+func (h *testHelper) mockListResponse(method, endpoint string, items interface{}) { //nolint:unused
 	response := ListResponse[interface{}]{
 		Object:  "list",
 		Data:    []interface{}{items},
