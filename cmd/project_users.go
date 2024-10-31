@@ -167,9 +167,8 @@ func createProjectUser(c *cli.Context) error {
 
 	projectID := c.String("project-id")
 	userID := c.String("user-id")
-	role := openaiorgs.RoleType(c.String("role"))
 
-	user, err := client.CreateProjectUser(projectID, userID, role)
+	user, err := client.CreateProjectUser(projectID, userID, c.String("role"))
 	if err != nil {
 		return fmt.Errorf("failed to create project user: %w", err)
 	}
@@ -214,9 +213,8 @@ func modifyProjectUser(c *cli.Context) error {
 
 	projectID := c.String("project-id")
 	userID := c.String("user-id")
-	role := openaiorgs.RoleType(c.String("role"))
 
-	user, err := client.ModifyProjectUser(projectID, userID, role)
+	user, err := client.ModifyProjectUser(projectID, userID, c.String("role"))
 	if err != nil {
 		return fmt.Errorf("failed to modify project user role: %w", err)
 	}

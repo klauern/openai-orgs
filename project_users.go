@@ -25,8 +25,12 @@ func (c *Client) ListProjectUsers(projectID string, limit int, after string) (*L
 	return Get[ProjectUser](c.client, fmt.Sprintf(ProjectUsersListEndpoint, projectID), queryParams)
 }
 
-func (c *Client) CreateProjectUser(projectID string, userID string, role RoleType) (*ProjectUser, error) {
-	body := map[string]string{"user_id": userID, "role": string(role)}
+func (c *Client) CreateProjectUser(projectID string, userID string, role string) (*ProjectUser, error) {
+	roleType := ParseRoleType(role)
+	if roleType == "" {
+		return nil, fmt.Errorf("invalid role: %s", role)
+	}
+	body := map[string]string{"user_id": userID, "role": string(roleType)}
 	return Post[ProjectUser](c.client, fmt.Sprintf(ProjectUsersListEndpoint, projectID), body)
 }
 
@@ -34,8 +38,12 @@ func (c *Client) RetrieveProjectUser(projectID string, userID string) (*ProjectU
 	return GetSingle[ProjectUser](c.client, fmt.Sprintf(ProjectUsersListEndpoint+"/%s", projectID, userID))
 }
 
-func (c *Client) ModifyProjectUser(projectID string, userID string, role RoleType) (*ProjectUser, error) {
-	body := map[string]string{"role": string(role)}
+func (c *Client) ModifyProjectUser(projectID string, userID string, role string) (*ProjectUser, error) {
+	roleType := ParseRoleType(role)
+	if roleType == "" {
+		return nil, fmt.Errorf("invalid role: %s", role)
+	}
+	body := map[string]string{"role": string(roleType)}
 	return Post[ProjectUser](c.client, fmt.Sprintf(ProjectUsersListEndpoint+"/%s", projectID, userID), body)
 }
 
