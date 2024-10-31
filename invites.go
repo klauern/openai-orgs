@@ -1,10 +1,7 @@
 package openaiorgs
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
 )
 
 type Invite struct {
@@ -21,23 +18,9 @@ type Invite struct {
 const InviteListEndpoint = "/organization/invites"
 
 func (c *Client) ListInvites() ([]Invite, error) {
-	// Get the raw response
-	rawResp, err := c.client.R().Get(InviteListEndpoint)
+	resp, err := Get[Invite](c.client, InviteListEndpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get invites: %w", err)
-	}
-
-	// Read and log the raw response body
-	body, err := io.ReadAll(bytes.NewReader(rawResp.Body()))
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
-	}
-
-	// Attempt to parse the response
-	var resp ListResponse[Invite]
-	err = json.Unmarshal(body, &resp)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 
 	return resp.Data, nil

@@ -153,6 +153,6 @@ func retrieveInvite(c *cli.Context) error {
 	}
 
 	fmt.Printf("Invite retrieved: ID: %s, Email: %s, Role: %s, Status: %s, Created At: %s, Expires At: %s, Accepted At: %s\n",
-			invite.ID, invite.Email, invite.Role, invite.Status, invite.CreatedAt.String(), invite.ExpiresAt.String(), acceptedAt)
+		invite.ID, invite.Email, invite.Role, invite.Status, invite.CreatedAt.String(), invite.ExpiresAt.String(), acceptedAt)
 	return nil
 }
