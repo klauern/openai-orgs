@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 tasks:
   default:
@@ -26,8 +26,10 @@ tasks:
 
   test:
     cmds:
-      - go test -v -cover -timeout=120s -parallel=10 ./...
+      - go test -v -coverprofile=coverage.out -timeout=120s -parallel=10 ./...
 
-  testacc:
+  cover:
+    deps:
+      - test
     cmds:
-      - TF_ACC=1 go test -v -cover -timeout 120m ./...
+      - go tool cover -html=coverage.out
