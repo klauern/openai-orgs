@@ -1,6 +1,7 @@
 package openaiorgs
 
 import (
+	"net/http"
 	"testing"
 )
 
@@ -19,6 +20,7 @@ func TestClient_Get_WithPagination(t *testing.T) {
 		LastID:  "obj2",
 		HasMore: true,
 	}
+
 	h.mockResponse("GET", "/test-endpoint", http.StatusOK, firstPageResponse)
 
 	// Mock second page response
