@@ -102,8 +102,7 @@ func TestRetrieveUser(t *testing.T) {
 			} else if err == nil {
 				if user == nil {
 					t.Error("Expected user, got nil")
-				}
-				if tt.mockUser.ID != user.ID {
+				} else if tt.mockUser.ID != user.ID {
 					t.Errorf("Expected ID %s, got %s", tt.mockUser.ID, user.ID)
 				}
 			}
