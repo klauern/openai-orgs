@@ -18,7 +18,7 @@ type Owner struct {
 	ID     string                 `json:"id"`
 	Name   string                 `json:"name"`
 	Type   OwnerType              `json:"type"`
-	User   *Users                 `json:"user,omitempty"`
+	User   *User                  `json:"user,omitempty"`
 	SA     *ProjectServiceAccount `json:"service_account,omitempty"`
 }
 
