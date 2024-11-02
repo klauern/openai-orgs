@@ -4,8 +4,8 @@ import (
 	"fmt"
 )
 
-// Users represents a user in the OpenAI organization
-type Users struct {
+// User represents a user in the OpenAI organization
+type User struct {
 	Object  string      `json:"object"`
 	ID      string      `json:"id"`
 	Name    string      `json:"name"`
@@ -16,7 +16,7 @@ type Users struct {
 
 const UsersListEndpoint = "/organization/users"
 
-func (c *Client) ListUsers(limit int, after string) (*ListResponse[Users], error) {
+func (c *Client) ListUsers(limit int, after string) (*ListResponse[User], error) {
 	queryParams := make(map[string]string)
 	if limit > 0 {
 		queryParams["limit"] = fmt.Sprintf("%d", limit)
@@ -25,15 +25,15 @@ func (c *Client) ListUsers(limit int, after string) (*ListResponse[Users], error
 		queryParams["after"] = after
 	}
 
-	return Get[Users](c.client, UsersListEndpoint, queryParams)
+	return Get[User](c.client, UsersListEndpoint, queryParams)
 }
 
-func (c *Client) RetrieveUser(id string) (*Users, error) {
-	return GetSingle[Users](c.client, UsersListEndpoint+"/"+id)
+func (c *Client) RetrieveUser(id string) (*User, error) {
+	return GetSingle[User](c.client, UsersListEndpoint+"/"+id)
 }
 
 func (c *Client) DeleteUser(id string) error {
-	err := Delete[Users](c.client, UsersListEndpoint+"/"+id)
+	err := Delete[User](c.client, UsersListEndpoint+"/"+id)
 	if err != nil {
 		return fmt.Errorf("failed to delete user: %w", err)
 	}
@@ -46,7 +46,7 @@ func (c *Client) ModifyUserRole(id string, role RoleType) error {
 		"role": string(role),
 	}
 
-	_, err := Post[Users](c.client, UsersListEndpoint+"/"+id, body)
+	_, err := Post[User](c.client, UsersListEndpoint+"/"+id, body)
 	if err != nil {
 		return fmt.Errorf("failed to modify user role: %w", err)
 	}

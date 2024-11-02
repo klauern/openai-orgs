@@ -1,5 +1,7 @@
 # openai-orgs - CLI for OpenAI Platform Management API
 
+[![codecov](https://codecov.io/gh/klauern/openai-orgs/graph/badge.svg?token=7ENEG01SSU)](https://codecov.io/gh/klauern/openai-orgs)
+
 `openai-orgs` is a command-line interface (CLI) tool for interacting with the OpenAI Platform Administration APIs. It provides various commands to manage projects, users, API keys, service accounts, invites, and more.
 
 ## Installation
@@ -14,7 +16,7 @@ go install github.com/klauern/openai-orgs/cmd/openai-orgs@latest
 
 Before using `openai-orgs`, you need to set up your OpenAI API key:
 
-1. Log in to your OpenAI account at https://platform.openai.com/
+1. Log in to your OpenAI account at <https://platform.openai.com/>
 2. Navigate to the API keys section
 3. Create a new API key
 4. Set the API key as an environment variable:
