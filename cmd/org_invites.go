@@ -112,9 +112,8 @@ func createInvite(c *cli.Context) error {
 	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
 
 	email := c.String("email")
-	role := openaiorgs.RoleType(c.String("role"))
 
-	invite, err := client.CreateInvite(email, role)
+	invite, err := client.CreateInvite(email, c.String("role"))
 	if err != nil {
 		return fmt.Errorf("failed to create invite: %w", err)
 	}
