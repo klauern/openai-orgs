@@ -72,7 +72,7 @@ func TestCreateInvite(t *testing.T) {
 	h.mockResponse("POST", InviteListEndpoint, 200, mockInvite)
 
 	// Make the API call
-	invite, err := h.client.CreateInvite("new@example.com", RoleType("admin"))
+	invite, err := h.client.CreateInvite("new@example.com", "admin")
 	// Assert results
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)

@@ -26,10 +26,10 @@ func (c *Client) ListInvites() ([]Invite, error) {
 	return resp.Data, nil
 }
 
-func (c *Client) CreateInvite(email string, role RoleType) (*Invite, error) {
+func (c *Client) CreateInvite(email string, role string) (*Invite, error) {
 	body := map[string]string{
 		"email": email,
-		"role":  string(role),
+		"role":  role,
 	}
 
 	invite, err := Post[Invite](c.client, InviteListEndpoint, body)
