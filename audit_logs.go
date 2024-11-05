@@ -2,6 +2,7 @@ package openaiorgs
 
 import (
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/mitchellh/mapstructure"
@@ -274,7 +275,70 @@ func ParseAuditLogPayload(auditLog *AuditLog) (interface{}, error) {
 		return nil, fmt.Errorf("unknown audit log type: %s", auditLog.Type)
 	}
 
-	err := mapstructure.Decode(auditLog.Event.Payload, payload)
+	config := &mapstructure.DecoderConfig{
+		Result:           payload,
+		TagName:          "json",
+		WeaklyTypedInput: true,
+		DecodeHook: mapstructure.ComposeDecodeHookFunc(
+			// String to Time conversion - ensure UTC
+			func(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+				if t != reflect.TypeOf(time.Time{}) {
+					return data, nil
+				}
+
+				if str, ok := data.(string); ok {
+					if parsed, err := time.Parse(time.RFC3339, str); err == nil {
+						return parsed.UTC(), nil
+					}
+				}
+				return data, nil
+			},
+			// Number to Time conversion - ensure UTC
+			func(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+				if t != reflect.TypeOf(time.Time{}) {
+					return data, nil
+				}
+
+				var timestamp int64
+				switch v := data.(type) {
+				case int64:
+					timestamp = v
+				case int:
+					timestamp = int64(v)
+				default:
+					return data, nil
+				}
+
+				return time.Unix(timestamp, 0).UTC(), nil
+			},
+			// Ensure string fields are properly mapped
+			func(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+				if t.Kind() != reflect.String {
+					return data, nil
+				}
+
+				if f.Kind() == reflect.Interface {
+					if v, ok := data.(string); ok {
+						return v, nil
+					}
+				}
+				return data, nil
+			},
+		),
+		Metadata: nil,
+	}
+
+	decoder, err := mapstructure.NewDecoder(config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create decoder: %w", err)
+	}
+
+	if m, ok := auditLog.Event.Payload.(map[string]interface{}); ok {
+		err = decoder.Decode(m)
+	} else {
+		err = decoder.Decode(auditLog.Event.Payload)
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode audit log payload: %w", err)
 	}
