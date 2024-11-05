@@ -2,7 +2,7 @@
 
 [![codecov](https://codecov.io/gh/klauern/openai-orgs/graph/badge.svg?token=7ENEG01SSU)](https://codecov.io/gh/klauern/openai-orgs)
 
-`openai-orgs` is a command-line interface (CLI) tool for interacting with the OpenAI Platform Administration APIs. It provides various commands to manage projects, users, API keys, service accounts, invites, and more.
+`openai-orgs` is a command-line interface (CLI) tool for interacting with the [OpenAI Platform Administration APIs](https://platform.openai.com/docs/api-reference/assistants-streaming). It provides various commands to manage projects, users, API keys, service accounts, invites, and more.
 
 ## Installation
 
