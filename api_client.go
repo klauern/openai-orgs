@@ -3,6 +3,7 @@ package openaiorgs
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -22,8 +23,20 @@ type ListResponse[T any] struct {
 	HasMore bool   `json:"has_more"`
 }
 
+func withLowRateLimits(client *resty.Client) *resty.Client {
+	return client.
+		SetRetryCount(3).
+		SetRetryWaitTime(1 * time.Second).
+		SetRetryMaxWaitTime(5 * time.Second).
+		AddRetryCondition(func(response *resty.Response, err error) bool {
+			return response.StatusCode() >= 500
+		})
+}
+
 func NewClient(baseURL, token string) *Client {
 	client := resty.New()
+	client = withLowRateLimits(client)
+
 	if baseURL == "" {
 		baseURL = DefaultBaseURL
 	}
