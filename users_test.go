@@ -144,7 +144,7 @@ func TestModifyUser(t *testing.T) {
 
 			h.mockResponse("POST", "/organization/users/"+tt.userID, tt.mockResponseCode, nil)
 
-			err := h.client.ModifyUserRole(tt.userID, ParseRoleType(tt.newRole))
+			err := h.client.ModifyUserRole(tt.userID, tt.newRole)
 			if err != nil && err.Error() != tt.expectedError.Error() {
 				t.Errorf("Expected error %v, got %v", tt.expectedError, err)
 			}

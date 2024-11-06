@@ -155,7 +155,7 @@ func modifyUserRole(c *cli.Context) error {
 	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
 
 	id := c.String("id")
-	role := openaiorgs.RoleType(c.String("role"))
+	role := c.String("role")
 
 	err := client.ModifyUserRole(id, role)
 	if err != nil {
