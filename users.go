@@ -41,9 +41,9 @@ func (c *Client) DeleteUser(id string) error {
 	return nil
 }
 
-func (c *Client) ModifyUserRole(id string, role RoleType) error {
+func (c *Client) ModifyUserRole(id string, role string) error {
 	body := map[string]string{
-		"role": string(role),
+		"role": role,
 	}
 
 	_, err := Post[User](c.client, UsersListEndpoint+"/"+id, body)
