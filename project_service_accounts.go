@@ -5,11 +5,20 @@ import "fmt"
 const ProjectServiceAccountsListEndpoint = "/organization/projects/%s/service_accounts"
 
 type ProjectServiceAccount struct {
+	Object    string                       `json:"object"`
+	ID        string                       `json:"id"`
+	Name      string                       `json:"name"`
+	Role      string                       `json:"role"`
+	CreatedAt UnixSeconds                  `json:"created_at"`
+	APIKey    *ProjectServiceAccountAPIKey `json:"api_key,omitempty"`
+}
+
+type ProjectServiceAccountAPIKey struct {
 	Object    string      `json:"object"`
-	ID        string      `json:"id"`
-	Name      string      `json:"name"`
-	Role      string      `json:"role"`
+	Value     string      `json:"value"`
+	Name      *string     `json:"name"`
 	CreatedAt UnixSeconds `json:"created_at"`
+	ID        string      `json:"id"`
 }
 
 func (c *Client) ListProjectServiceAccounts(projectID string, limit int, after string) (*ListResponse[ProjectServiceAccount], error) {

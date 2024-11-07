@@ -18,6 +18,7 @@ func TestListProjectServiceAccounts(t *testing.T) {
 			Name:      "Test Service Account",
 			Role:      "admin",
 			CreatedAt: UnixSeconds(now),
+			APIKey:    nil,
 		},
 	}
 
@@ -63,6 +64,13 @@ func TestCreateProjectServiceAccount(t *testing.T) {
 		Name:      "New Service Account",
 		Role:      "admin",
 		CreatedAt: UnixSeconds(time.Now()),
+		APIKey: &ProjectServiceAccountAPIKey{
+			Object:    "project_service_account_api_key",
+			Value:     "sk-api-key-123",
+			Name:      nil,
+			CreatedAt: UnixSeconds(time.Now()),
+			ID:        "api_key_123",
+		},
 	}
 
 	h.mockResponse("POST", "/organization/projects/proj_123/service_accounts", 200, mockAccount)
@@ -99,6 +107,7 @@ func TestRetrieveProjectServiceAccount(t *testing.T) {
 		Name:      "Test Service Account",
 		Role:      "admin",
 		CreatedAt: UnixSeconds(time.Now()),
+		APIKey:    nil,
 	}
 
 	h.mockResponse("GET", "/organization/projects/proj_123/service_accounts/"+accountID, 200, mockAccount)
