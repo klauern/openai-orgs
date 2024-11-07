@@ -142,11 +142,12 @@ func createProjectServiceAccount(c *cli.Context) error {
 	}
 
 	fmt.Printf("Project service account created:\n")
-	fmt.Printf("ID: %s\nName: %s\nRole: %s\nCreated At: %s\n",
+	fmt.Printf("ID: %s\nName: %s\nRole: %s\nCreated At: %s\nAPI Key: %s\n",
 		account.ID,
 		account.Name,
 		account.Role,
 		account.CreatedAt.String(),
+		account.APIKey.Value,
 	)
 
 	return nil
