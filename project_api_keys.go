@@ -13,7 +13,6 @@ type ProjectApiKey struct {
 	Owner         Owner       `json:"owner"`
 }
 
-
 func (c *Client) ListProjectApiKeys(projectID string, limit int, after string) (*ListResponse[ProjectApiKey], error) {
 	queryParams := make(map[string]string)
 	if limit > 0 {

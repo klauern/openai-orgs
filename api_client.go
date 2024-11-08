@@ -15,7 +15,6 @@ type Client struct {
 	BaseURL string
 }
 
-
 func withLowRateLimits(client *resty.Client) *resty.Client {
 	return client.
 		SetRetryCount(3).

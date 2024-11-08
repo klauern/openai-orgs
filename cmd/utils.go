@@ -15,17 +15,17 @@ var (
 		Usage:    "ID of the project",
 		Required: true,
 	}
-	
+
 	limitFlag = &cli.IntFlag{
 		Name:  "limit",
 		Usage: "Limit the number of items returned",
 	}
-	
+
 	afterFlag = &cli.StringFlag{
 		Name:  "after",
 		Usage: "Return items after this ID",
 	}
-	
+
 	idFlag = &cli.StringFlag{
 		Name:     "id",
 		Usage:    "ID of the resource",

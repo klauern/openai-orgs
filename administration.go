@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-
 func (us UnixSeconds) MarshalJSON() ([]byte, error) {
 	return json.Marshal(time.Time(us).Unix())
 }
