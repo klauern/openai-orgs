@@ -56,4 +56,3 @@ func ParseRoleType(s string) RoleType {
 		return ""
 	}
 }
-
