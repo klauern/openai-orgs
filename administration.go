@@ -5,30 +5,6 @@ import (
 	"time"
 )
 
-type RoleType string
-
-const (
-	RoleTypeOwner  RoleType = "owner"
-	RoleTypeMember RoleType = "member"
-)
-
-func (rt RoleType) String() string {
-	return string(rt)
-}
-
-func ParseRoleType(s string) RoleType {
-	switch s {
-	case "owner":
-		return RoleTypeOwner
-	case "member":
-		return RoleTypeMember
-	default:
-		return ""
-	}
-}
-
-type UnixSeconds time.Time
-
 func (us UnixSeconds) MarshalJSON() ([]byte, error) {
 	return json.Marshal(time.Time(us).Unix())
 }
