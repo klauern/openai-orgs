@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	openaiorgs "github.com/klauern/openai-orgs"
 	"github.com/urfave/cli/v2"
@@ -34,16 +33,8 @@ func createInviteCommand() *cli.Command {
 		Name:  "create",
 		Usage: "Create a new invite",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "email",
-				Usage:    "Email address of the invitee",
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     "role",
-				Usage:    "Role for the invitee (e.g., owner, member)",
-				Required: true,
-			},
+			emailFlag,
+			roleFlag,
 		},
 		Action: createInvite,
 	}
@@ -54,11 +45,7 @@ func deleteInviteCommand() *cli.Command {
 		Name:  "delete",
 		Usage: "Delete an invite",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "id",
-				Usage:    "ID of the invite to delete",
-				Required: true,
-			},
+			idFlag,
 		},
 		Action: deleteInvite,
 	}
@@ -69,11 +56,7 @@ func retrieveInviteCommand() *cli.Command {
 		Name:  "retrieve",
 		Usage: "Retrieve an invite",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "id",
-				Usage:    "ID of the invite to retrieve",
-				Required: true,
-			},
+			idFlag,
 		},
 		Action: retrieveInvite,
 	}
@@ -87,14 +70,17 @@ func listInvites(c *cli.Context) error {
 		return fmt.Errorf("failed to list invites: %w", err)
 	}
 
-	fmt.Println("ID | Email | Role | Status | Created At | Expires At | Accepted At")
-	fmt.Println(strings.Repeat("-", 80))
+	data := TableData{
+		Headers: []string{"ID", "Email", "Role", "Status", "Created At", "Expires At", "Accepted At"},
+		Rows:    make([][]string, len(invites)),
+	}
+
 	for _, invite := range invites {
 		acceptedAt := "N/A"
 		if invite.AcceptedAt != nil {
 			acceptedAt = invite.AcceptedAt.String()
 		}
-		fmt.Printf("%s | %s | %s | %s | %s | %s | %s\n",
+		data.Rows = append(data.Rows, []string{
 			invite.ID,
 			invite.Email,
 			invite.Role,
@@ -102,8 +88,10 @@ func listInvites(c *cli.Context) error {
 			invite.CreatedAt.String(),
 			invite.ExpiresAt.String(),
 			acceptedAt,
-		)
+		})
 	}
+
+	printTable(data.Headers, data.Rows)
 
 	return nil
 }

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	openaiorgs "github.com/klauern/openai-orgs"
 	"github.com/urfave/cli/v2"
@@ -49,11 +48,7 @@ func createProjectCommand() *cli.Command {
 		Name:  "create",
 		Usage: "Create a new project",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "name",
-				Usage:    "Name of the project to create",
-				Required: true,
-			},
+			nameFlag,
 		},
 		Action: createProject,
 	}
@@ -64,11 +59,7 @@ func retrieveProjectCommand() *cli.Command {
 		Name:  "retrieve",
 		Usage: "Retrieve a specific project",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "id",
-				Usage:    "ID of the project to retrieve",
-				Required: true,
-			},
+			idFlag,
 		},
 		Action: retrieveProject,
 	}
@@ -79,16 +70,8 @@ func modifyProjectCommand() *cli.Command {
 		Name:  "modify",
 		Usage: "Modify a project",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "id",
-				Usage:    "ID of the project to modify",
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     "name",
-				Usage:    "New name for the project",
-				Required: true,
-			},
+			idFlag,
+			nameFlag,
 		},
 		Action: modifyProject,
 	}
@@ -99,44 +82,44 @@ func archiveProjectCommand() *cli.Command {
 		Name:  "archive",
 		Usage: "Archive a project",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "id",
-				Usage:    "ID of the project to archive",
-				Required: true,
-			},
+			idFlag,
 		},
 		Action: archiveProject,
 	}
 }
 
 func listProjects(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+	client := newClient(c)
 
-	limit := c.Int("limit")
-	after := c.String("after")
-	includeArchived := c.Bool("include-archived")
-
-	projects, err := client.ListProjects(limit, after, includeArchived)
+	projects, err := client.ListProjects(
+		c.Int("limit"),
+		c.String("after"),
+		c.Bool("include-archived"),
+	)
 	if err != nil {
-		return fmt.Errorf("failed to list projects: %w", err)
+		return wrapError("list projects", err)
 	}
 
-	fmt.Println("ID | Name | Created At | Archived At | Status")
-	fmt.Println(strings.Repeat("-", 80))
-	for _, project := range projects.Data {
+	data := TableData{
+		Headers: []string{"ID", "Name", "Created At", "Archived At", "Status"},
+		Rows:    make([][]string, len(projects.Data)),
+	}
+
+	for i, project := range projects.Data {
 		archivedAt := "N/A"
 		if project.ArchivedAt != nil {
 			archivedAt = project.ArchivedAt.String()
 		}
-		fmt.Printf("%s | %s | %s | %s | %s\n",
+		data.Rows[i] = []string{
 			project.ID,
 			project.Name,
 			project.CreatedAt.String(),
 			archivedAt,
 			project.Status,
-		)
+		}
 	}
 
+	printTableData(data)
 	return nil
 }
 
