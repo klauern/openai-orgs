@@ -1,6 +1,9 @@
 package openaiorgs
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 // Common response type for paginated lists
 type ListResponse[T any] struct {
@@ -54,32 +57,3 @@ func ParseRoleType(s string) RoleType {
 	}
 }
 
-func (us UnixSeconds) MarshalJSON() ([]byte, error) {
-	return json.Marshal(time.Time(us).Unix())
-}
-
-func (us *UnixSeconds) UnmarshalJSON(data []byte) error {
-	var timeStr string
-	if err := json.Unmarshal(data, &timeStr); err == nil {
-		t, err := time.Parse(time.RFC3339, timeStr)
-		if err == nil {
-			*us = UnixSeconds(t)
-			return nil
-		}
-	}
-
-	var timestamp int64
-	if err := json.Unmarshal(data, &timestamp); err != nil {
-		return err
-	}
-	*us = UnixSeconds(time.Unix(timestamp, 0))
-	return nil
-}
-
-func (ct UnixSeconds) String() string {
-	return time.Time(ct).Format(time.RFC3339)
-}
-
-func (ct UnixSeconds) Time() time.Time {
-	return time.Time(ct)
-}
