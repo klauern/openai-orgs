@@ -26,14 +26,8 @@ func listProjectsCommand() *cli.Command {
 		Name:  "list",
 		Usage: "List all projects",
 		Flags: []cli.Flag{
-			&cli.IntFlag{
-				Name:  "limit",
-				Usage: "Limit the number of projects returned",
-			},
-			&cli.StringFlag{
-				Name:  "after",
-				Usage: "Return projects after this ID",
-			},
+			limitFlag,
+			afterFlag,
 			&cli.BoolFlag{
 				Name:  "include-archived",
 				Usage: "Include archived projects in the list",

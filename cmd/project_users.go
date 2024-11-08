@@ -32,14 +32,8 @@ func listProjectUsersCommand() *cli.Command {
 				Usage:    "ID of the project",
 				Required: true,
 			},
-			&cli.IntFlag{
-				Name:  "limit",
-				Usage: "Limit the number of users returned",
-			},
-			&cli.StringFlag{
-				Name:  "after",
-				Usage: "Return users after this ID",
-			},
+			limitFlag,
+			afterFlag,
 		},
 		Action: listProjectUsers,
 	}

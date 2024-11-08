@@ -25,14 +25,8 @@ func listUsersCommand() *cli.Command {
 		Name:  "list",
 		Usage: "List all users",
 		Flags: []cli.Flag{
-			&cli.IntFlag{
-				Name:  "limit",
-				Usage: "Limit the number of users returned",
-			},
-			&cli.StringFlag{
-				Name:  "after",
-				Usage: "Return users after this ID",
-			},
+			limitFlag,
+			afterFlag,
 		},
 		Action: listUsers,
 	}
@@ -66,11 +60,7 @@ func modifyUserRoleCommand() *cli.Command {
 		Usage: "Modify a user's role",
 		Flags: []cli.Flag{
 			idFlag,
-			&cli.StringFlag{
-				Name:     "role",
-				Usage:    "New role for the user (e.g., owner, member)",
-				Required: true,
-			},
+			roleFlag,
 		},
 		Action: modifyUserRole,
 	}
