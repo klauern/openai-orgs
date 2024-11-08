@@ -75,7 +75,7 @@ func deleteProjectApiKeyCommand() *cli.Command {
 
 func listProjectApiKeys(c *cli.Context) error {
 	client := newClient(c)
-	
+
 	apiKeys, err := client.ListProjectApiKeys(
 		c.String("project-id"),
 		c.Int("limit"),
@@ -87,7 +87,7 @@ func listProjectApiKeys(c *cli.Context) error {
 
 	headers := []string{"ID", "Name", "Redacted Value", "Created At", "Owner"}
 	rows := make([][]string, len(apiKeys.Data))
-	
+
 	for i, apiKey := range apiKeys.Data {
 		rows[i] = []string{
 			apiKey.ID,
