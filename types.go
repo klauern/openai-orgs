@@ -41,10 +41,6 @@ const (
 	RoleTypeMember RoleType = "member"
 )
 
-func (rt RoleType) String() string {
-	return string(rt)
-}
-
 func ParseRoleType(s string) RoleType {
 	switch s {
 	case "owner":
