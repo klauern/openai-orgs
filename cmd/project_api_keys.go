@@ -25,19 +25,9 @@ func listProjectApiKeysCommand() *cli.Command {
 		Name:  "list",
 		Usage: "List all project API keys",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "project-id",
-				Usage:    "ID of the project",
-				Required: true,
-			},
-			&cli.IntFlag{
-				Name:  "limit",
-				Usage: "Limit the number of API keys returned",
-			},
-			&cli.StringFlag{
-				Name:  "after",
-				Usage: "Return API keys after this ID",
-			},
+			projectIDFlag,
+			limitFlag,
+			afterFlag,
 		},
 		Action: listProjectApiKeys,
 	}
@@ -84,30 +74,31 @@ func deleteProjectApiKeyCommand() *cli.Command {
 }
 
 func listProjectApiKeys(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
-
-	projectID := c.String("project-id")
-	limit := c.Int("limit")
-	after := c.String("after")
-
-	apiKeys, err := client.ListProjectApiKeys(projectID, limit, after)
+	client := newClient(c)
+	
+	apiKeys, err := client.ListProjectApiKeys(
+		c.String("project-id"),
+		c.Int("limit"),
+		c.String("after"),
+	)
 	if err != nil {
 		return fmt.Errorf("failed to list project API keys: %w", err)
 	}
 
-	fmt.Println("ID | Name | Redacted Value | Created At | Owner")
-	fmt.Println(strings.Repeat("-", 80))
-	for _, apiKey := range apiKeys.Data {
-		fmt.Printf("%s | %s | %s | %s | %s (%s)\n",
+	headers := []string{"ID", "Name", "Redacted Value", "Created At", "Owner"}
+	rows := make([][]string, len(apiKeys.Data))
+	
+	for i, apiKey := range apiKeys.Data {
+		rows[i] = []string{
 			apiKey.ID,
 			apiKey.Name,
 			apiKey.RedactedValue,
 			apiKey.CreatedAt.String(),
-			apiKey.Owner.Name,
-			apiKey.Owner.Type,
-		)
+			fmt.Sprintf("%s (%s)", apiKey.Owner.Name, apiKey.Owner.Type),
+		}
 	}
 
+	printTable(headers, rows)
 	return nil
 }
 
