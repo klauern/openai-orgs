@@ -15,13 +15,6 @@ type Client struct {
 	BaseURL string
 }
 
-type ListResponse[T any] struct {
-	Object  string `json:"object"`
-	Data    []T    `json:"data"`
-	FirstID string `json:"first_id"`
-	LastID  string `json:"last_id"`
-	HasMore bool   `json:"has_more"`
-}
 
 func withLowRateLimits(client *resty.Client) *resty.Client {
 	return client.

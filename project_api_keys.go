@@ -13,21 +13,6 @@ type ProjectApiKey struct {
 	Owner         Owner       `json:"owner"`
 }
 
-type Owner struct {
-	Object string                 `json:"object"`
-	ID     string                 `json:"id"`
-	Name   string                 `json:"name"`
-	Type   OwnerType              `json:"type"`
-	User   *User                  `json:"user,omitempty"`
-	SA     *ProjectServiceAccount `json:"service_account,omitempty"`
-}
-
-type OwnerType string
-
-const (
-	OwnerTypeUser           OwnerType = "user"
-	OwnerTypeServiceAccount OwnerType = "service_account"
-)
 
 func (c *Client) ListProjectApiKeys(projectID string, limit int, after string) (*ListResponse[ProjectApiKey], error) {
 	queryParams := make(map[string]string)
