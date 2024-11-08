@@ -25,12 +25,6 @@ var (
 		Name:  "after",
 		Usage: "Return items after this ID",
 	}
-
-	idFlag = &cli.StringFlag{
-		Name:     "id",
-		Usage:    "ID of the resource",
-		Required: true,
-	}
 )
 
 // newClient creates a new OpenAI client from context
