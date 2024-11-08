@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	openaiorgs "github.com/klauern/openai-orgs"
 	"github.com/urfave/cli/v2"
