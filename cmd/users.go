@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	openaiorgs "github.com/klauern/openai-orgs"
 	"github.com/urfave/cli/v2"
@@ -26,14 +25,8 @@ func listUsersCommand() *cli.Command {
 		Name:  "list",
 		Usage: "List all users",
 		Flags: []cli.Flag{
-			&cli.IntFlag{
-				Name:  "limit",
-				Usage: "Limit the number of users returned",
-			},
-			&cli.StringFlag{
-				Name:  "after",
-				Usage: "Return users after this ID",
-			},
+			limitFlag,
+			afterFlag,
 		},
 		Action: listUsers,
 	}
@@ -44,11 +37,7 @@ func retrieveUserCommand() *cli.Command {
 		Name:  "retrieve",
 		Usage: "Retrieve a specific user",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "id",
-				Usage:    "ID of the user to retrieve",
-				Required: true,
-			},
+			idFlag,
 		},
 		Action: retrieveUser,
 	}
@@ -59,11 +48,7 @@ func deleteUserCommand() *cli.Command {
 		Name:  "delete",
 		Usage: "Delete a user",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "id",
-				Usage:    "ID of the user to delete",
-				Required: true,
-			},
+			idFlag,
 		},
 		Action: deleteUser,
 	}
@@ -74,44 +59,40 @@ func modifyUserRoleCommand() *cli.Command {
 		Name:  "modify-role",
 		Usage: "Modify a user's role",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "id",
-				Usage:    "ID of the user to modify",
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     "role",
-				Usage:    "New role for the user (e.g., owner, member)",
-				Required: true,
-			},
+			idFlag,
+			roleFlag,
 		},
 		Action: modifyUserRole,
 	}
 }
 
 func listUsers(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+	client := newClient(c)
 
-	limit := c.Int("limit")
-	after := c.String("after")
-
-	users, err := client.ListUsers(limit, after)
+	users, err := client.ListUsers(
+		c.Int("limit"),
+		c.String("after"),
+	)
 	if err != nil {
-		return fmt.Errorf("failed to list users: %w", err)
+		return wrapError("list users", err)
 	}
 
-	fmt.Println("ID | Name | Email | Role | Added At")
-	fmt.Println(strings.Repeat("-", 80))
-	for _, user := range users.Data {
-		fmt.Printf("%s | %s | %s | %s | %s\n",
+	data := TableData{
+		Headers: []string{"ID", "Name", "Email", "Role", "Added At"},
+		Rows:    make([][]string, len(users.Data)),
+	}
+
+	for i, user := range users.Data {
+		data.Rows[i] = []string{
 			user.ID,
 			user.Name,
 			user.Email,
 			user.Role,
 			user.AddedAt.String(),
-		)
+		}
 	}
 
+	printTableData(data)
 	return nil
 }
 

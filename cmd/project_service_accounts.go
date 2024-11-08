@@ -31,14 +31,8 @@ func listProjectServiceAccountsCommand() *cli.Command {
 				Usage:    "ID of the project",
 				Required: true,
 			},
-			&cli.IntFlag{
-				Name:  "limit",
-				Usage: "Limit the number of service accounts returned",
-			},
-			&cli.StringFlag{
-				Name:  "after",
-				Usage: "Return service accounts after this ID",
-			},
+			limitFlag,
+			afterFlag,
 		},
 		Action: listProjectServiceAccounts,
 	}
@@ -49,16 +43,8 @@ func createProjectServiceAccountCommand() *cli.Command {
 		Name:  "create",
 		Usage: "Create a new project service account",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "project-id",
-				Usage:    "ID of the project",
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     "name",
-				Usage:    "Name of the service account",
-				Required: true,
-			},
+			projectIDFlag,
+			nameFlag,
 		},
 		Action: createProjectServiceAccount,
 	}
@@ -67,18 +53,10 @@ func createProjectServiceAccountCommand() *cli.Command {
 func retrieveProjectServiceAccountCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "retrieve",
-		Usage: "Retrieve a specific project service account",
+		Usage: "Retrieve a project service account",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "project-id",
-				Usage:    "ID of the project",
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     "id",
-				Usage:    "ID of the service account to retrieve",
-				Required: true,
-			},
+			projectIDFlag,
+			idFlag,
 		},
 		Action: retrieveProjectServiceAccount,
 	}
@@ -89,16 +67,8 @@ func deleteProjectServiceAccountCommand() *cli.Command {
 		Name:  "delete",
 		Usage: "Delete a project service account",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "project-id",
-				Usage:    "ID of the project",
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     "id",
-				Usage:    "ID of the service account to delete",
-				Required: true,
-			},
+			projectIDFlag,
+			idFlag,
 		},
 		Action: deleteProjectServiceAccount,
 	}

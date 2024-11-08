@@ -32,14 +32,8 @@ func listProjectUsersCommand() *cli.Command {
 				Usage:    "ID of the project",
 				Required: true,
 			},
-			&cli.IntFlag{
-				Name:  "limit",
-				Usage: "Limit the number of users returned",
-			},
-			&cli.StringFlag{
-				Name:  "after",
-				Usage: "Return users after this ID",
-			},
+			limitFlag,
+			afterFlag,
 		},
 		Action: listProjectUsers,
 	}
@@ -50,21 +44,9 @@ func createProjectUserCommand() *cli.Command {
 		Name:  "create",
 		Usage: "Create a new project user",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "project-id",
-				Usage:    "ID of the project",
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     "user-id",
-				Usage:    "ID of the user to add to the project",
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     "role",
-				Usage:    "Role of the user in the project",
-				Required: true,
-			},
+			projectIDFlag,
+			idFlag,
+			roleFlag,
 		},
 		Action: createProjectUser,
 	}
@@ -75,16 +57,8 @@ func retrieveProjectUserCommand() *cli.Command {
 		Name:  "retrieve",
 		Usage: "Retrieve a specific project user",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "project-id",
-				Usage:    "ID of the project",
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     "user-id",
-				Usage:    "ID of the user to retrieve",
-				Required: true,
-			},
+			projectIDFlag,
+			idFlag,
 		},
 		Action: retrieveProjectUser,
 	}
@@ -95,21 +69,9 @@ func modifyProjectUserCommand() *cli.Command {
 		Name:  "modify",
 		Usage: "Modify a project user's role",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "project-id",
-				Usage:    "ID of the project",
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     "user-id",
-				Usage:    "ID of the user to modify",
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     "role",
-				Usage:    "New role for the user (e.g., owner, member)",
-				Required: true,
-			},
+			projectIDFlag,
+			idFlag,
+			roleFlag,
 		},
 		Action: modifyProjectUser,
 	}
@@ -120,16 +82,8 @@ func deleteProjectUserCommand() *cli.Command {
 		Name:  "delete",
 		Usage: "Delete a project user",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "project-id",
-				Usage:    "ID of the project",
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     "user-id",
-				Usage:    "ID of the user to delete",
-				Required: true,
-			},
+			projectIDFlag,
+			idFlag,
 		},
 		Action: deleteProjectUser,
 	}

@@ -15,18 +15,8 @@ func AuditLogsCommand() *cli.Command {
 		Name:  "audit-logs",
 		Usage: "List audit logs",
 		Flags: []cli.Flag{
-			&cli.IntFlag{
-				Name:  "limit",
-				Usage: "Limit the number of results",
-			},
-			&cli.StringFlag{
-				Name:  "after",
-				Usage: "Return results after this ID",
-			},
-			&cli.StringFlag{
-				Name:  "before",
-				Usage: "Return results before this ID",
-			},
+			limitFlag,
+			afterFlag,
 			&cli.StringFlag{
 				Name:  "start-date",
 				Usage: "Start date for the query (RFC3339 format)",

@@ -37,16 +37,8 @@ func retrieveProjectApiKeyCommand() *cli.Command {
 		Name:  "retrieve",
 		Usage: "Retrieve a specific project API key",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "project-id",
-				Usage:    "ID of the project",
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     "api-key-id",
-				Usage:    "ID of the API key to retrieve",
-				Required: true,
-			},
+			projectIDFlag,
+			idFlag,
 		},
 		Action: retrieveProjectApiKey,
 	}
@@ -57,11 +49,7 @@ func deleteProjectApiKeyCommand() *cli.Command {
 		Name:  "delete",
 		Usage: "Delete a project API key",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "project-id",
-				Usage:    "ID of the project",
-				Required: true,
-			},
+			projectIDFlag,
 			&cli.StringFlag{
 				Name:     "api-key-id",
 				Usage:    "ID of the API key to delete",
@@ -81,7 +69,7 @@ func listProjectApiKeys(c *cli.Context) error {
 		c.String("after"),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to list project API keys: %w", err)
+		return wrapError("list project API keys", err)
 	}
 
 	headers := []string{"ID", "Name", "Redacted Value", "Created At", "Owner"}
@@ -102,14 +90,14 @@ func listProjectApiKeys(c *cli.Context) error {
 }
 
 func retrieveProjectApiKey(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+	client := newClient(c)
 
-	projectID := c.String("project-id")
-	apiKeyID := c.String("api-key-id")
-
-	apiKey, err := client.RetrieveProjectApiKey(projectID, apiKeyID)
+	apiKey, err := client.RetrieveProjectApiKey(
+		c.String("project-id"),
+		c.String("api-key-id"),
+	)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve project API key: %w", err)
+		return wrapError("retrieve project API key", err)
 	}
 
 	fmt.Printf("API Key details:\n")
