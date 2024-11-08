@@ -16,8 +16,8 @@ type Owner struct {
 	Object string                 `json:"object"`
 	ID     string                 `json:"id"`
 	Name   string                 `json:"name"`
-	Type   OwnerType             `json:"type"`
-	User   *User                 `json:"user,omitempty"`
+	Type   OwnerType              `json:"type"`
+	User   *User                  `json:"user,omitempty"`
 	SA     *ProjectServiceAccount `json:"service_account,omitempty"`
 }
 
@@ -38,6 +38,7 @@ const (
 	RoleTypeOwner  RoleType = "owner"
 	RoleTypeMember RoleType = "member"
 )
+
 func (rt RoleType) String() string {
 	return string(rt)
 }
