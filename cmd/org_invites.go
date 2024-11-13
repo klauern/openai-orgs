@@ -75,12 +75,12 @@ func listInvites(c *cli.Context) error {
 		Rows:    make([][]string, len(invites)),
 	}
 
-	for _, invite := range invites {
+	for i, invite := range invites {
 		acceptedAt := "N/A"
 		if invite.AcceptedAt != nil {
 			acceptedAt = invite.AcceptedAt.String()
 		}
-		data.Rows = append(data.Rows, []string{
+		data.Rows[i] = []string{
 			invite.ID,
 			invite.Email,
 			invite.Role,
@@ -88,7 +88,7 @@ func listInvites(c *cli.Context) error {
 			invite.CreatedAt.String(),
 			invite.ExpiresAt.String(),
 			acceptedAt,
-		})
+		}
 	}
 
 	printTable(data.Headers, data.Rows)

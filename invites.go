@@ -18,12 +18,28 @@ type Invite struct {
 const InviteListEndpoint = "/organization/invites"
 
 func (c *Client) ListInvites() ([]Invite, error) {
-	resp, err := Get[Invite](c.client, InviteListEndpoint, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get invites: %w", err)
+	var allInvites []Invite
+	queryParams := map[string]string{
+		"limit": "100",
 	}
 
-	return resp.Data, nil
+	for {
+		resp, err := Get[Invite](c.client, InviteListEndpoint, queryParams)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get invites: %w", err)
+		}
+
+		allInvites = append(allInvites, resp.Data...)
+
+		if !resp.HasMore {
+			break
+		}
+
+		fmt.Println("Getting more invites after", resp.LastID)
+		queryParams["after"] = resp.LastID
+	}
+
+	return allInvites, nil
 }
 
 func (c *Client) CreateInvite(email string, role string) (*Invite, error) {
