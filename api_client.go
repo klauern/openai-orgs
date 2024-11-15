@@ -21,7 +21,7 @@ func withLowRateLimits(client *resty.Client) *resty.Client {
 		SetRetryWaitTime(1 * time.Second).
 		SetRetryMaxWaitTime(5 * time.Second).
 		AddRetryCondition(func(response *resty.Response, err error) bool {
-			return response.StatusCode() >= 500
+			return response.StatusCode() >= 500 || response.StatusCode() == 429
 		})
 }
 
