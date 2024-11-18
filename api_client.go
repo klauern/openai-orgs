@@ -17,9 +17,9 @@ type Client struct {
 
 func withLowRateLimits(client *resty.Client) *resty.Client {
 	return client.
-		SetRetryCount(3).
-		SetRetryWaitTime(1 * time.Second).
-		SetRetryMaxWaitTime(5 * time.Second).
+		SetRetryCount(20).
+		SetRetryWaitTime(5 * time.Second).
+		SetRetryMaxWaitTime(5 * time.Minute).
 		AddRetryCondition(func(response *resty.Response, err error) bool {
 			return response.StatusCode() >= 500 || response.StatusCode() == 429
 		})
