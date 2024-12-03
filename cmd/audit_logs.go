@@ -61,7 +61,9 @@ func listAuditLogs(c *cli.Context) error {
 		if params.EffectiveAt == nil {
 			params.EffectiveAt = &struct {
 				Gte int64 `json:"gte,omitempty"`
+				Gt  int64 `json:"gt,omitempty"`
 				Lte int64 `json:"lte,omitempty"`
+				Lt  int64 `json:"lt,omitempty"`
 			}{}
 		}
 		params.EffectiveAt.Gte = parsedStartDate.Unix()
@@ -75,7 +77,9 @@ func listAuditLogs(c *cli.Context) error {
 		if params.EffectiveAt == nil {
 			params.EffectiveAt = &struct {
 				Gte int64 `json:"gte,omitempty"`
+				Gt  int64 `json:"gt,omitempty"`
 				Lte int64 `json:"lte,omitempty"`
+				Lt  int64 `json:"lt,omitempty"`
 			}{}
 		}
 		params.EffectiveAt.Lte = parsedEndDate.Unix()
