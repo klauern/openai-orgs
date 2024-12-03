@@ -1,197 +1,307 @@
 package openaiorgs
 
 import (
+	"encoding/json"
 	"fmt"
-	"reflect"
-	"time"
-
-	"github.com/mitchellh/mapstructure"
+	"strconv"
+	"strings"
 )
 
 const AuditLogsListEndpoint = "/organization/audit_logs"
 
+// AuditLogListResponse represents the paginated response from the audit logs endpoint
+type AuditLogListResponse struct {
+	Object  string     `json:"object"`
+	Data    []AuditLog `json:"data"`
+	FirstID string     `json:"first_id"`
+	LastID  string     `json:"last_id"`
+	HasMore bool       `json:"has_more"`
+}
+
 // AuditLog represents the main audit log object
 type AuditLog struct {
-	ID        string    `json:"id"`
-	Type      string    `json:"type"`
-	Timestamp time.Time `json:"timestamp"`
-	Version   string    `json:"version"`
-	Actor     Actor     `json:"actor"`
-	Event     Event     `json:"event"`
+	ID          string        `json:"id"`
+	Type        string        `json:"type"`
+	EffectiveAt UnixSeconds   `json:"effective_at"`
+	Project     *AuditProject `json:"project,omitempty"`
+	Actor       Actor         `json:"actor"`
+	Details     interface{}   `json:"-"` // This will be unmarshaled based on Type
+}
+
+// AuditProject represents project information in audit logs
+type AuditProject struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 // Actor represents the entity performing the action
 type Actor struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Type    string       `json:"type"` // "session" or "api_key"
+	Session *Session     `json:"session,omitempty"`
+	APIKey  *APIKeyActor `json:"api_key,omitempty"`
 }
 
-// Event represents the details of the audit log event
-type Event struct {
-	ID      string      `json:"id"`
-	Type    string      `json:"type"`
-	Action  string      `json:"action"`
-	Auth    Auth        `json:"auth"`
-	Payload interface{} `json:"payload"`
+// Session represents user session information
+type Session struct {
+	User      AuditUser `json:"user"`
+	IPAddress string    `json:"ip_address"`
+	UserAgent string    `json:"user_agent"`
 }
 
-// Auth represents authentication details
-type Auth struct {
-	Type      string `json:"type"`
-	Transport string `json:"transport"`
+// APIKeyActor represents API key information in the actor field
+type APIKeyActor struct {
+	Type string    `json:"type"`
+	User AuditUser `json:"user"`
 }
 
-// AccessPolicyCreated represents the payload for access policy creation
-type AccessPolicyCreated struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+// AuditUser represents user information in audit logs
+type AuditUser struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
 }
 
-// AccessPolicyDeleted represents the payload for access policy deletion
-type AccessPolicyDeleted struct {
-	ID string `json:"id"`
-}
-
-// AccessPolicyUpdated represents the payload for access policy updates
-type AccessPolicyUpdated struct {
-	ID      string `json:"id"`
-	Changes struct {
-		Name struct {
-			Old string `json:"old"`
-			New string `json:"new"`
-		} `json:"name"`
-	} `json:"changes"`
-}
-
-// APIKeyCreated represents the payload for API key creation
+// Event types and their corresponding payload structures
 type APIKeyCreated struct {
 	ID   string `json:"id"`
-	Name string `json:"name"`
+	Data struct {
+		Scopes []string `json:"scopes"`
+	} `json:"data"`
 }
 
-// APIKeyDeleted represents the payload for API key deletion
+type APIKeyUpdated struct {
+	ID               string `json:"id"`
+	ChangesRequested struct {
+		Scopes []string `json:"scopes"`
+	} `json:"changes_requested"`
+}
+
 type APIKeyDeleted struct {
 	ID string `json:"id"`
 }
 
-// AssistantCreated represents the payload for assistant creation
-type AssistantCreated struct {
+type InviteSent struct {
 	ID   string `json:"id"`
-	Name string `json:"name"`
+	Data struct {
+		Email string `json:"email"`
+	} `json:"data"`
 }
 
-// AssistantDeleted represents the payload for assistant deletion
-type AssistantDeleted struct {
+type InviteAccepted struct {
 	ID string `json:"id"`
 }
 
-// AssistantModified represents the payload for assistant modifications
-type AssistantModified struct {
-	ID      string `json:"id"`
-	Changes struct {
-		Name struct {
-			Old string `json:"old"`
-			New string `json:"new"`
-		} `json:"name"`
-	} `json:"changes"`
+type InviteDeleted struct {
+	ID string `json:"id"`
 }
 
-// FileCreated represents the payload for file creation
-type FileCreated struct {
+type LoginFailed struct {
+	ErrorCode    string `json:"error_code"`
+	ErrorMessage string `json:"error_message"`
+}
+
+type LogoutFailed struct {
+	ErrorCode    string `json:"error_code"`
+	ErrorMessage string `json:"error_message"`
+}
+
+type OrganizationUpdated struct {
+	ID               string `json:"id"`
+	ChangesRequested struct {
+		Name string `json:"name,omitempty"`
+	} `json:"changes_requested"`
+}
+
+// ProjectCreated represents the details for project.created events
+type ProjectCreated struct {
 	ID   string `json:"id"`
-	Name string `json:"name"`
+	Data struct {
+		Name  string `json:"name"`
+		Title string `json:"title"`
+	} `json:"data"`
 }
 
-// FileDeleted represents the payload for file deletion
-type FileDeleted struct {
+// ProjectUpdated represents the details for project.updated events
+type ProjectUpdated struct {
+	ID               string `json:"id"`
+	ChangesRequested struct {
+		Title string `json:"title"`
+	} `json:"changes_requested"`
+}
+
+// ProjectArchived represents the details for project.archived events
+type ProjectArchived struct {
 	ID string `json:"id"`
 }
 
-// FineTuneCreated represents the payload for fine-tune creation
-type FineTuneCreated struct {
+// RateLimitUpdated represents the details for rate_limit.updated events
+type RateLimitUpdated struct {
+	ID               string `json:"id"`
+	ChangesRequested struct {
+		MaxRequestsPer1Minute       int `json:"max_requests_per_1_minute,omitempty"`
+		MaxTokensPer1Minute         int `json:"max_tokens_per_1_minute,omitempty"`
+		MaxImagesPer1Minute         int `json:"max_images_per_1_minute,omitempty"`
+		MaxAudioMegabytesPer1Minute int `json:"max_audio_megabytes_per_1_minute,omitempty"`
+		MaxRequestsPer1Day          int `json:"max_requests_per_1_day,omitempty"`
+		Batch1DayMaxInputTokens     int `json:"batch_1_day_max_input_tokens,omitempty"`
+	} `json:"changes_requested"`
+}
+
+// RateLimitDeleted represents the details for rate_limit.deleted events
+type RateLimitDeleted struct {
 	ID string `json:"id"`
 }
 
-// FineTuneDeleted represents the payload for fine-tune deletion
-type FineTuneDeleted struct {
-	ID string `json:"id"`
-}
-
-// FineTuneEventCreated represents the payload for fine-tune event creation
-type FineTuneEventCreated struct {
-	ID           string    `json:"id"`
-	FineTuneID   string    `json:"fine_tune_id"`
-	Level        string    `json:"level"`
-	Message      string    `json:"message"`
-	CreatedAt    time.Time `json:"created_at"`
-	SerializedAt time.Time `json:"serialized_at"`
-}
-
-// ModelCreated represents the payload for model creation
-type ModelCreated struct {
+// ServiceAccountCreated represents the details for service_account.created events
+type ServiceAccountCreated struct {
 	ID   string `json:"id"`
-	Name string `json:"name"`
+	Data struct {
+		Role string `json:"role"` // Either "owner" or "member"
+	} `json:"data"`
 }
 
-// ModelDeleted represents the payload for model deletion
-type ModelDeleted struct {
+// ServiceAccountUpdated represents the details for service_account.updated events
+type ServiceAccountUpdated struct {
+	ID               string `json:"id"`
+	ChangesRequested struct {
+		Role string `json:"role"` // Either "owner" or "member"
+	} `json:"changes_requested"`
+}
+
+// ServiceAccountDeleted represents the details for service_account.deleted events
+type ServiceAccountDeleted struct {
 	ID string `json:"id"`
 }
 
-// RunCreated represents the payload for run creation
-type RunCreated struct {
-	ID            string    `json:"id"`
-	ThreadID      string    `json:"thread_id"`
-	AssistantID   string    `json:"assistant_id"`
-	Status        string    `json:"status"`
-	StartedAt     time.Time `json:"started_at"`
-	ExpiresAt     time.Time `json:"expires_at"`
-	CancelledAt   time.Time `json:"cancelled_at"`
-	FailedAt      time.Time `json:"failed_at"`
-	CompletedAt   time.Time `json:"completed_at"`
-	LastErrorCode string    `json:"last_error_code"`
+// UserAdded represents the details for user.added events
+type UserAdded struct {
+	ID   string `json:"id"`
+	Data struct {
+		Role string `json:"role"` // Either "owner" or "member"
+	} `json:"data"`
 }
 
-// RunModified represents the payload for run modifications
-type RunModified struct {
-	ID      string `json:"id"`
-	Changes struct {
-		Status struct {
-			Old string `json:"old"`
-			New string `json:"new"`
-		} `json:"status"`
-	} `json:"changes"`
+// UserUpdated represents the details for user.updated events
+type UserUpdated struct {
+	ID               string `json:"id"`
+	ChangesRequested struct {
+		Role string `json:"role"` // Either "owner" or "member"
+	} `json:"changes_requested"`
 }
 
-// ThreadCreated represents the payload for thread creation
-type ThreadCreated struct {
+// UserDeleted represents the details for user.deleted events
+type UserDeleted struct {
 	ID string `json:"id"`
 }
 
-// ThreadDeleted represents the payload for thread deletion
-type ThreadDeleted struct {
-	ID string `json:"id"`
-}
-
-// ThreadModified represents the payload for thread modifications
-type ThreadModified struct {
-	ID      string `json:"id"`
-	Changes struct {
-		Metadata struct {
-			Old map[string]interface{} `json:"old"`
-			New map[string]interface{} `json:"new"`
-		} `json:"metadata"`
-	} `json:"changes"`
+type LoginSucceeded struct {
+	Object      string `json:"object"`
+	ID          string `json:"id"`
+	Type        string `json:"type"`
+	EffectiveAt int64  `json:"effective_at"`
+	Actor       Actor  `json:"actor"`
 }
 
 // AuditLogListParams represents the query parameters for listing audit logs
 type AuditLogListParams struct {
-	Limit     int       `json:"limit,omitempty"`
-	After     string    `json:"after,omitempty"`
-	Before    string    `json:"before,omitempty"`
-	StartDate time.Time `json:"start_date,omitempty"`
-	EndDate   time.Time `json:"end_date,omitempty"`
+	EffectiveAt *struct {
+		Gte int64 `json:"gte,omitempty"`
+		Lte int64 `json:"lte,omitempty"`
+	} `json:"effective_at,omitempty"`
+	ProjectIDs  []string `json:"project_ids,omitempty"`
+	EventTypes  []string `json:"event_types,omitempty"`
+	ActorIDs    []string `json:"actor_ids,omitempty"`
+	ActorEmails []string `json:"actor_emails,omitempty"`
+	ResourceIDs []string `json:"resource_ids,omitempty"`
+	Limit       int      `json:"limit,omitempty"`
+	After       string   `json:"after,omitempty"`
+	Before      string   `json:"before,omitempty"`
+}
+
+// Add this type to store the raw event data
+type rawAuditLog struct {
+	ID          string          `json:"id"`
+	Type        string          `json:"type"`
+	EffectiveAt UnixSeconds     `json:"effective_at"`
+	Project     *AuditProject   `json:"project,omitempty"`
+	Actor       Actor           `json:"actor"`
+	Details     json.RawMessage `json:"details"` // Store the raw JSON temporarily
+}
+
+// Add UnmarshalJSON to AuditLog to handle the event-specific details
+func (a *AuditLog) UnmarshalJSON(data []byte) error {
+	var raw rawAuditLog
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	// Copy the common fields
+	a.ID = raw.ID
+	a.Type = raw.Type
+	a.EffectiveAt = raw.EffectiveAt
+	a.Project = raw.Project
+	a.Actor = raw.Actor
+
+	// If details is empty or null, return early
+	if len(raw.Details) == 0 || string(raw.Details) == "null" {
+		a.Details = nil
+		return nil
+	}
+
+	// Parse the details based on the event type
+	var details interface{}
+	switch raw.Type {
+	case "api_key.created":
+		details = &APIKeyCreated{}
+	case "api_key.updated":
+		details = &APIKeyUpdated{}
+	case "api_key.deleted":
+		details = &APIKeyDeleted{}
+	case "invite.sent":
+		details = &InviteSent{}
+	case "invite.accepted":
+		details = &InviteAccepted{}
+	case "invite.deleted":
+		details = &InviteDeleted{}
+	case "login.failed":
+		details = &LoginFailed{}
+	case "login.succeeded":
+		details = &LoginSucceeded{}
+	case "logout.failed":
+		details = &LogoutFailed{}
+	case "organization.updated":
+		details = &OrganizationUpdated{}
+	case "project.created":
+		details = &ProjectCreated{}
+	case "project.updated":
+		details = &ProjectUpdated{}
+	case "project.archived":
+		details = &ProjectArchived{}
+	case "rate_limit.updated":
+		details = &RateLimitUpdated{}
+	case "rate_limit.deleted":
+		details = &RateLimitDeleted{}
+	case "service_account.created":
+		details = &ServiceAccountCreated{}
+	case "service_account.updated":
+		details = &ServiceAccountUpdated{}
+	case "service_account.deleted":
+		details = &ServiceAccountDeleted{}
+	case "user.added":
+		details = &UserAdded{}
+	case "user.updated":
+		details = &UserUpdated{}
+	case "user.deleted":
+		details = &UserDeleted{}
+	default:
+		return fmt.Errorf("unknown audit log type: %s", raw.Type)
+	}
+
+	if err := json.Unmarshal(raw.Details, details); err != nil {
+		return fmt.Errorf("failed to unmarshal details for type %s: %w", raw.Type, err)
+	}
+
+	a.Details = details
+	return nil
 }
 
 func (c *Client) ListAuditLogs(params *AuditLogListParams) (*ListResponse[AuditLog], error) {
@@ -199,7 +309,7 @@ func (c *Client) ListAuditLogs(params *AuditLogListParams) (*ListResponse[AuditL
 
 	if params != nil {
 		if params.Limit > 0 {
-			queryParams["limit"] = fmt.Sprintf("%d", params.Limit)
+			queryParams["limit"] = strconv.Itoa(params.Limit)
 		}
 		if params.After != "" {
 			queryParams["after"] = params.After
@@ -207,165 +317,30 @@ func (c *Client) ListAuditLogs(params *AuditLogListParams) (*ListResponse[AuditL
 		if params.Before != "" {
 			queryParams["before"] = params.Before
 		}
-		if !params.StartDate.IsZero() {
-			queryParams["start_date"] = params.StartDate.Format(time.RFC3339)
+		if params.EffectiveAt != nil {
+			if params.EffectiveAt.Gte != 0 {
+				queryParams["effective_at[gte]"] = strconv.FormatInt(params.EffectiveAt.Gte, 10)
+			}
+			if params.EffectiveAt.Lte != 0 {
+				queryParams["effective_at[lte]"] = strconv.FormatInt(params.EffectiveAt.Lte, 10)
+			}
 		}
-		if !params.EndDate.IsZero() {
-			queryParams["end_date"] = params.EndDate.Format(time.RFC3339)
+		if len(params.ProjectIDs) > 0 {
+			queryParams["project_ids"] = strings.Join(params.ProjectIDs, ",")
+		}
+		if len(params.EventTypes) > 0 {
+			queryParams["event_types"] = strings.Join(params.EventTypes, ",")
+		}
+		if len(params.ActorIDs) > 0 {
+			queryParams["actor_ids"] = strings.Join(params.ActorIDs, ",")
+		}
+		if len(params.ActorEmails) > 0 {
+			queryParams["actor_emails"] = strings.Join(params.ActorEmails, ",")
+		}
+		if len(params.ResourceIDs) > 0 {
+			queryParams["resource_ids"] = strings.Join(params.ResourceIDs, ",")
 		}
 	}
 
 	return Get[AuditLog](c.client, AuditLogsListEndpoint, queryParams)
-}
-
-// ParseAuditLogPayload parses the payload of an AuditLog based on its type
-func ParseAuditLogPayload(auditLog *AuditLog) (interface{}, error) {
-	var payload interface{}
-
-	switch auditLog.Type {
-	case "access_policy.created":
-		payload = &AccessPolicyCreated{}
-	case "access_policy.deleted":
-		payload = &AccessPolicyDeleted{}
-	case "access_policy.updated":
-		payload = &AccessPolicyUpdated{}
-	case "api_key.created":
-		payload = &APIKeyCreated{}
-	case "api_key.deleted":
-		payload = &APIKeyDeleted{}
-	case "assistant.created":
-		payload = &AssistantCreated{}
-	case "assistant.deleted":
-		payload = &AssistantDeleted{}
-	case "assistant.modified":
-		payload = &AssistantModified{}
-	case "file.created":
-		payload = &FileCreated{}
-	case "file.deleted":
-		payload = &FileDeleted{}
-	case "fine_tune.created":
-		payload = &FineTuneCreated{}
-	case "fine_tune.deleted":
-		payload = &FineTuneDeleted{}
-	case "fine_tune.event.created":
-		payload = &FineTuneEventCreated{}
-	case "model.created":
-		payload = &ModelCreated{}
-	case "model.deleted":
-		payload = &ModelDeleted{}
-	case "run.created":
-		payload = &RunCreated{}
-	case "run.modified":
-		payload = &RunModified{}
-	case "thread.created":
-		payload = &ThreadCreated{}
-	case "thread.deleted":
-		payload = &ThreadDeleted{}
-	case "thread.modified":
-		payload = &ThreadModified{}
-	case "invite.sent":
-		payload = &InviteSent{}
-	case "login.succeeded":
-		payload = &LoginSucceeded{}
-	case "logout.succeeded":
-		payload = &LogoutSucceeded{}
-	case "organization.updated":
-		payload = &OrganizationUpdated{}
-	default:
-		return nil, fmt.Errorf("unknown audit log type: %s", auditLog.Type)
-	}
-
-	config := &mapstructure.DecoderConfig{
-		Result:           payload,
-		TagName:          "json",
-		WeaklyTypedInput: true,
-		DecodeHook: mapstructure.ComposeDecodeHookFunc(
-			// String to Time conversion - ensure UTC
-			func(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
-				if t != reflect.TypeOf(time.Time{}) {
-					return data, nil
-				}
-
-				if str, ok := data.(string); ok {
-					if parsed, err := time.Parse(time.RFC3339, str); err == nil {
-						return parsed.UTC(), nil
-					}
-				}
-				return data, nil
-			},
-			// Number to Time conversion - ensure UTC
-			func(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
-				if t != reflect.TypeOf(time.Time{}) {
-					return data, nil
-				}
-
-				var timestamp int64
-				switch v := data.(type) {
-				case int64:
-					timestamp = v
-				case int:
-					timestamp = int64(v)
-				default:
-					return data, nil
-				}
-
-				return time.Unix(timestamp, 0).UTC(), nil
-			},
-			// Ensure string fields are properly mapped
-			func(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
-				if t.Kind() != reflect.String {
-					return data, nil
-				}
-
-				if f.Kind() == reflect.Interface {
-					if v, ok := data.(string); ok {
-						return v, nil
-					}
-				}
-				return data, nil
-			},
-		),
-		Metadata: nil,
-	}
-
-	decoder, err := mapstructure.NewDecoder(config)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create decoder: %w", err)
-	}
-
-	if m, ok := auditLog.Event.Payload.(map[string]interface{}); ok {
-		err = decoder.Decode(m)
-	} else {
-		err = decoder.Decode(auditLog.Event.Payload)
-	}
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode audit log payload: %w", err)
-	}
-
-	return payload, nil
-}
-
-// Add these new structs for the missing audit log types
-type InviteSent struct {
-	Email string `json:"email"`
-}
-
-type LoginSucceeded struct {
-	// Add relevant fields if available in the API response
-}
-
-type LogoutSucceeded struct {
-	// Add relevant fields if available in the API response
-}
-
-type OrganizationUpdated struct {
-	Changes struct {
-		// Add relevant fields based on what can be updated in an organization
-		Name struct {
-			Old string `json:"old"`
-			New string `json:"new"`
-		} `json:"name,omitempty"`
-		// Add other fields as necessary
-	} `json:"changes"`
 }

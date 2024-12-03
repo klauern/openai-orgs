@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	openaiorgs "github.com/klauern/openai-orgs"
@@ -57,7 +58,13 @@ func listAuditLogs(c *cli.Context) error {
 		if err != nil {
 			return fmt.Errorf("invalid start-date format: %w", err)
 		}
-		params.StartDate = parsedStartDate
+		if params.EffectiveAt == nil {
+			params.EffectiveAt = &struct {
+				Gte int64 `json:"gte,omitempty"`
+				Lte int64 `json:"lte,omitempty"`
+			}{}
+		}
+		params.EffectiveAt.Gte = parsedStartDate.Unix()
 	}
 
 	if endDate := c.String("end-date"); endDate != "" {
@@ -65,7 +72,13 @@ func listAuditLogs(c *cli.Context) error {
 		if err != nil {
 			return fmt.Errorf("invalid end-date format: %w", err)
 		}
-		params.EndDate = parsedEndDate
+		if params.EffectiveAt == nil {
+			params.EffectiveAt = &struct {
+				Gte int64 `json:"gte,omitempty"`
+				Lte int64 `json:"lte,omitempty"`
+			}{}
+		}
+		params.EffectiveAt.Lte = parsedEndDate.Unix()
 	}
 
 	response, err := client.ListAuditLogs(params)
@@ -131,35 +144,106 @@ func outputPretty(response *openaiorgs.ListResponse[openaiorgs.AuditLog], verbos
 		fmt.Printf("=== Audit Log Entry ===\n")
 		fmt.Printf("ID:        %s\n", log.ID)
 		fmt.Printf("Type:      %s\n", log.Type)
-		fmt.Printf("Timestamp: %s\n", log.Timestamp)
+		fmt.Printf("Effective: %s\n", log.EffectiveAt.Time().Format(time.RFC3339))
 
 		if verbose {
 			fmt.Printf("\nActor Details:\n")
-			fmt.Printf("  ID:   %s\n", log.Actor.ID)
-			fmt.Printf("  Name: %s\n", log.Actor.Name)
 			fmt.Printf("  Type: %s\n", log.Actor.Type)
-
-			fmt.Printf("\nEvent Details:\n")
-			fmt.Printf("  ID:     %s\n", log.Event.ID)
-			fmt.Printf("  Type:   %s\n", log.Event.Type)
-			fmt.Printf("  Action: %s\n", log.Event.Action)
-			if log.Event.Auth.Type != "" {
-				fmt.Printf("  Auth:    %s (%s)\n", log.Event.Auth.Type, log.Event.Auth.Transport)
+			if log.Actor.Session != nil {
+				fmt.Printf("  User ID:    %s\n", log.Actor.Session.User.ID)
+				fmt.Printf("  User Email: %s\n", log.Actor.Session.User.Email)
+				fmt.Printf("  IP:         %s\n", log.Actor.Session.IPAddress)
+				fmt.Printf("  User Agent: %s\n", log.Actor.Session.UserAgent)
+			}
+			if log.Actor.APIKey != nil {
+				fmt.Printf("  API Key Type: %s\n", log.Actor.APIKey.Type)
+				fmt.Printf("  User ID:      %s\n", log.Actor.APIKey.User.ID)
+				fmt.Printf("  User Email:   %s\n", log.Actor.APIKey.User.Email)
 			}
 		}
 
-		payload, err := openaiorgs.ParseAuditLogPayload(&log)
-		if err != nil {
-			fmt.Printf("\nPayload Error: %v\n", err)
-		} else {
+		if log.Details != nil {
 			fmt.Printf("\nPayload Details:\n")
-			switch p := payload.(type) {
-			case *openaiorgs.LoginSucceeded:
-				fmt.Printf("  Login Success\n")
-				// Add specific login success details if available
-			// Add other payload types as needed
+			switch details := log.Details.(type) {
+			case *openaiorgs.APIKeyCreated:
+				fmt.Printf("  API Key created with ID: %s\n", details.ID)
+				if len(details.Data.Scopes) > 0 {
+					fmt.Printf("  Scopes: %s\n", strings.Join(details.Data.Scopes, ", "))
+				}
+			case *openaiorgs.APIKeyUpdated:
+				fmt.Printf("  API Key updated with ID: %s\n", details.ID)
+				if len(details.ChangesRequested.Scopes) > 0 {
+					fmt.Printf("  New scopes: %s\n", strings.Join(details.ChangesRequested.Scopes, ", "))
+				}
+			case *openaiorgs.APIKeyDeleted:
+				fmt.Printf("  API Key deleted with ID: %s\n", details.ID)
+			case *openaiorgs.InviteSent:
+				fmt.Printf("  Invite sent with ID: %s\n  Email: %s\n",
+					details.ID, details.Data.Email)
+			case *openaiorgs.InviteAccepted:
+				fmt.Printf("  Invite accepted with ID: %s\n", details.ID)
+			case *openaiorgs.InviteDeleted:
+				fmt.Printf("  Invite deleted with ID: %s\n", details.ID)
+			case *openaiorgs.LoginFailed:
+				fmt.Printf("  Login failed\n  Error code: %s\n  Error message: %s\n",
+					details.ErrorCode, details.ErrorMessage)
+			case *openaiorgs.LogoutFailed:
+				fmt.Printf("  Logout failed\n  Error code: %s\n  Error message: %s\n",
+					details.ErrorCode, details.ErrorMessage)
+			case *openaiorgs.OrganizationUpdated:
+				fmt.Printf("  Organization updated with ID: %s\n", details.ID)
+				if details.ChangesRequested.Name != "" {
+					fmt.Printf("  New name: %s\n", details.ChangesRequested.Name)
+				}
+			case *openaiorgs.ProjectCreated:
+				fmt.Printf("  Project created with ID: %s\n  Name: %s\n  Title: %s\n",
+					details.ID, details.Data.Name, details.Data.Title)
+			case *openaiorgs.ProjectUpdated:
+				fmt.Printf("  Project updated with ID: %s\n  New title: %s\n",
+					details.ID, details.ChangesRequested.Title)
+			case *openaiorgs.ProjectArchived:
+				fmt.Printf("  Project archived with ID: %s\n", details.ID)
+			case *openaiorgs.RateLimitUpdated:
+				fmt.Printf("  Rate limit updated with ID: %s\n", details.ID)
+				changes := details.ChangesRequested
+				if changes.MaxRequestsPer1Minute > 0 {
+					fmt.Printf("  Max requests per minute: %d\n", changes.MaxRequestsPer1Minute)
+				}
+				if changes.MaxTokensPer1Minute > 0 {
+					fmt.Printf("  Max tokens per minute: %d\n", changes.MaxTokensPer1Minute)
+				}
+				if changes.MaxImagesPer1Minute > 0 {
+					fmt.Printf("  Max images per minute: %d\n", changes.MaxImagesPer1Minute)
+				}
+				if changes.MaxAudioMegabytesPer1Minute > 0 {
+					fmt.Printf("  Max audio MB per minute: %d\n", changes.MaxAudioMegabytesPer1Minute)
+				}
+				if changes.MaxRequestsPer1Day > 0 {
+					fmt.Printf("  Max requests per day: %d\n", changes.MaxRequestsPer1Day)
+				}
+				if changes.Batch1DayMaxInputTokens > 0 {
+					fmt.Printf("  Batch max input tokens per day: %d\n", changes.Batch1DayMaxInputTokens)
+				}
+			case *openaiorgs.RateLimitDeleted:
+				fmt.Printf("  Rate limit deleted with ID: %s\n", details.ID)
+			case *openaiorgs.ServiceAccountCreated:
+				fmt.Printf("  Service account created with ID: %s\n  Role: %s\n",
+					details.ID, details.Data.Role)
+			case *openaiorgs.ServiceAccountUpdated:
+				fmt.Printf("  Service account updated with ID: %s\n  New role: %s\n",
+					details.ID, details.ChangesRequested.Role)
+			case *openaiorgs.ServiceAccountDeleted:
+				fmt.Printf("  Service account deleted with ID: %s\n", details.ID)
+			case *openaiorgs.UserAdded:
+				fmt.Printf("  User added with ID: %s\n  Role: %s\n",
+					details.ID, details.Data.Role)
+			case *openaiorgs.UserUpdated:
+				fmt.Printf("  User updated with ID: %s\n  New role: %s\n",
+					details.ID, details.ChangesRequested.Role)
+			case *openaiorgs.UserDeleted:
+				fmt.Printf("  User deleted with ID: %s\n", details.ID)
 			default:
-				fmt.Printf("  %#v\n", p)
+				fmt.Printf("  %#v\n", details)
 			}
 		}
 		fmt.Println("\n---")
