@@ -59,12 +59,7 @@ func listAuditLogs(c *cli.Context) error {
 			return fmt.Errorf("invalid start-date format: %w", err)
 		}
 		if params.EffectiveAt == nil {
-			params.EffectiveAt = &struct {
-				Gte int64 `json:"gte,omitempty"`
-				Gt  int64 `json:"gt,omitempty"`
-				Lte int64 `json:"lte,omitempty"`
-				Lt  int64 `json:"lt,omitempty"`
-			}{}
+			params.EffectiveAt = &openaiorgs.EffectiveAt{}
 		}
 		params.EffectiveAt.Gte = parsedStartDate.Unix()
 	}
@@ -75,12 +70,7 @@ func listAuditLogs(c *cli.Context) error {
 			return fmt.Errorf("invalid end-date format: %w", err)
 		}
 		if params.EffectiveAt == nil {
-			params.EffectiveAt = &struct {
-				Gte int64 `json:"gte,omitempty"`
-				Gt  int64 `json:"gt,omitempty"`
-				Lte int64 `json:"lte,omitempty"`
-				Lt  int64 `json:"lt,omitempty"`
-			}{}
+			params.EffectiveAt = &openaiorgs.EffectiveAt{}
 		}
 		params.EffectiveAt.Lte = parsedEndDate.Unix()
 	}

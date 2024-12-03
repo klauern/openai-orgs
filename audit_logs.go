@@ -201,22 +201,24 @@ type LoginSucceeded struct {
 	Actor       Actor  `json:"actor"`
 }
 
+type EffectiveAt struct {
+	Gte int64 `json:"gte,omitempty"`
+	Gt  int64 `json:"gt,omitempty"`
+	Lte int64 `json:"lte,omitempty"`
+	Lt  int64 `json:"lt,omitempty"`
+}
+
 // AuditLogListParams represents the query parameters for listing audit logs
 type AuditLogListParams struct {
-	EffectiveAt *struct {
-		Gte int64 `json:"gte,omitempty"`
-		Gt  int64 `json:"gt,omitempty"`
-		Lte int64 `json:"lte,omitempty"`
-		Lt  int64 `json:"lt,omitempty"`
-	} `json:"effective_at,omitempty"`
-	ProjectIDs  []string `json:"project_ids,omitempty"`
-	EventTypes  []string `json:"event_types,omitempty"`
-	ActorIDs    []string `json:"actor_ids,omitempty"`
-	ActorEmails []string `json:"actor_emails,omitempty"`
-	ResourceIDs []string `json:"resource_ids,omitempty"`
-	Limit       int      `json:"limit,omitempty"`
-	After       string   `json:"after,omitempty"`
-	Before      string   `json:"before,omitempty"`
+	EffectiveAt *EffectiveAt `json:"effective_at,omitempty"`
+	ProjectIDs  []string     `json:"project_ids,omitempty"`
+	EventTypes  []string     `json:"event_types,omitempty"`
+	ActorIDs    []string     `json:"actor_ids,omitempty"`
+	ActorEmails []string     `json:"actor_emails,omitempty"`
+	ResourceIDs []string     `json:"resource_ids,omitempty"`
+	Limit       int          `json:"limit,omitempty"`
+	After       string       `json:"after,omitempty"`
+	Before      string       `json:"before,omitempty"`
 }
 
 // Add this type to store the raw event data
