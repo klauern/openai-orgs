@@ -205,7 +205,9 @@ type LoginSucceeded struct {
 type AuditLogListParams struct {
 	EffectiveAt *struct {
 		Gte int64 `json:"gte,omitempty"`
+		Gt  int64 `json:"gt,omitempty"`
 		Lte int64 `json:"lte,omitempty"`
+		Lt  int64 `json:"lt,omitempty"`
 	} `json:"effective_at,omitempty"`
 	ProjectIDs  []string `json:"project_ids,omitempty"`
 	EventTypes  []string `json:"event_types,omitempty"`
@@ -321,8 +323,14 @@ func (c *Client) ListAuditLogs(params *AuditLogListParams) (*ListResponse[AuditL
 			if params.EffectiveAt.Gte != 0 {
 				queryParams["effective_at[gte]"] = strconv.FormatInt(params.EffectiveAt.Gte, 10)
 			}
+			if params.EffectiveAt.Gt != 0 {
+				queryParams["effective_at[gt]"] = strconv.FormatInt(params.EffectiveAt.Gt, 10)
+			}
 			if params.EffectiveAt.Lte != 0 {
 				queryParams["effective_at[lte]"] = strconv.FormatInt(params.EffectiveAt.Lte, 10)
+			}
+			if params.EffectiveAt.Lt != 0 {
+				queryParams["effective_at[lt]"] = strconv.FormatInt(params.EffectiveAt.Lt, 10)
 			}
 		}
 		if len(params.ProjectIDs) > 0 {
