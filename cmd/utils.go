@@ -42,6 +42,11 @@ var (
 		Usage: "Return items after this ID",
 	}
 
+	beforeFlag = &cli.StringFlag{
+		Name:  "before",
+		Usage: "Return results before this ID",
+	}
+
 	emailFlag = &cli.StringFlag{
 		Name:     "email",
 		Usage:    "Email address",

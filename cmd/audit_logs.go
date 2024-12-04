@@ -17,6 +17,7 @@ func AuditLogsCommand() *cli.Command {
 		Usage: "List audit logs",
 		Flags: []cli.Flag{
 			limitFlag,
+			beforeFlag,
 			afterFlag,
 			&cli.StringFlag{
 				Name:  "start-date",
@@ -37,6 +38,10 @@ func AuditLogsCommand() *cli.Command {
 				Aliases: []string{"v"},
 				Usage:   "Show verbose output",
 			},
+			&cli.BoolFlag{
+				Name:  "paginate",
+				Usage: "Automatically paginate through all results",
+			},
 		},
 		Action: listAuditLogs,
 	}
@@ -46,6 +51,7 @@ func listAuditLogs(c *cli.Context) error {
 	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
 	verbose := c.Bool("verbose")
 	outputFormat := c.String("output")
+	shouldPaginate := c.Bool("paginate")
 
 	params := &openaiorgs.AuditLogListParams{
 		Limit:  c.Int("limit"),
@@ -54,7 +60,7 @@ func listAuditLogs(c *cli.Context) error {
 	}
 
 	if startDate := c.String("start-date"); startDate != "" {
-		parsedStartDate, err := time.Parse(time.RFC3339, startDate)
+		parsedStartDate, err := time.Parse(time.DateOnly, startDate)
 		if err != nil {
 			return fmt.Errorf("invalid start-date format: %w", err)
 		}
@@ -65,7 +71,7 @@ func listAuditLogs(c *cli.Context) error {
 	}
 
 	if endDate := c.String("end-date"); endDate != "" {
-		parsedEndDate, err := time.Parse(time.RFC3339, endDate)
+		parsedEndDate, err := time.Parse(time.DateOnly, endDate)
 		if err != nil {
 			return fmt.Errorf("invalid end-date format: %w", err)
 		}
@@ -75,11 +81,40 @@ func listAuditLogs(c *cli.Context) error {
 		params.EffectiveAt.Lte = parsedEndDate.Unix()
 	}
 
-	response, err := client.ListAuditLogs(params)
-	if err != nil {
-		return fmt.Errorf("failed to list audit logs: %w", err)
+	var allLogs []openaiorgs.AuditLog
+	for {
+		response, err := client.ListAuditLogs(params)
+		if err != nil {
+			return fmt.Errorf("failed to list audit logs: %w", err)
+		}
+
+		if shouldPaginate {
+			allLogs = append(allLogs, response.Data...)
+			if !response.HasMore {
+				break
+			}
+			params.After = response.LastID
+		} else {
+			// If not paginating, just output the single response and return
+			return outputResponse(response, outputFormat, verbose)
+		}
 	}
 
+	if shouldPaginate {
+		// Create a combined response with all logs
+		combinedResponse := &openaiorgs.ListResponse[openaiorgs.AuditLog]{
+			Data:    allLogs,
+			HasMore: false,
+			FirstID: allLogs[0].ID,
+			LastID:  allLogs[len(allLogs)-1].ID,
+		}
+		return outputResponse(combinedResponse, outputFormat, verbose)
+	}
+
+	return nil
+}
+
+func outputResponse(response *openaiorgs.ListResponse[openaiorgs.AuditLog], outputFormat string, verbose bool) error {
 	switch outputFormat {
 	case "json":
 		return outputJSON(response, verbose)
