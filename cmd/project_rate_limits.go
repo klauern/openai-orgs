@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"github.com/urfave/cli/v2"
 	"strconv"
+
+	"github.com/urfave/cli/v2"
 )
 
 func ProjectRateLimitsCommand() *cli.Command {
