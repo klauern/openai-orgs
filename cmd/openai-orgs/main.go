@@ -29,6 +29,22 @@ func main() {
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
+				Name:  "output",
+				Usage: "Output format (default: pretty)",
+				Value: "pretty",
+				Action: func(ctx *cli.Context, s string) error {
+					if s == "" {
+						return nil
+					}
+
+					if _, ok := cmd.ValidOutputFormats[s]; ok {
+						return nil
+					}
+
+					return fmt.Errorf("invalid output format: %s", s)
+				},
+			},
+			&cli.StringFlag{
 				Name:    "api-key",
 				Usage:   "OpenAI API key (can be set via OPENAI_API_KEY environment variable)",
 				EnvVars: []string{"OPENAI_API_KEY"},

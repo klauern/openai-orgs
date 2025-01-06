@@ -1,9 +1,13 @@
 package cmd
 
 import (
+	"encoding/json"
+	"os"
 	"strconv"
 
 	"github.com/urfave/cli/v2"
+
+	openaiorgs "github.com/klauern/openai-orgs"
 )
 
 func ProjectRateLimitsCommand() *cli.Command {
@@ -33,18 +37,18 @@ func listProjectRateLimitsCommand() *cli.Command {
 	}
 }
 
-func listProjectRateLimits(c *cli.Context) error {
-	client := newClient(c)
-
-	projectRateLimits, err := client.ListProjectRateLimits(
-		c.Int("limit"),
-		c.String("after"),
-		c.String("project-id"),
-	)
+func printProjectRateLimitsJson(projectRateLimits *openaiorgs.ListResponse[openaiorgs.ProjectRateLimit]) error {
+	marshalled, err := json.Marshal(projectRateLimits.Data)
 	if err != nil {
-		return wrapError("list project rate limits", err)
+		return wrapError("json marshalling error", err)
 	}
 
+	os.Stdout.Write(marshalled)
+
+	return nil
+}
+
+func printProjectRateLimitsTable(projectRateLimits *openaiorgs.ListResponse[openaiorgs.ProjectRateLimit]) error {
 	data := TableData{
 		Headers: []string{
 			"ID",
@@ -77,4 +81,25 @@ func listProjectRateLimits(c *cli.Context) error {
 
 	printTableData(data)
 	return nil
+}
+
+func listProjectRateLimits(c *cli.Context) error {
+	client := newClient(c)
+
+	projectRateLimits, err := client.ListProjectRateLimits(
+		c.Int("limit"),
+		c.String("after"),
+		c.String("project-id"),
+	)
+	if err != nil {
+		return wrapError("list project rate limits", err)
+	}
+
+	output := c.String("output")
+	switch output {
+	case OutputFormatJSON:
+		return printProjectRateLimitsJson(projectRateLimits)
+	default:
+		return printProjectRateLimitsTable(projectRateLimits)
+	}
 }
