@@ -26,6 +26,5 @@ func (c *Client) ListProjectRateLimits(limit int, after string, projectId string
 	}
 
 	path := fmt.Sprintf("%s/%s/rate_limits", ProjectsListEndpoint, projectId)
-	fmt.Println(path)
 	return Get[ProjectRateLimit](c.client, path, queryParams)
 }
