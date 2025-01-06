@@ -1,8 +1,8 @@
 package openaiorgs
 
 import (
+	"fmt"
 	"testing"
-	"time"
 )
 
 func TestListProjectRateLimits(t *testing.T) {
@@ -10,14 +10,17 @@ func TestListProjectRateLimits(t *testing.T) {
 	defer h.cleanup()
 
 	// Mock response data
-	now := time.Now()
 	mockProjectRateLimits := []ProjectRateLimit{
 		{
-			Object:    "project",
-			ID:        "proj_123",
-			Name:      "Test ProjectRateLimit",
-			CreatedAt: UnixSeconds(now),
-			Status:    "active",
+			Object:                      "project.rate_limit",
+			ID:                          "rl-babbage-002",
+			Model:                       "babbage-002",
+			MaxRequestsPer1Minute:       3,
+			MaxTokensPer1Minute:         150000,
+			MaxImagesPer1Minute:         10,
+			MaxAudioMegabytesPer1Minute: 0,
+			MaxRequestsPer1Day:          200,
+			Batch1DayMaxInputTokens:     0,
 		},
 	}
 
@@ -25,14 +28,16 @@ func TestListProjectRateLimits(t *testing.T) {
 	response := ListResponse[ProjectRateLimit]{
 		Object:  "list",
 		Data:    mockProjectRateLimits,
-		FirstID: "proj_123",
-		LastID:  "proj_123",
+		FirstID: "rl-babbage-002",
+		LastID:  "rl-babbage-002",
 		HasMore: false,
 	}
-	h.mockResponse("GET", ProjectRateLimitsListEndpoint, 200, response)
+	projectId := "proj_123"
+	path := fmt.Sprintf("%s/%s/rate_limits", ProjectsListEndpoint, projectId)
+	h.mockResponse("GET", path, 200, response)
 
 	// Make the API call
-	projects, err := h.client.ListProjectRateLimits(10, "", false)
+	projects, err := h.client.ListProjectRateLimits(10, "", projectId)
 	// Assert results
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
@@ -45,10 +50,10 @@ func TestListProjectRateLimits(t *testing.T) {
 	if mockProjectRateLimits[0].ID != projects.Data[0].ID {
 		t.Errorf("Expected ID %s, got %s", mockProjectRateLimits[0].ID, projects.Data[0].ID)
 	}
-	if mockProjectRateLimits[0].Name != projects.Data[0].Name {
-		t.Errorf("Expected Name %s, got %s", mockProjectRateLimits[0].Name, projects.Data[0].Name)
+	if mockProjectRateLimits[0].Model != projects.Data[0].Model {
+		t.Errorf("Expected Model %s, got %s", mockProjectRateLimits[0].Model, projects.Data[0].Model)
 	}
 
 	// Verify the request was made
-	h.assertRequest("GET", ProjectRateLimitsListEndpoint, 1)
+	h.assertRequest("GET", path, 1)
 }
