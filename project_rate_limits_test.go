@@ -141,7 +141,6 @@ func TestListProjectRateLimitsPaginated(t *testing.T) {
 	h.mockResponse("GET", path, 200, response)
 
 	projectRateLimits, err = h.client.ListProjectRateLimits(1, projectRateLimits.LastID, projectId)
-
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 		return
