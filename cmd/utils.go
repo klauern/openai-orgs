@@ -15,7 +15,6 @@ const (
 	// Common output formats
 	OutputFormatPretty = "pretty"
 	OutputFormatJSON   = "json"
-	OutputFormatJSONL  = "jsonl"
 )
 
 // Common flag definitions grouped together
@@ -63,6 +62,11 @@ var (
 		Name:     "name",
 		Usage:    "Resource name",
 		Required: true,
+	}
+
+	ValidOutputFormats = map[string]bool{
+		OutputFormatPretty: true,
+		OutputFormatJSON:   true,
 	}
 )
 
