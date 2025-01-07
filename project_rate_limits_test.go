@@ -37,21 +37,21 @@ func TestListProjectRateLimits(t *testing.T) {
 	h.mockResponse("GET", path, 200, response)
 
 	// Make the API call
-	projects, err := h.client.ListProjectRateLimits(10, "", projectId)
+	projectRateLimits, err := h.client.ListProjectRateLimits(10, "", projectId)
 	// Assert results
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 		return
 	}
-	if len(projects.Data) != 1 {
-		t.Errorf("Expected 1 project, got %d", len(projects.Data))
+	if len(projectRateLimits.Data) != 1 {
+		t.Errorf("Expected 1 project, got %d", len(projectRateLimits.Data))
 		return
 	}
-	if mockProjectRateLimits[0].ID != projects.Data[0].ID {
-		t.Errorf("Expected ID %s, got %s", mockProjectRateLimits[0].ID, projects.Data[0].ID)
+	if mockProjectRateLimits[0].ID != projectRateLimits.Data[0].ID {
+		t.Errorf("Expected ID %s, got %s", mockProjectRateLimits[0].ID, projectRateLimits.Data[0].ID)
 	}
-	if mockProjectRateLimits[0].Model != projects.Data[0].Model {
-		t.Errorf("Expected Model %s, got %s", mockProjectRateLimits[0].Model, projects.Data[0].Model)
+	if mockProjectRateLimits[0].Model != projectRateLimits.Data[0].Model {
+		t.Errorf("Expected Model %s, got %s", mockProjectRateLimits[0].Model, projectRateLimits.Data[0].Model)
 	}
 
 	// Verify the request was made
