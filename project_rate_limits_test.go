@@ -77,7 +77,7 @@ func TestModifyProjectRateLimits(t *testing.T) {
 		Batch1DayMaxInputTokens:     0,
 	}
 
-	expectedMaxRequestsPer1Minute := 2
+	expectedMaxRequestsPer1Minute := int64(2)
 
 	// Register mock response
 	response := ProjectRateLimit{
