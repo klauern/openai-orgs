@@ -208,12 +208,12 @@ func TestModifyProjectRateLimits(t *testing.T) {
 	h.mockResponse("POST", path, 200, response)
 
 	fields := ProjectRateLimitRequestFields{
-		MaxRequestsPer1Minute: expectedMaxRequestsPer1Minute,
-		MaxTokensPer1Minute: expectedMaxTokensPer1Minute,
-		MaxImagesPer1Minute: expectedMaxImagesPer1Minute,
+		MaxRequestsPer1Minute:       expectedMaxRequestsPer1Minute,
+		MaxTokensPer1Minute:         expectedMaxTokensPer1Minute,
+		MaxImagesPer1Minute:         expectedMaxImagesPer1Minute,
 		MaxAudioMegabytesPer1Minute: expectedMaxAudioMegabytesPer1Minute,
-		MaxRequestsPer1Day: expectedMaxRequestsPer1Day,
-		Batch1DayMaxInputTokens: expectedBatch1DayMaxInputTokens,
+		MaxRequestsPer1Day:          expectedMaxRequestsPer1Day,
+		Batch1DayMaxInputTokens:     expectedBatch1DayMaxInputTokens,
 	}
 	// Make the API call
 	projectRateLimit, err := h.client.ModifyProjectRateLimit(projectId, rateLimitId, fields)
