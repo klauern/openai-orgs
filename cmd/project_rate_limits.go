@@ -155,7 +155,7 @@ func printProjectRateLimitTable(projectRateLimit *openaiorgs.ProjectRateLimit) e
 			"Batch 1 Day Max Input Tokens",
 		},
 		Rows: [][]string{
-			[]string{
+			{
 				projectRateLimit.ID,
 				projectRateLimit.Model,
 				strconv.Itoa(projectRateLimit.MaxRequestsPer1Minute),
