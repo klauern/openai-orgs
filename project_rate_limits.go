@@ -8,12 +8,12 @@ type ProjectRateLimit struct {
 	Object                      string `json:"object"`
 	ID                          string `json:"id"`
 	Model                       string `json:"model"`
-	MaxRequestsPer1Minute       int    `json:"max_requests_per_1_minute"`
-	MaxTokensPer1Minute         int    `json:"max_tokens_per_1_minute"`
-	MaxImagesPer1Minute         int    `json:"max_images_per_1_minute"`
-	MaxAudioMegabytesPer1Minute int    `json:"max_audio_megabytes_per_1_minute"`
-	MaxRequestsPer1Day          int    `json:"max_requests_per_1_day"`
-	Batch1DayMaxInputTokens     int    `json:"batch_1_day_max_input_tokens"`
+	MaxRequestsPer1Minute       int64  `json:"max_requests_per_1_minute"`
+	MaxTokensPer1Minute         int64  `json:"max_tokens_per_1_minute"`
+	MaxImagesPer1Minute         int64  `json:"max_images_per_1_minute"`
+	MaxAudioMegabytesPer1Minute int64  `json:"max_audio_megabytes_per_1_minute"`
+	MaxRequestsPer1Day          int64  `json:"max_requests_per_1_day"`
+	Batch1DayMaxInputTokens     int64  `json:"batch_1_day_max_input_tokens"`
 }
 
 func (c *Client) ListProjectRateLimits(limit int, after string, projectId string) (*ListResponse[ProjectRateLimit], error) {
@@ -30,16 +30,16 @@ func (c *Client) ListProjectRateLimits(limit int, after string, projectId string
 }
 
 type ProjectRateLimitRequestFields struct {
-	MaxRequestsPer1Minute       int
-	MaxTokensPer1Minute         int
-	MaxImagesPer1Minute         int
-	MaxAudioMegabytesPer1Minute int
-	MaxRequestsPer1Day          int
-	Batch1DayMaxInputTokens     int
+	MaxRequestsPer1Minute       int64
+	MaxTokensPer1Minute         int64
+	MaxImagesPer1Minute         int64
+	MaxAudioMegabytesPer1Minute int64
+	MaxRequestsPer1Day          int64
+	Batch1DayMaxInputTokens     int64
 }
 
 func (c *Client) ModifyProjectRateLimit(projectId, rateLimitId string, fields ProjectRateLimitRequestFields) (*ProjectRateLimit, error) {
-	body := map[string]int{}
+	body := map[string]int64{}
 	if fields.MaxRequestsPer1Minute > 0 {
 		body["max_requests_per_1_minute"] = fields.MaxRequestsPer1Minute
 	}

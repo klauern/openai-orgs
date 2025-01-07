@@ -116,12 +116,12 @@ func printProjectRateLimitsTable(projectRateLimits *openaiorgs.ListResponse[open
 		data.Rows[i] = []string{
 			projectRateLimit.ID,
 			projectRateLimit.Model,
-			strconv.Itoa(projectRateLimit.MaxRequestsPer1Minute),
-			strconv.Itoa(projectRateLimit.MaxTokensPer1Minute),
-			strconv.Itoa(projectRateLimit.MaxImagesPer1Minute),
-			strconv.Itoa(projectRateLimit.MaxAudioMegabytesPer1Minute),
-			strconv.Itoa(projectRateLimit.MaxRequestsPer1Day),
-			strconv.Itoa(projectRateLimit.Batch1DayMaxInputTokens),
+			strconv.FormatInt(projectRateLimit.MaxRequestsPer1Minute, 10),
+			strconv.FormatInt(projectRateLimit.MaxTokensPer1Minute, 10),
+			strconv.FormatInt(projectRateLimit.MaxImagesPer1Minute, 10),
+			strconv.FormatInt(projectRateLimit.MaxAudioMegabytesPer1Minute, 10),
+			strconv.FormatInt(projectRateLimit.MaxRequestsPer1Day, 10),
+			strconv.FormatInt(projectRateLimit.Batch1DayMaxInputTokens, 10),
 		}
 	}
 
@@ -156,12 +156,12 @@ func printProjectRateLimitTable(projectRateLimit *openaiorgs.ProjectRateLimit) e
 			{
 				projectRateLimit.ID,
 				projectRateLimit.Model,
-				strconv.Itoa(projectRateLimit.MaxRequestsPer1Minute),
-				strconv.Itoa(projectRateLimit.MaxTokensPer1Minute),
-				strconv.Itoa(projectRateLimit.MaxImagesPer1Minute),
-				strconv.Itoa(projectRateLimit.MaxAudioMegabytesPer1Minute),
-				strconv.Itoa(projectRateLimit.MaxRequestsPer1Day),
-				strconv.Itoa(projectRateLimit.Batch1DayMaxInputTokens),
+				strconv.FormatInt(projectRateLimit.MaxRequestsPer1Minute, 10),
+				strconv.FormatInt(projectRateLimit.MaxTokensPer1Minute, 10),
+				strconv.FormatInt(projectRateLimit.MaxImagesPer1Minute, 10),
+				strconv.FormatInt(projectRateLimit.MaxAudioMegabytesPer1Minute, 10),
+				strconv.FormatInt(projectRateLimit.MaxRequestsPer1Day, 10),
+				strconv.FormatInt(projectRateLimit.Batch1DayMaxInputTokens, 10),
 			},
 		},
 	}
@@ -230,12 +230,12 @@ func modifyProjectRateLimit(c *cli.Context) error {
 		c.String("project-id"),
 		c.String("rate-limit-id"),
 		openaiorgs.ProjectRateLimitRequestFields{
-			MaxRequestsPer1Minute:       c.Int("max-requests-per-1-minute"),
-			MaxTokensPer1Minute:         c.Int("max-tokens-per-1-minute"),
-			MaxImagesPer1Minute:         c.Int("max-images-per-1-minute"),
-			MaxAudioMegabytesPer1Minute: c.Int("max-audio-megabytes-per-1-minute"),
-			MaxRequestsPer1Day:          c.Int("max-requests-per-1-day"),
-			Batch1DayMaxInputTokens:     c.Int("batch-1-day-max-input-tokens"),
+			MaxRequestsPer1Minute:       c.Int64("max-requests-per-1-minute"),
+			MaxTokensPer1Minute:         c.Int64("max-tokens-per-1-minute"),
+			MaxImagesPer1Minute:         c.Int64("max-images-per-1-minute"),
+			MaxAudioMegabytesPer1Minute: c.Int64("max-audio-megabytes-per-1-minute"),
+			MaxRequestsPer1Day:          c.Int64("max-requests-per-1-day"),
+			Batch1DayMaxInputTokens:     c.Int64("batch-1-day-max-input-tokens"),
 		},
 	)
 	if err != nil {
