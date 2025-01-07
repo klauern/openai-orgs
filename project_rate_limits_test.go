@@ -99,7 +99,7 @@ func TestModifyProjectRateLimits(t *testing.T) {
 		MaxRequestsPer1Minute: expectedMaxRequestsPer1Minute,
 	}
 	// Make the API call
-	projectRateLimit, err := h.client.ModifyProjectRateLimit(10, "", projectId, rateLimitId, fields)
+	projectRateLimit, err := h.client.ModifyProjectRateLimit(projectId, rateLimitId, fields)
 	// Assert results
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)

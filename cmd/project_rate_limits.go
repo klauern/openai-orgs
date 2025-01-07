@@ -44,8 +44,6 @@ func modifyProjectRateLimitsCommand() *cli.Command {
 		Name:  "modify",
 		Usage: "Modify a project rate limit identified by rate limit ID for a given project ID",
 		Flags: []cli.Flag{
-			limitFlag,
-			afterFlag,
 			&cli.StringFlag{
 				Name:     "project-id",
 				Usage:    "ID of the project whose rate limits will be listed",
@@ -229,8 +227,6 @@ func modifyProjectRateLimit(c *cli.Context) error {
 	}
 
 	projectRateLimit, err := client.ModifyProjectRateLimit(
-		c.Int("limit"),
-		c.String("after"),
 		c.String("project-id"),
 		c.String("rate-limit-id"),
 		openaiorgs.ProjectRateLimitRequestFields{

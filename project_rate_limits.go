@@ -38,7 +38,7 @@ type ProjectRateLimitRequestFields struct {
 	Batch1DayMaxInputTokens     int
 }
 
-func (c *Client) ModifyProjectRateLimit(limit int, after string, projectId, rateLimitId string, fields ProjectRateLimitRequestFields) (*ProjectRateLimit, error) {
+func (c *Client) ModifyProjectRateLimit(projectId, rateLimitId string, fields ProjectRateLimitRequestFields) (*ProjectRateLimit, error) {
 	body := map[string]int{}
 	if fields.MaxRequestsPer1Minute > 0 {
 		body["max_requests_per_1_minute"] = fields.MaxRequestsPer1Minute
