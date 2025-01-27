@@ -3,7 +3,7 @@ module github.com/klauern/openai-orgs
 go 1.23.3
 
 require (
-	github.com/go-resty/resty/v2 v2.16.3
+	github.com/go-resty/resty/v2 v2.16.5
 	github.com/urfave/cli/v2 v2.27.5
 )
 
