@@ -18,6 +18,8 @@ func main() {
 		Usage:   "CLI for OpenAI Platform Management API",
 		Version: Version,
 		Commands: []*cli.Command{
+			cmd.OrganizationsCommand(),
+			cmd.AdminAPIKeysCommand(),
 			cmd.AuditLogsCommand(),
 			cmd.InvitesCommand(),
 			cmd.UsersCommand(),
