@@ -105,17 +105,6 @@ func newClient(ctx context.Context, cmd *cli.Command) *openaiorgs.Client {
 	return openaiorgs.NewClient(openaiorgs.DefaultBaseURL, cmd.String("api-key"))
 }
 
-func printTable(headers []string, rows [][]string) {
-	// Print headers
-	fmt.Println(strings.Join(headers, " | "))
-	fmt.Println(strings.Repeat("-", len(strings.Join(headers, " | "))))
-
-	// Print rows
-	for _, row := range rows {
-		fmt.Println(strings.Join(row, " | "))
-	}
-}
-
 func printTableData(data TableData) {
 	// Print headers
 	fmt.Println(strings.Join(data.Headers, " | "))
