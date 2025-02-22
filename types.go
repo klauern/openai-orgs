@@ -1,9 +1,5 @@
 package openaiorgs
 
-import (
-	"time"
-)
-
 // Common response type for paginated lists
 type ListResponse[T any] struct {
 	Object  string `json:"object"`
@@ -29,9 +25,6 @@ const (
 	OwnerTypeUser           OwnerType = "user"
 	OwnerTypeServiceAccount OwnerType = "service_account"
 )
-
-// Common time handling
-type UnixSeconds time.Time
 
 // Common role types
 type RoleType string

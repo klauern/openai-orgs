@@ -1,12 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"os"
 	"strconv"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	openaiorgs "github.com/klauern/openai-orgs"
 )
@@ -15,7 +16,7 @@ func ProjectRateLimitsCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "project-rate-limits",
 		Usage: "Manage organization project rate limits",
-		Subcommands: []*cli.Command{
+		Commands: []*cli.Command{
 			listProjectRateLimitsCommand(),
 			modifyProjectRateLimitsCommand(),
 		},
@@ -46,7 +47,7 @@ func modifyProjectRateLimitsCommand() *cli.Command {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:     "project-id",
-				Usage:    "ID of the project whose rate limits will be listed",
+				Usage:    "ID of the project whose rate limits will be modified",
 				Required: true,
 			},
 			&cli.StringFlag{
@@ -170,81 +171,75 @@ func printProjectRateLimitTable(projectRateLimit *openaiorgs.ProjectRateLimit) e
 	return nil
 }
 
-func listProjectRateLimits(c *cli.Context) error {
-	client := newClient(c)
+func listProjectRateLimits(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
+	limit := int(cmd.Int("limit"))
 	projectRateLimits, err := client.ListProjectRateLimits(
-		c.Int("limit"),
-		c.String("after"),
-		c.String("project-id"),
+		limit,
+		cmd.String("after"),
+		cmd.String("project-id"),
 	)
 	if err != nil {
 		return wrapError("list project rate limits", err)
 	}
 
-	output := c.String("output")
-	switch output {
-	case OutputFormatJSON:
+	switch cmd.String("output") {
+	case "json":
 		return printProjectRateLimitsJson(projectRateLimits)
 	default:
 		return printProjectRateLimitsTable(projectRateLimits)
 	}
 }
 
-func validateModifyProjectRateLimitContext(c *cli.Context) error {
-	if c.Int("max-requests-per-1-minute") != 0 {
-		return nil
+func validateModifyProjectRateLimitContext(ctx context.Context, cmd *cli.Command) error {
+	if cmd.String("project-id") == "" {
+		return errors.New("project-id is required")
+	}
+	if cmd.String("rate-limit-id") == "" {
+		return errors.New("rate-limit-id is required")
 	}
 
-	if c.Int("max-tokens-per-1-minute") != 0 {
-		return nil
+	// At least one rate limit field must be set
+	if cmd.Int("max-requests-per-1-minute") == 0 &&
+		cmd.Int("max-tokens-per-1-minute") == 0 &&
+		cmd.Int("max-images-per-1-minute") == 0 &&
+		cmd.Int("max-audio-megabytes-per-1-minute") == 0 &&
+		cmd.Int("max-requests-per-1-day") == 0 &&
+		cmd.Int("batch-1-day-max-input-tokens") == 0 {
+		return errors.New("must set at least one rate limit field to modify")
 	}
 
-	if c.Int("max-images-per-1-minute") != 0 {
-		return nil
-	}
-
-	if c.Int("max-audio-megabytes-per-1-minute") != 0 {
-		return nil
-	}
-
-	if c.Int("max-requests-per-1-day") != 0 {
-		return nil
-	}
-
-	if c.Int("batch-1-day-max-input-tokens") != 0 {
-		return nil
-	}
-
-	return errors.New("must set at least one field to modify for the project rate limit")
+	return nil
 }
 
-func modifyProjectRateLimit(c *cli.Context) error {
-	client := newClient(c)
-
-	if err := validateModifyProjectRateLimitContext(c); err != nil {
+func modifyProjectRateLimit(ctx context.Context, cmd *cli.Command) error {
+	if err := validateModifyProjectRateLimitContext(ctx, cmd); err != nil {
 		return err
 	}
 
+	client := newClient(ctx, cmd)
+
+	fields := openaiorgs.ProjectRateLimitRequestFields{
+		MaxRequestsPer1Minute:       int64(cmd.Int("max-requests-per-1-minute")),
+		MaxTokensPer1Minute:         int64(cmd.Int("max-tokens-per-1-minute")),
+		MaxImagesPer1Minute:         int64(cmd.Int("max-images-per-1-minute")),
+		MaxAudioMegabytesPer1Minute: int64(cmd.Int("max-audio-megabytes-per-1-minute")),
+		MaxRequestsPer1Day:          int64(cmd.Int("max-requests-per-1-day")),
+		Batch1DayMaxInputTokens:     int64(cmd.Int("batch-1-day-max-input-tokens")),
+	}
+
 	projectRateLimit, err := client.ModifyProjectRateLimit(
-		c.String("project-id"),
-		c.String("rate-limit-id"),
-		openaiorgs.ProjectRateLimitRequestFields{
-			MaxRequestsPer1Minute:       c.Int64("max-requests-per-1-minute"),
-			MaxTokensPer1Minute:         c.Int64("max-tokens-per-1-minute"),
-			MaxImagesPer1Minute:         c.Int64("max-images-per-1-minute"),
-			MaxAudioMegabytesPer1Minute: c.Int64("max-audio-megabytes-per-1-minute"),
-			MaxRequestsPer1Day:          c.Int64("max-requests-per-1-day"),
-			Batch1DayMaxInputTokens:     c.Int64("batch-1-day-max-input-tokens"),
-		},
+		cmd.String("project-id"),
+		cmd.String("rate-limit-id"),
+		fields,
 	)
 	if err != nil {
 		return wrapError("modify project rate limit", err)
 	}
 
-	output := c.String("output")
-	switch output {
-	case OutputFormatJSON:
+	switch cmd.String("output") {
+	case "json":
 		return printProjectRateLimitJson(projectRateLimit)
 	default:
 		return printProjectRateLimitTable(projectRateLimit)

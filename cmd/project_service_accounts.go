@@ -1,18 +1,17 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
-	"strings"
 
-	openaiorgs "github.com/klauern/openai-orgs"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func ProjectServiceAccountsCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "project-service-accounts",
 		Usage: "Manage project service accounts",
-		Subcommands: []*cli.Command{
+		Commands: []*cli.Command{
 			listProjectServiceAccountsCommand(),
 			createProjectServiceAccountCommand(),
 			retrieveProjectServiceAccountCommand(),
@@ -26,11 +25,7 @@ func listProjectServiceAccountsCommand() *cli.Command {
 		Name:  "list",
 		Usage: "List all project service accounts",
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:     "project-id",
-				Usage:    "ID of the project",
-				Required: true,
-			},
+			projectIDFlag,
 			limitFlag,
 			afterFlag,
 		},
@@ -53,7 +48,7 @@ func createProjectServiceAccountCommand() *cli.Command {
 func retrieveProjectServiceAccountCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "retrieve",
-		Usage: "Retrieve a project service account",
+		Usage: "Retrieve a specific project service account",
 		Flags: []cli.Flag{
 			projectIDFlag,
 			idFlag,
@@ -74,88 +69,89 @@ func deleteProjectServiceAccountCommand() *cli.Command {
 	}
 }
 
-func listProjectServiceAccounts(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+func listProjectServiceAccounts(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
-	projectID := c.String("project-id")
-	limit := c.Int("limit")
-	after := c.String("after")
-
-	accounts, err := client.ListProjectServiceAccounts(projectID, limit, after)
+	limit := int(cmd.Int("limit"))
+	serviceAccounts, err := client.ListProjectServiceAccounts(
+		cmd.String("project-id"),
+		limit,
+		cmd.String("after"),
+	)
 	if err != nil {
-		return fmt.Errorf("failed to list project service accounts: %w", err)
+		return wrapError("list project service accounts", err)
 	}
 
-	fmt.Println("ID | Name | Role | Created At")
-	fmt.Println(strings.Repeat("-", 80))
-	for _, account := range accounts.Data {
-		fmt.Printf("%s | %s | %s | %s\n",
+	data := TableData{
+		Headers: []string{"ID", "Name", "Created At"},
+		Rows:    make([][]string, len(serviceAccounts.Data)),
+	}
+
+	for i, account := range serviceAccounts.Data {
+		data.Rows[i] = []string{
 			account.ID,
 			account.Name,
-			account.Role,
 			account.CreatedAt.String(),
-		)
+		}
 	}
 
+	printTableData(data)
 	return nil
 }
 
-func createProjectServiceAccount(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+func createProjectServiceAccount(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
-	projectID := c.String("project-id")
-	name := c.String("name")
-
-	account, err := client.CreateProjectServiceAccount(projectID, name)
+	serviceAccount, err := client.CreateProjectServiceAccount(
+		cmd.String("project-id"),
+		cmd.String("name"),
+	)
 	if err != nil {
-		return fmt.Errorf("failed to create project service account: %w", err)
+		return wrapError("create project service account", err)
 	}
 
-	fmt.Printf("Project service account created:\n")
-	fmt.Printf("ID: %s\nName: %s\nRole: %s\nCreated At: %s\nAPI Key: %s\n",
-		account.ID,
-		account.Name,
-		account.Role,
-		account.CreatedAt.String(),
-		account.APIKey.Value,
+	fmt.Printf("Project Service Account created:\n")
+	fmt.Printf("ID: %s\nName: %s\nCreated At: %s\n",
+		serviceAccount.ID,
+		serviceAccount.Name,
+		serviceAccount.CreatedAt.String(),
 	)
 
 	return nil
 }
 
-func retrieveProjectServiceAccount(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+func retrieveProjectServiceAccount(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
-	projectID := c.String("project-id")
-	id := c.String("id")
-
-	account, err := client.RetrieveProjectServiceAccount(projectID, id)
+	serviceAccount, err := client.RetrieveProjectServiceAccount(
+		cmd.String("project-id"),
+		cmd.String("id"),
+	)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve project service account: %w", err)
+		return wrapError("retrieve project service account", err)
 	}
 
-	fmt.Printf("Project service account details:\n")
-	fmt.Printf("ID: %s\nName: %s\nRole: %s\nCreated At: %s\n",
-		account.ID,
-		account.Name,
-		account.Role,
-		account.CreatedAt.String(),
+	fmt.Printf("Project Service Account details:\n")
+	fmt.Printf("ID: %s\nName: %s\nCreated At: %s\n",
+		serviceAccount.ID,
+		serviceAccount.Name,
+		serviceAccount.CreatedAt.String(),
 	)
 
 	return nil
 }
 
-func deleteProjectServiceAccount(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+func deleteProjectServiceAccount(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
-	projectID := c.String("project-id")
-	id := c.String("id")
-
-	err := client.DeleteProjectServiceAccount(projectID, id)
+	err := client.DeleteProjectServiceAccount(
+		cmd.String("project-id"),
+		cmd.String("id"),
+	)
 	if err != nil {
-		return fmt.Errorf("failed to delete project service account: %w", err)
+		return wrapError("delete project service account", err)
 	}
 
-	fmt.Printf("Project service account with ID %s has been deleted\n", id)
+	fmt.Printf("Project Service Account %s deleted successfully\n", cmd.String("id"))
 	return nil
 }

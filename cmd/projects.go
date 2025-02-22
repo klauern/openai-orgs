@@ -1,17 +1,17 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 
-	openaiorgs "github.com/klauern/openai-orgs"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func ProjectsCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "projects",
 		Usage: "Manage organization projects",
-		Subcommands: []*cli.Command{
+		Commands: []*cli.Command{
 			listProjectsCommand(),
 			createProjectCommand(),
 			retrieveProjectCommand(),
@@ -82,13 +82,14 @@ func archiveProjectCommand() *cli.Command {
 	}
 }
 
-func listProjects(c *cli.Context) error {
-	client := newClient(c)
+func listProjects(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
+	limit := int(cmd.Int("limit"))
 	projects, err := client.ListProjects(
-		c.Int("limit"),
-		c.String("after"),
-		c.Bool("include-archived"),
+		limit,
+		cmd.String("after"),
+		cmd.Bool("include-archived"),
 	)
 	if err != nil {
 		return wrapError("list projects", err)
@@ -117,10 +118,10 @@ func listProjects(c *cli.Context) error {
 	return nil
 }
 
-func createProject(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+func createProject(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
-	name := c.String("name")
+	name := cmd.String("name")
 
 	project, err := client.CreateProject(name)
 	if err != nil {
@@ -138,10 +139,10 @@ func createProject(c *cli.Context) error {
 	return nil
 }
 
-func retrieveProject(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+func retrieveProject(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
-	id := c.String("id")
+	id := cmd.String("id")
 
 	project, err := client.RetrieveProject(id)
 	if err != nil {
@@ -162,11 +163,11 @@ func retrieveProject(c *cli.Context) error {
 	return nil
 }
 
-func modifyProject(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+func modifyProject(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
-	id := c.String("id")
-	name := c.String("name")
+	id := cmd.String("id")
+	name := cmd.String("name")
 
 	project, err := client.ModifyProject(id, name)
 	if err != nil {
@@ -184,10 +185,10 @@ func modifyProject(c *cli.Context) error {
 	return nil
 }
 
-func archiveProject(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+func archiveProject(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
-	id := c.String("id")
+	id := cmd.String("id")
 
 	project, err := client.ArchiveProject(id)
 	if err != nil {

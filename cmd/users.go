@@ -1,17 +1,17 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 
-	openaiorgs "github.com/klauern/openai-orgs"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func UsersCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "users",
 		Usage: "Manage organization users",
-		Subcommands: []*cli.Command{
+		Commands: []*cli.Command{
 			listUsersCommand(),
 			retrieveUserCommand(),
 			deleteUserCommand(),
@@ -66,29 +66,29 @@ func modifyUserRoleCommand() *cli.Command {
 	}
 }
 
-func listUsers(c *cli.Context) error {
-	client := newClient(c)
+func listUsers(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
+	limit := int(cmd.Int("limit"))
 	users, err := client.ListUsers(
-		c.Int("limit"),
-		c.String("after"),
+		limit,
+		cmd.String("after"),
 	)
 	if err != nil {
 		return wrapError("list users", err)
 	}
 
 	data := TableData{
-		Headers: []string{"ID", "Name", "Email", "Role", "Added At"},
+		Headers: []string{"ID", "Email", "Name", "Role"},
 		Rows:    make([][]string, len(users.Data)),
 	}
 
 	for i, user := range users.Data {
 		data.Rows[i] = []string{
 			user.ID,
-			user.Name,
 			user.Email,
+			user.Name,
 			user.Role,
-			user.AddedAt.String(),
 		}
 	}
 
@@ -96,53 +96,61 @@ func listUsers(c *cli.Context) error {
 	return nil
 }
 
-func retrieveUser(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+func retrieveUser(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
-	id := c.String("id")
-
-	user, err := client.RetrieveUser(id)
+	user, err := client.RetrieveUser(cmd.String("id"))
 	if err != nil {
-		return fmt.Errorf("failed to retrieve user: %w", err)
+		return wrapError("retrieve user", err)
 	}
 
 	fmt.Printf("User details:\n")
-	fmt.Printf("ID: %s\nName: %s\nEmail: %s\nRole: %s\nAdded At: %s\n",
+	fmt.Printf("ID: %s\nEmail: %s\nName: %s\nRole: %s\n",
 		user.ID,
-		user.Name,
 		user.Email,
+		user.Name,
 		user.Role,
-		user.AddedAt.String(),
 	)
 
 	return nil
 }
 
-func deleteUser(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+func deleteUser(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
-	id := c.String("id")
-
-	err := client.DeleteUser(id)
+	err := client.DeleteUser(cmd.String("id"))
 	if err != nil {
-		return fmt.Errorf("failed to delete user: %w", err)
+		return wrapError("delete user", err)
 	}
 
-	fmt.Printf("User with ID %s has been deleted\n", id)
+	fmt.Printf("User %s deleted successfully\n", cmd.String("id"))
 	return nil
 }
 
-func modifyUserRole(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+func modifyUserRole(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
-	id := c.String("id")
-	role := c.String("role")
+	id := cmd.String("id")
+	role := cmd.String("role")
 
 	err := client.ModifyUserRole(id, role)
 	if err != nil {
-		return fmt.Errorf("failed to modify user role: %w", err)
+		return wrapError("modify user role", err)
 	}
 
-	fmt.Printf("User with ID %s has been updated with role: %s\n", id, role)
+	// Retrieve the updated user to show the changes
+	user, err := client.RetrieveUser(id)
+	if err != nil {
+		return wrapError("retrieve updated user", err)
+	}
+
+	fmt.Printf("User role modified:\n")
+	fmt.Printf("ID: %s\nEmail: %s\nName: %s\nNew Role: %s\n",
+		user.ID,
+		user.Email,
+		user.Name,
+		user.Role,
+	)
+
 	return nil
 }

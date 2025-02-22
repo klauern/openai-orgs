@@ -1,17 +1,17 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 
-	openaiorgs "github.com/klauern/openai-orgs"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func InvitesCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "invites",
 		Usage: "Manage organization invites",
-		Subcommands: []*cli.Command{
+		Commands: []*cli.Command{
 			listInvitesCommand(),
 			createInviteCommand(),
 			retrieveInviteCommand(),
@@ -30,13 +30,19 @@ func listInvitesCommand() *cli.Command {
 
 func createInviteCommand() *cli.Command {
 	return &cli.Command{
-		Name:  "create",
-		Usage: "Create a new invite",
-		Flags: []cli.Flag{
-			emailFlag,
-			roleFlag,
-		},
+		Name:   "create",
+		Usage:  "Create a new invite",
+		Flags:  []cli.Flag{emailFlag, roleFlag},
 		Action: createInvite,
+	}
+}
+
+func retrieveInviteCommand() *cli.Command {
+	return &cli.Command{
+		Name:   "retrieve",
+		Usage:  "Retrieve a specific invite",
+		Flags:  []cli.Flag{idFlag},
+		Action: retrieveInvite,
 	}
 }
 
@@ -51,23 +57,12 @@ func deleteInviteCommand() *cli.Command {
 	}
 }
 
-func retrieveInviteCommand() *cli.Command {
-	return &cli.Command{
-		Name:  "retrieve",
-		Usage: "Retrieve an invite",
-		Flags: []cli.Flag{
-			idFlag,
-		},
-		Action: retrieveInvite,
-	}
-}
-
-func listInvites(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+func listInvites(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
 	invites, err := client.ListInvites()
 	if err != nil {
-		return fmt.Errorf("failed to list invites: %w", err)
+		return wrapError("list invites", err)
 	}
 
 	data := TableData{
@@ -91,55 +86,61 @@ func listInvites(c *cli.Context) error {
 		}
 	}
 
-	printTable(data.Headers, data.Rows)
+	printTableData(data)
+	return nil
+}
+
+func createInvite(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
+
+	invite, err := client.CreateInvite(
+		cmd.String("email"),
+		cmd.String("role"),
+	)
+	if err != nil {
+		return wrapError("create invite", err)
+	}
+
+	fmt.Printf("Invite created:\n")
+	fmt.Printf("ID: %s\nEmail: %s\nRole: %s\nCreated At: %s\nExpires At: %s\n",
+		invite.ID,
+		invite.Email,
+		invite.Role,
+		invite.CreatedAt.String(),
+		invite.ExpiresAt.String(),
+	)
 
 	return nil
 }
 
-func createInvite(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+func retrieveInvite(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
-	email := c.String("email")
-
-	invite, err := client.CreateInvite(email, c.String("role"))
+	invite, err := client.RetrieveInvite(cmd.String("id"))
 	if err != nil {
-		return fmt.Errorf("failed to create invite: %w", err)
+		return wrapError("retrieve invite", err)
 	}
 
-	fmt.Printf("Invite created: ID: %s, Email: %s, Role: %s, Status: %s\n", invite.ID, invite.Email, invite.Role, invite.Status)
+	fmt.Printf("Invite details:\n")
+	fmt.Printf("ID: %s\nEmail: %s\nRole: %s\nCreated At: %s\nExpires At: %s\n",
+		invite.ID,
+		invite.Email,
+		invite.Role,
+		invite.CreatedAt.String(),
+		invite.ExpiresAt.String(),
+	)
+
 	return nil
 }
 
-func deleteInvite(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+func deleteInvite(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
-	id := c.String("id")
-
-	err := client.DeleteInvite(id)
+	err := client.DeleteInvite(cmd.String("id"))
 	if err != nil {
-		return fmt.Errorf("failed to delete invite: %w", err)
+		return wrapError("delete invite", err)
 	}
 
-	fmt.Printf("Invite with ID %s has been deleted\n", id)
-	return nil
-}
-
-func retrieveInvite(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
-
-	id := c.String("id")
-
-	invite, err := client.RetrieveInvite(id)
-	if err != nil {
-		return fmt.Errorf("failed to retrieve invite: %w", err)
-	}
-
-	acceptedAt := "N/A"
-	if invite.AcceptedAt != nil {
-		acceptedAt = invite.AcceptedAt.String()
-	}
-
-	fmt.Printf("Invite retrieved: ID: %s, Email: %s, Role: %s, Status: %s, Created At: %s, Expires At: %s, Accepted At: %s\n",
-		invite.ID, invite.Email, invite.Role, invite.Status, invite.CreatedAt.String(), invite.ExpiresAt.String(), acceptedAt)
+	fmt.Printf("Invite %s deleted successfully\n", cmd.String("id"))
 	return nil
 }

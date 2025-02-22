@@ -1,0 +1,2 @@
+Never write code using the following packages: github.com/stretchr/testify
+Generate interfaces when possible, and make testability easier.

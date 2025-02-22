@@ -5,6 +5,9 @@ import (
 	"time"
 )
 
+// UnixSeconds represents a Unix timestamp as a time.Time
+type UnixSeconds time.Time
+
 func (us UnixSeconds) MarshalJSON() ([]byte, error) {
 	return json.Marshal(time.Time(us).Unix())
 }

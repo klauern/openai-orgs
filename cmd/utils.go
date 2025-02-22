@@ -1,11 +1,12 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	openaiorgs "github.com/klauern/openai-orgs"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 // Constants should be grouped at the top
@@ -90,9 +91,9 @@ type BaseCommand struct {
 
 func (b *BaseCommand) Command() *cli.Command {
 	return &cli.Command{
-		Name:        b.Name,
-		Usage:       b.Usage,
-		Subcommands: b.Commands,
+		Name:     b.Name,
+		Usage:    b.Usage,
+		Commands: b.Commands,
 	}
 }
 
@@ -100,19 +101,8 @@ func (b *BaseCommand) Subcommands() []*cli.Command {
 	return b.Commands
 }
 
-func newClient(c *cli.Context) *openaiorgs.Client {
-	return openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
-}
-
-func printTable(headers []string, rows [][]string) {
-	// Print headers
-	fmt.Println(strings.Join(headers, " | "))
-	fmt.Println(strings.Repeat("-", len(strings.Join(headers, " | "))))
-
-	// Print rows
-	for _, row := range rows {
-		fmt.Println(strings.Join(row, " | "))
-	}
+func newClient(ctx context.Context, cmd *cli.Command) *openaiorgs.Client {
+	return openaiorgs.NewClient(openaiorgs.DefaultBaseURL, cmd.String("api-key"))
 }
 
 func printTableData(data TableData) {
