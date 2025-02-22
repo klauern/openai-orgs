@@ -2,6 +2,7 @@ package openaiorgs
 
 import (
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 )
@@ -127,22 +128,74 @@ func TestOrganizationErrors(t *testing.T) {
 	defer h.cleanup()
 
 	// Test list error
-	h.mockResponse("GET", "/organizations", http.StatusInternalServerError, map[string]string{
-		"error": "internal server error",
+	h.mockResponse("GET", "/organizations", http.StatusInternalServerError, map[string]interface{}{
+		"error": map[string]interface{}{
+			"message": "internal server error",
+			"type":    "internal_error",
+			"code":    "internal_error",
+		},
 	})
 
 	_, err := h.client.ListOrganizations(10, "")
 	if err == nil {
 		t.Error("Expected error from ListOrganizations, got none")
 	}
+	h.assertRequest("GET", "/organizations", 1)
 
 	// Test get error
-	h.mockResponse("GET", "/organizations/org_123", http.StatusNotFound, map[string]string{
-		"error": "not found",
+	h.mockResponse("GET", "/organizations/org_123", http.StatusNotFound, map[string]interface{}{
+		"error": map[string]interface{}{
+			"message": "organization not found",
+			"type":    "not_found",
+			"code":    "not_found",
+		},
 	})
 
 	_, err = h.client.GetOrganization("org_123")
 	if err == nil {
 		t.Error("Expected error from GetOrganization, got none")
 	}
+	if err != nil && !strings.Contains(err.Error(), "not found") {
+		t.Errorf("Expected 'not found' error, got: %v", err)
+	}
+	h.assertRequest("GET", "/organizations/org_123", 1)
+
+	// Test update error
+	h.mockResponse("POST", "/organizations/org_123", http.StatusBadRequest, map[string]interface{}{
+		"error": map[string]interface{}{
+			"message": "invalid request",
+			"type":    "invalid_request",
+			"code":    "invalid_request",
+		},
+	})
+
+	name := "Test"
+	_, err = h.client.UpdateOrganization("org_123", &UpdateOrganizationRequest{
+		Name: &name,
+	})
+	if err == nil {
+		t.Error("Expected error from UpdateOrganization, got none")
+	}
+	if err != nil && !strings.Contains(err.Error(), "invalid request") {
+		t.Errorf("Expected 'invalid request' error, got: %v", err)
+	}
+	h.assertRequest("POST", "/organizations/org_123", 1)
+
+	// Test delete error
+	h.mockResponse("DELETE", "/organizations/org_123", http.StatusForbidden, map[string]interface{}{
+		"error": map[string]interface{}{
+			"message": "permission denied",
+			"type":    "permission_denied",
+			"code":    "permission_denied",
+		},
+	})
+
+	err = h.client.DeleteOrganization("org_123")
+	if err == nil {
+		t.Error("Expected error from DeleteOrganization, got none")
+	}
+	if err != nil && !strings.Contains(err.Error(), "permission denied") {
+		t.Errorf("Expected 'permission denied' error, got: %v", err)
+	}
+	h.assertRequest("DELETE", "/organizations/org_123", 1)
 }
