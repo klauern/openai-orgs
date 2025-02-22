@@ -1,17 +1,17 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 
-	openaiorgs "github.com/klauern/openai-orgs"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func ProjectApiKeysCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "project-api-keys",
 		Usage: "Manage project API keys",
-		Subcommands: []*cli.Command{
+		Commands: []*cli.Command{
 			listProjectApiKeysCommand(),
 			retrieveProjectApiKeyCommand(),
 			deleteProjectApiKeyCommand(),
@@ -50,79 +50,78 @@ func deleteProjectApiKeyCommand() *cli.Command {
 		Usage: "Delete a project API key",
 		Flags: []cli.Flag{
 			projectIDFlag,
-			&cli.StringFlag{
-				Name:     "api-key-id",
-				Usage:    "ID of the API key to delete",
-				Required: true,
-			},
+			idFlag,
 		},
 		Action: deleteProjectApiKey,
 	}
 }
 
-func listProjectApiKeys(c *cli.Context) error {
-	client := newClient(c)
+func listProjectApiKeys(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
-	apiKeys, err := client.ListProjectApiKeys(
-		c.String("project-id"),
-		c.Int("limit"),
-		c.String("after"),
+	limit := int(cmd.Int("limit"))
+	projectApiKeys, err := client.ListProjectApiKeys(
+		cmd.String("project-id"),
+		limit,
+		cmd.String("after"),
 	)
 	if err != nil {
 		return wrapError("list project API keys", err)
 	}
 
-	headers := []string{"ID", "Name", "Redacted Value", "Created At", "Owner"}
-	rows := make([][]string, len(apiKeys.Data))
+	data := TableData{
+		Headers: []string{"ID", "Name", "Redacted Value", "Created At", "Owner"},
+		Rows:    make([][]string, len(projectApiKeys.Data)),
+	}
 
-	for i, apiKey := range apiKeys.Data {
-		rows[i] = []string{
-			apiKey.ID,
-			apiKey.Name,
-			apiKey.RedactedValue,
-			apiKey.CreatedAt.String(),
-			fmt.Sprintf("%s (%s)", apiKey.Owner.Name, apiKey.Owner.Type),
+	for i, key := range projectApiKeys.Data {
+		data.Rows[i] = []string{
+			key.ID,
+			key.Name,
+			key.RedactedValue,
+			key.CreatedAt.String(),
+			fmt.Sprintf("%s (%s)", key.Owner.Name, key.Owner.Type),
 		}
 	}
 
-	printTable(headers, rows)
+	printTableData(data)
 	return nil
 }
 
-func retrieveProjectApiKey(c *cli.Context) error {
-	client := newClient(c)
+func retrieveProjectApiKey(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
-	apiKey, err := client.RetrieveProjectApiKey(
-		c.String("project-id"),
-		c.String("api-key-id"),
+	projectApiKey, err := client.RetrieveProjectApiKey(
+		cmd.String("project-id"),
+		cmd.String("id"),
 	)
 	if err != nil {
 		return wrapError("retrieve project API key", err)
 	}
 
-	fmt.Printf("API Key details:\n")
+	fmt.Printf("Project API Key details:\n")
 	fmt.Printf("ID: %s\nName: %s\nRedacted Value: %s\nCreated At: %s\n",
-		apiKey.ID,
-		apiKey.Name,
-		apiKey.RedactedValue,
-		apiKey.CreatedAt.String(),
+		projectApiKey.ID,
+		projectApiKey.Name,
+		projectApiKey.RedactedValue,
+		projectApiKey.CreatedAt.String(),
 	)
-	fmt.Printf("Owner: %s (%s)\n", apiKey.Owner.Name, apiKey.Owner.Type)
+	fmt.Printf("Owner: %s (%s)\n", projectApiKey.Owner.Name, projectApiKey.Owner.Type)
 
 	return nil
 }
 
-func deleteProjectApiKey(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
+func deleteProjectApiKey(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
-	projectID := c.String("project-id")
-	apiKeyID := c.String("api-key-id")
-
-	err := client.DeleteProjectApiKey(projectID, apiKeyID)
+	err := client.DeleteProjectApiKey(
+		cmd.String("project-id"),
+		cmd.String("id"),
+	)
 	if err != nil {
-		return fmt.Errorf("failed to delete project API key: %w", err)
+		return wrapError("delete project API key", err)
 	}
 
-	fmt.Printf("API Key with ID %s has been deleted from project %s\n", apiKeyID, projectID)
+	fmt.Printf("Project API Key %s deleted successfully\n", cmd.String("id"))
 	return nil
 }

@@ -1,19 +1,19 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/klauern/openai-orgs/cmd"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var Version = "dev"
 
 func main() {
-	app := &cli.App{
+	app := &cli.Command{
 		Name:    "openai-orgs",
 		Usage:   "CLI for OpenAI Platform Management API",
 		Version: Version,
@@ -32,34 +32,31 @@ func main() {
 				Name:  "output",
 				Usage: "Output format (default: pretty)",
 				Value: "pretty",
-				Action: func(ctx *cli.Context, s string) error {
-					if s == "" {
+				Action: func(ctx context.Context, cmd *cli.Command, value string) error {
+					if value == "" {
 						return nil
 					}
 
-					if _, ok := cmd.ValidOutputFormats[s]; ok {
-						return nil
+					validFormats := []string{"pretty", "json", "jsonl"}
+					for _, format := range validFormats {
+						if format == value {
+							return nil
+						}
 					}
 
-					return fmt.Errorf("invalid output format: %s", s)
+					return fmt.Errorf("invalid output format: %s (valid formats: %v)", value, validFormats)
 				},
 			},
 			&cli.StringFlag{
-				Name:    "api-key",
-				Usage:   "OpenAI API key (can be set via OPENAI_API_KEY environment variable)",
-				EnvVars: []string{"OPENAI_API_KEY"},
-				Action: func(ctx *cli.Context, s string) error {
-					if !strings.HasPrefix(s, "sk-admin-") {
-						return fmt.Errorf("invalid API key, must start with sk-admin-")
-					}
-					return nil
-				},
+				Name:     "api-key",
+				Usage:    "OpenAI API key (can be set via OPENAI_API_KEY environment variable)",
+				Sources:  cli.EnvVars("OPENAI_API_KEY"),
+				Required: true,
 			},
 		},
 	}
 
-	err := app.Run(os.Args)
-	if err != nil {
+	if err := app.Run(context.Background(), os.Args); err != nil {
 		log.Fatal(err)
 	}
 }
