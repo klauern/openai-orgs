@@ -108,13 +108,9 @@ func Post[T any](client *resty.Client, endpoint string, body interface{}) (*T, e
 }
 
 func Delete[T any](client *resty.Client, endpoint string) error {
-	resp, err := client.R().Delete(endpoint)
+	_, err := client.R().Delete(endpoint)
 	if err != nil {
 		return fmt.Errorf("error making DELETE request: %v", err)
-	}
-
-	if resp.IsError() {
-		return fmt.Errorf("API request failed with status code %d: %s", resp.StatusCode(), string(resp.Body()))
 	}
 
 	return nil

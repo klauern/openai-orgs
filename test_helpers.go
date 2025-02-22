@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/go-resty/resty/v2"
 	"github.com/jarcoal/httpmock"
 )
 
@@ -17,23 +16,12 @@ type testHelper struct {
 
 // newTestHelper creates a new test helper with mocked HTTP client
 func newTestHelper(t *testing.T) *testHelper {
-	client := resty.New()
-	// Disable retries for tests
-	client.SetRetryCount(0)
-	client.SetBaseURL(testBaseURL)
-	client.SetAuthToken("test-token")
-	client.SetHeader("Content-Type", "application/json")
-
-	c := &Client{
-		client:  client,
-		BaseURL: testBaseURL,
-	}
-
+	client := NewClient(testBaseURL, "test-token")
 	// Enable HTTP mocking
-	httpmock.ActivateNonDefault(c.client.GetClient())
+	httpmock.ActivateNonDefault(client.client.GetClient())
 
 	return &testHelper{
-		client: c,
+		client: client,
 		t:      t,
 	}
 }
