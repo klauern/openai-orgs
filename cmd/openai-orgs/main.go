@@ -27,6 +27,7 @@ func main() {
 			cmd.ProjectServiceAccountsCommand(),
 			cmd.ProjectApiKeysCommand(),
 			cmd.ProjectRateLimitsCommand(),
+			cmd.UsageCommand(),
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{

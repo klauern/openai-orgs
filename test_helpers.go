@@ -78,3 +78,22 @@ func (h *testHelper) assertRequest(method, endpoint string, times int) {
 		h.t.Errorf("Expected %d calls to %s %s, got %d", times, method, endpoint, count)
 	}
 }
+
+// mockErrorResponse registers a mock error response for a given method and endpoint
+func (h *testHelper) mockErrorResponse(method, endpoint string, statusCode int, errorMessage string) {
+	responder := func(req *http.Request) (*http.Response, error) {
+		resp, err := httpmock.NewJsonResponse(statusCode, map[string]interface{}{
+			"error": map[string]interface{}{
+				"message": errorMessage,
+				"type":    "api_error",
+			},
+		})
+		if err != nil {
+			h.t.Fatalf("Failed to create mock error response: %v", err)
+		}
+		return resp, nil
+	}
+
+	// Register the mock responder
+	httpmock.RegisterResponder(method, testBaseURL+endpoint, responder)
+}
