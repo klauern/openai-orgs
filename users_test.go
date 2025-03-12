@@ -175,7 +175,7 @@ func TestDeleteUser(t *testing.T) {
 			name:             "Error response",
 			userID:           "user_123",
 			mockResponseCode: 400,
-			expectedError:    nil,
+			expectedError:    fmt.Errorf("failed to delete user: API request failed with status code 400: null"),
 		},
 	}
 

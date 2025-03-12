@@ -1,0 +1,12 @@
+---
+description: Conventions and Project Layout
+globs: 
+---
+# Conventions
+
+- Use interfaces where possible to make testing easier
+- NEVER use testify for test generation
+- Major components of this project include:
+  - resty/v2
+  - urfave/cli/v3
+- Every API endpoint should have some corresponding CLI command or subcommand as well

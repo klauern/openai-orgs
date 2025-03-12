@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -8,7 +9,7 @@ import (
 	"time"
 
 	openaiorgs "github.com/klauern/openai-orgs"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func AuditLogsCommand() *cli.Command {
@@ -47,68 +48,67 @@ func AuditLogsCommand() *cli.Command {
 	}
 }
 
-func listAuditLogs(c *cli.Context) error {
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, c.String("api-key"))
-	verbose := c.Bool("verbose")
-	outputFormat := c.String("output")
-	shouldPaginate := c.Bool("paginate")
+func listAuditLogs(ctx context.Context, cmd *cli.Command) error {
+	client := newClient(ctx, cmd)
 
 	params := &openaiorgs.AuditLogListParams{
-		Limit:  c.Int("limit"),
-		After:  c.String("after"),
-		Before: c.String("before"),
+		Limit:  int(cmd.Int("limit")),
+		After:  cmd.String("after"),
+		Before: cmd.String("before"),
 	}
 
-	if startDate := c.String("start-date"); startDate != "" {
-		parsedStartDate, err := time.Parse(time.DateOnly, startDate)
+	startDate := cmd.String("start-date")
+	endDate := cmd.String("end-date")
+	outputFormat := cmd.String("output")
+	verbose := cmd.Bool("verbose")
+	paginate := cmd.Bool("paginate")
+
+	if startDate != "" {
+		t, err := time.Parse(time.RFC3339, startDate)
 		if err != nil {
 			return fmt.Errorf("invalid start-date format: %w", err)
 		}
 		if params.EffectiveAt == nil {
 			params.EffectiveAt = &openaiorgs.EffectiveAt{}
 		}
-		params.EffectiveAt.Gte = parsedStartDate.Unix()
+		params.EffectiveAt.Gte = t.Unix()
 	}
 
-	if endDate := c.String("end-date"); endDate != "" {
-		parsedEndDate, err := time.Parse(time.DateOnly, endDate)
+	if endDate != "" {
+		t, err := time.Parse(time.RFC3339, endDate)
 		if err != nil {
 			return fmt.Errorf("invalid end-date format: %w", err)
 		}
 		if params.EffectiveAt == nil {
 			params.EffectiveAt = &openaiorgs.EffectiveAt{}
 		}
-		params.EffectiveAt.Lte = parsedEndDate.Unix()
+		params.EffectiveAt.Lte = t.Unix()
 	}
 
 	var allLogs []openaiorgs.AuditLog
 	for {
-		response, err := client.ListAuditLogs(params)
+		logs, err := client.ListAuditLogs(params)
 		if err != nil {
-			return fmt.Errorf("failed to list audit logs: %w", err)
+			return wrapError("list audit logs", err)
 		}
 
-		if shouldPaginate {
-			allLogs = append(allLogs, response.Data...)
-			if !response.HasMore {
+		if paginate {
+			allLogs = append(allLogs, logs.Data...)
+			if logs.LastID == "" {
 				break
 			}
-			params.After = response.LastID
+			params.After = logs.LastID
 		} else {
-			// If not paginating, just output the single response and return
-			return outputResponse(response, outputFormat, verbose)
+			return outputResponse(logs, outputFormat, verbose)
 		}
 	}
 
-	if shouldPaginate {
-		// Create a combined response with all logs
-		combinedResponse := &openaiorgs.ListResponse[openaiorgs.AuditLog]{
-			Data:    allLogs,
-			HasMore: false,
-			FirstID: allLogs[0].ID,
-			LastID:  allLogs[len(allLogs)-1].ID,
+	if paginate {
+		response := &openaiorgs.ListResponse[openaiorgs.AuditLog]{
+			Object: "list",
+			Data:   allLogs,
 		}
-		return outputResponse(combinedResponse, outputFormat, verbose)
+		return outputResponse(response, outputFormat, verbose)
 	}
 
 	return nil
