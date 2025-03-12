@@ -19,7 +19,7 @@ func TestGetCompletionsUsage(t *testing.T) {
 			OutputTokens:     20,
 			NumModelRequests: 1,
 			ProjectID:        "proj_123",
-			Model:           "gpt-4",
+			Model:            "gpt-4",
 		},
 	}
 
@@ -100,7 +100,7 @@ func TestGetEmbeddingsUsage(t *testing.T) {
 			InputTokens:      50,
 			NumModelRequests: 1,
 			ProjectID:        "proj_456",
-			Model:           "text-embedding-ada-002",
+			Model:            "text-embedding-ada-002",
 		},
 	}
 
@@ -151,8 +151,8 @@ func TestGetEmbeddingsUsage(t *testing.T) {
 
 	// Test with query parameters
 	queryParams := map[string]string{
-		"start_time":  "1672531200",
-		"end_time":    "1672617600",
+		"start_time": "1672531200",
+		"end_time":   "1672617600",
 		"project_id": "proj_456",
 	}
 	_, err = h.client.GetEmbeddingsUsage(queryParams)
@@ -176,7 +176,7 @@ func TestGetModerationsUsage(t *testing.T) {
 			InputTokens:      25,
 			NumModelRequests: 1,
 			ProjectID:        "proj_789",
-			Model:           "text-moderation-latest",
+			Model:            "text-moderation-latest",
 		},
 	}
 
@@ -231,11 +231,11 @@ func TestGetImagesUsage(t *testing.T) {
 	mockResults := []ImagesUsageResult{
 		{
 			Object:           "usage_result",
-			Images:          5,
+			Images:           5,
 			NumModelRequests: 1,
-			Size:            "1024x1024",
-			ProjectID:       "proj_987",
-			Model:          "dall-e-3",
+			Size:             "1024x1024",
+			ProjectID:        "proj_987",
+			Model:            "dall-e-3",
 		},
 	}
 
@@ -290,10 +290,10 @@ func TestGetAudioSpeechesUsage(t *testing.T) {
 	mockResults := []AudioSpeechesUsageResult{
 		{
 			Object:           "usage_result",
-			Characters:      1000,
+			Characters:       1000,
 			NumModelRequests: 1,
-			ProjectID:       "proj_audio",
-			Model:          "tts-1",
+			ProjectID:        "proj_audio",
+			Model:            "tts-1",
 		},
 	}
 
@@ -348,10 +348,10 @@ func TestGetAudioTranscriptionsUsage(t *testing.T) {
 	mockResults := []AudioTranscriptionsUsageResult{
 		{
 			Object:           "usage_result",
-			Seconds:         120,
+			Seconds:          120,
 			NumModelRequests: 1,
-			ProjectID:       "proj_trans",
-			Model:          "whisper-1",
+			ProjectID:        "proj_trans",
+			Model:            "whisper-1",
 		},
 	}
 
@@ -581,7 +581,7 @@ func TestUsageWithPagination(t *testing.T) {
 			OutputTokens:     20,
 			NumModelRequests: 1,
 			ProjectID:        "proj_123",
-			Model:           "gpt-4",
+			Model:            "gpt-4",
 		},
 		{
 			Object:           "usage_result",
@@ -589,7 +589,7 @@ func TestUsageWithPagination(t *testing.T) {
 			OutputTokens:     25,
 			NumModelRequests: 1,
 			ProjectID:        "proj_123",
-			Model:           "gpt-4",
+			Model:            "gpt-4",
 		},
 	}
 
@@ -615,7 +615,7 @@ func TestUsageWithPagination(t *testing.T) {
 			OutputTokens:     30,
 			NumModelRequests: 1,
 			ProjectID:        "proj_123",
-			Model:           "gpt-4",
+			Model:            "gpt-4",
 		},
 	}
 
