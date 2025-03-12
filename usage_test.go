@@ -519,8 +519,8 @@ func TestUsageWithPagination(t *testing.T) {
 		ProjectID: "proj_123",
 	}
 
-	// First page response
-	firstPageResp := &ListResponse[UsageRecord]{
+	// First page response (with has_more=true)
+	firstPageResponse := ListResponse[UsageRecord]{
 		Object:  "list",
 		Data:    []UsageRecord{mockRecord1, mockRecord2},
 		FirstID: "usage_page1_1",
@@ -539,7 +539,7 @@ func TestUsageWithPagination(t *testing.T) {
 	}
 
 	// Second page response
-	secondPageResp := &ListResponse[UsageRecord]{
+	secondPageResponse := ListResponse[UsageRecord]{
 		Object:  "list",
 		Data:    []UsageRecord{mockRecord3},
 		FirstID: "usage_page2_1",
@@ -556,11 +556,11 @@ func TestUsageWithPagination(t *testing.T) {
 
 			if after == "usage_page1_2" {
 				// Return second page if "after" is the last ID of the first page
-				return httpmock.NewJsonResponse(200, secondPageResp)
+				return httpmock.NewJsonResponse(200, secondPageResponse)
 			}
 
 			// Otherwise return first page
-			return httpmock.NewJsonResponse(200, firstPageResp)
+			return httpmock.NewJsonResponse(200, firstPageResponse)
 		})
 
 	// Test first page
