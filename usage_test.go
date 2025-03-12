@@ -73,7 +73,7 @@ func TestGetCompletionsUsage(t *testing.T) {
 		"start_date": "2023-01-01",
 		"end_date":   "2023-01-31",
 	}
-	usage, err = h.client.GetCompletionsUsage(queryParams)
+	_, err = h.client.GetCompletionsUsage(queryParams)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 		return
@@ -141,7 +141,7 @@ func TestGetEmbeddingsUsage(t *testing.T) {
 		"end_date":   "2023-01-31",
 		"project_id": "proj_456",
 	}
-	usage, err = h.client.GetEmbeddingsUsage(queryParams)
+	_, err = h.client.GetEmbeddingsUsage(queryParams)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 		return
