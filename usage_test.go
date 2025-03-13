@@ -3,6 +3,7 @@ package openaiorgs
 import (
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/jarcoal/httpmock"
 )
@@ -11,33 +12,36 @@ func TestGetCompletionsUsage(t *testing.T) {
 	h := newTestHelper(t)
 	defer h.cleanup()
 
-	// Mock response data
-	mockResults := []CompletionsUsageResult{
-		{
-			Object:           "usage_result",
-			InputTokens:      10,
-			OutputTokens:     20,
-			NumModelRequests: 1,
-			ProjectID:        "proj_123",
-			Model:            "gpt-4",
-		},
+	// Mock response data for the new API structure
+	compResult := CompletionsUsageResult{
+		Object:            "completions_usage_result",
+		InputTokens:       10,
+		OutputTokens:      20,
+		InputCachedTokens: 0,
+		NumModelRequests:  1,
+		ProjectID:         "proj_123",
+		Model:             "gpt-4",
 	}
 
-	mockBucket := CompletionsUsageBucket{
-		Object:    "usage_bucket",
-		StartTime: 1672531200, // 2023-01-01 00:00:00 UTC
-		EndTime:   1672617600, // 2023-01-02 00:00:00 UTC
-		Results:   mockResults,
-	}
+	mockTimestamp := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	unixTimestamp := mockTimestamp.Unix()
 
+	// Create response for the new completions usage API structure
 	response := CompletionsUsageResponse{
-		Object:   "list",
-		Data:     []CompletionsUsageBucket{mockBucket},
-		HasMore:  false,
-		NextPage: "",
+		Object: "list",
+		Data: []CompletionsUsageBucket{
+			{
+				Object:    "completions_usage_bucket",
+				StartTime: unixTimestamp,
+				EndTime:   unixTimestamp + 3600,
+				Results:   []CompletionsUsageResult{compResult},
+			},
+		},
+		HasMore: false,
 	}
 
-	// Register mock response
+	// Register mock responses
+	h.mockResponse("GET", usageCompletionsEndpoint, 200, response)
 	h.mockResponse("GET", usageCompletionsEndpoint, 200, response)
 
 	// Test GetCompletionsUsage with no params
@@ -48,27 +52,29 @@ func TestGetCompletionsUsage(t *testing.T) {
 	}
 
 	if len(usage.Data) != 1 {
-		t.Errorf("Expected 1 usage bucket, got %d", len(usage.Data))
+		t.Errorf("Expected 1 usage record, got %d", len(usage.Data))
 		return
 	}
 
 	if len(usage.Data[0].Results) != 1 {
-		t.Errorf("Expected 1 result in bucket, got %d", len(usage.Data[0].Results))
+		t.Errorf("Expected 1 result in the bucket, got %d", len(usage.Data[0].Results))
 		return
 	}
 
-	result := usage.Data[0].Results[0]
-	if result.InputTokens != 10 {
-		t.Errorf("Expected InputTokens 10, got %d", result.InputTokens)
+	if usage.Data[0].Results[0].ProjectID != "proj_123" {
+		t.Errorf("Expected ProjectID proj_123, got %s", usage.Data[0].Results[0].ProjectID)
 	}
-	if result.OutputTokens != 20 {
-		t.Errorf("Expected OutputTokens 20, got %d", result.OutputTokens)
+
+	if usage.Data[0].Results[0].InputTokens != 10 {
+		t.Errorf("Expected InputTokens 10, got %d", usage.Data[0].Results[0].InputTokens)
 	}
-	if result.ProjectID != "proj_123" {
-		t.Errorf("Expected ProjectID proj_123, got %s", result.ProjectID)
+
+	if usage.Data[0].Results[0].OutputTokens != 20 {
+		t.Errorf("Expected OutputTokens 20, got %d", usage.Data[0].Results[0].OutputTokens)
 	}
-	if result.Model != "gpt-4" {
-		t.Errorf("Expected Model gpt-4, got %s", result.Model)
+
+	if usage.Data[0].Results[0].Model != "gpt-4" {
+		t.Errorf("Expected Model gpt-4, got %s", usage.Data[0].Results[0].Model)
 	}
 
 	// Verify the first request was made
@@ -76,8 +82,8 @@ func TestGetCompletionsUsage(t *testing.T) {
 
 	// Test with query parameters
 	queryParams := map[string]string{
-		"start_time": "1672531200",
-		"end_time":   "1672617600",
+		"start_date": "2023-01-01",
+		"end_date":   "2023-01-31",
 	}
 	_, err = h.client.GetCompletionsUsage(queryParams)
 	if err != nil {
@@ -93,32 +99,34 @@ func TestGetEmbeddingsUsage(t *testing.T) {
 	h := newTestHelper(t)
 	defer h.cleanup()
 
-	// Mock response data
-	mockResults := []EmbeddingsUsageResult{
-		{
-			Object:           "usage_result",
-			InputTokens:      50,
-			NumModelRequests: 1,
-			ProjectID:        "proj_456",
-			Model:            "text-embedding-ada-002",
-		},
+	// Mock response data for the new API structure
+	embResult := EmbeddingsUsageResult{
+		Object:           "embeddings_usage_result",
+		InputTokens:      50,
+		NumModelRequests: 1,
+		ProjectID:        "proj_456",
+		Model:            "text-embedding-ada-002",
 	}
 
-	mockBucket := EmbeddingsUsageBucket{
-		Object:    "usage_bucket",
-		StartTime: 1672531200, // 2023-01-01 00:00:00 UTC
-		EndTime:   1672617600, // 2023-01-02 00:00:00 UTC
-		Results:   mockResults,
-	}
+	mockTimestamp := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	unixTimestamp := mockTimestamp.Unix()
 
+	// Create response for the new embeddings usage API structure
 	response := EmbeddingsUsageResponse{
-		Object:   "list",
-		Data:     []EmbeddingsUsageBucket{mockBucket},
-		HasMore:  false,
-		NextPage: "",
+		Object: "list",
+		Data: []EmbeddingsUsageBucket{
+			{
+				Object:    "embeddings_usage_bucket",
+				StartTime: unixTimestamp,
+				EndTime:   unixTimestamp + 3600,
+				Results:   []EmbeddingsUsageResult{embResult},
+			},
+		},
+		HasMore: false,
 	}
 
-	// Register mock response
+	// Register mock responses
+	h.mockResponse("GET", usageEmbeddingsEndpoint, 200, response)
 	h.mockResponse("GET", usageEmbeddingsEndpoint, 200, response)
 
 	// Test GetEmbeddingsUsage with no params
@@ -129,30 +137,34 @@ func TestGetEmbeddingsUsage(t *testing.T) {
 	}
 
 	if len(usage.Data) != 1 {
-		t.Errorf("Expected 1 usage bucket, got %d", len(usage.Data))
+		t.Errorf("Expected 1 usage record, got %d", len(usage.Data))
 		return
 	}
 
 	if len(usage.Data[0].Results) != 1 {
-		t.Errorf("Expected 1 result in bucket, got %d", len(usage.Data[0].Results))
+		t.Errorf("Expected 1 result in the bucket, got %d", len(usage.Data[0].Results))
 		return
 	}
 
-	result := usage.Data[0].Results[0]
-	if result.InputTokens != 50 {
-		t.Errorf("Expected InputTokens 50, got %d", result.InputTokens)
+	if usage.Data[0].Results[0].ProjectID != "proj_456" {
+		t.Errorf("Expected ProjectID proj_456, got %s", usage.Data[0].Results[0].ProjectID)
 	}
-	if result.ProjectID != "proj_456" {
-		t.Errorf("Expected ProjectID proj_456, got %s", result.ProjectID)
+
+	if usage.Data[0].Results[0].InputTokens != 50 {
+		t.Errorf("Expected InputTokens 50, got %d", usage.Data[0].Results[0].InputTokens)
 	}
-	if result.Model != "text-embedding-ada-002" {
-		t.Errorf("Expected Model text-embedding-ada-002, got %s", result.Model)
+
+	if usage.Data[0].Results[0].Model != "text-embedding-ada-002" {
+		t.Errorf("Expected Model text-embedding-ada-002, got %s", usage.Data[0].Results[0].Model)
 	}
+
+	// Verify the first request was made
+	h.assertRequest("GET", usageEmbeddingsEndpoint, 1)
 
 	// Test with query parameters
 	queryParams := map[string]string{
-		"start_time": "1672531200",
-		"end_time":   "1672617600",
+		"start_date": "2023-01-01",
+		"end_date":   "2023-01-31",
 		"project_id": "proj_456",
 	}
 	_, err = h.client.GetEmbeddingsUsage(queryParams)
@@ -161,7 +173,7 @@ func TestGetEmbeddingsUsage(t *testing.T) {
 		return
 	}
 
-	// Verify requests were made
+	// Verify the second request was made with query parameters
 	h.assertRequest("GET", usageEmbeddingsEndpoint, 2)
 }
 
@@ -169,54 +181,58 @@ func TestGetModerationsUsage(t *testing.T) {
 	h := newTestHelper(t)
 	defer h.cleanup()
 
-	// Mock response data
-	mockResults := []ModerationsUsageResult{
-		{
-			Object:           "usage_result",
-			InputTokens:      25,
-			NumModelRequests: 1,
-			ProjectID:        "proj_789",
-			Model:            "text-moderation-latest",
-		},
+	// Mock response data for the new API structure
+	modResult := ModerationsUsageResult{
+		Object:           "moderations_usage_result",
+		InputTokens:      25,
+		NumModelRequests: 1,
+		ProjectID:        "proj_789",
+		Model:            "text-moderation-latest",
 	}
 
-	mockBucket := ModerationsUsageBucket{
-		Object:    "usage_bucket",
-		StartTime: 1672531200,
-		EndTime:   1672617600,
-		Results:   mockResults,
-	}
+	mockTimestamp := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	unixTimestamp := mockTimestamp.Unix()
 
+	// Create response for the new moderations usage API structure
 	response := ModerationsUsageResponse{
-		Object:   "list",
-		Data:     []ModerationsUsageBucket{mockBucket},
-		HasMore:  false,
-		NextPage: "",
+		Object: "list",
+		Data: []ModerationsUsageBucket{
+			{
+				Object:    "moderations_usage_bucket",
+				StartTime: unixTimestamp,
+				EndTime:   unixTimestamp + 3600,
+				Results:   []ModerationsUsageResult{modResult},
+			},
+		},
+		HasMore: false,
 	}
 
 	// Register mock response
 	h.mockResponse("GET", usageModerationsEndpoint, 200, response)
 
-	// Test GetModerationsUsage
+	// Test GetModerationsUsage with no params
 	usage, err := h.client.GetModerationsUsage(nil)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 		return
 	}
+
 	if len(usage.Data) != 1 {
-		t.Errorf("Expected 1 usage bucket, got %d", len(usage.Data))
+		t.Errorf("Expected 1 usage record, got %d", len(usage.Data))
 		return
 	}
+
 	if len(usage.Data[0].Results) != 1 {
-		t.Errorf("Expected 1 result, got %d", len(usage.Data[0].Results))
+		t.Errorf("Expected 1 result in the bucket, got %d", len(usage.Data[0].Results))
 		return
 	}
-	result := usage.Data[0].Results[0]
-	if result.InputTokens != 25 {
-		t.Errorf("Expected InputTokens 25, got %d", result.InputTokens)
+
+	if usage.Data[0].Results[0].ProjectID != "proj_789" {
+		t.Errorf("Expected ProjectID proj_789, got %s", usage.Data[0].Results[0].ProjectID)
 	}
-	if result.Model != "text-moderation-latest" {
-		t.Errorf("Expected Model text-moderation-latest, got %s", result.Model)
+
+	if usage.Data[0].Results[0].Model != "text-moderation-latest" {
+		t.Errorf("Expected Model text-moderation-latest, got %s", usage.Data[0].Results[0].Model)
 	}
 
 	// Verify the request was made
@@ -227,55 +243,60 @@ func TestGetImagesUsage(t *testing.T) {
 	h := newTestHelper(t)
 	defer h.cleanup()
 
-	// Mock response data
-	mockResults := []ImagesUsageResult{
-		{
-			Object:           "usage_result",
-			Images:           5,
-			NumModelRequests: 1,
-			Size:             "1024x1024",
-			ProjectID:        "proj_987",
-			Model:            "dall-e-3",
-		},
+	// Mock response data for the new API structure
+	imgResult := ImagesUsageResult{
+		Object:           "images_usage_result",
+		Images:           5,
+		NumModelRequests: 1,
+		Size:             "1024x1024",
+		Source:           "dall-e-3",
+		ProjectID:        "proj_987",
+		Model:            "dall-e-3",
 	}
 
-	mockBucket := ImagesUsageBucket{
-		Object:    "usage_bucket",
-		StartTime: 1672531200,
-		EndTime:   1672617600,
-		Results:   mockResults,
-	}
+	mockTimestamp := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	unixTimestamp := mockTimestamp.Unix()
 
+	// Create response for the new images usage API structure
 	response := ImagesUsageResponse{
-		Object:   "list",
-		Data:     []ImagesUsageBucket{mockBucket},
-		HasMore:  false,
-		NextPage: "",
+		Object: "list",
+		Data: []ImagesUsageBucket{
+			{
+				Object:    "images_usage_bucket",
+				StartTime: unixTimestamp,
+				EndTime:   unixTimestamp + 3600,
+				Results:   []ImagesUsageResult{imgResult},
+			},
+		},
+		HasMore: false,
 	}
 
 	// Register mock response
 	h.mockResponse("GET", usageImagesEndpoint, 200, response)
 
-	// Test GetImagesUsage
+	// Test GetImagesUsage with no params
 	usage, err := h.client.GetImagesUsage(nil)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 		return
 	}
+
 	if len(usage.Data) != 1 {
-		t.Errorf("Expected 1 usage bucket, got %d", len(usage.Data))
+		t.Errorf("Expected 1 usage record, got %d", len(usage.Data))
 		return
 	}
+
 	if len(usage.Data[0].Results) != 1 {
-		t.Errorf("Expected 1 result, got %d", len(usage.Data[0].Results))
+		t.Errorf("Expected 1 result in the bucket, got %d", len(usage.Data[0].Results))
 		return
 	}
-	result := usage.Data[0].Results[0]
-	if result.Images != 5 {
-		t.Errorf("Expected Images 5, got %d", result.Images)
+
+	if usage.Data[0].Results[0].ProjectID != "proj_987" {
+		t.Errorf("Expected ProjectID proj_987, got %s", usage.Data[0].Results[0].ProjectID)
 	}
-	if result.Size != "1024x1024" {
-		t.Errorf("Expected Size 1024x1024, got %s", result.Size)
+
+	if usage.Data[0].Results[0].Model != "dall-e-3" {
+		t.Errorf("Expected Model dall-e-3, got %s", usage.Data[0].Results[0].Model)
 	}
 
 	// Verify the request was made
@@ -286,54 +307,58 @@ func TestGetAudioSpeechesUsage(t *testing.T) {
 	h := newTestHelper(t)
 	defer h.cleanup()
 
-	// Mock response data
-	mockResults := []AudioSpeechesUsageResult{
-		{
-			Object:           "usage_result",
-			Characters:       1000,
-			NumModelRequests: 1,
-			ProjectID:        "proj_audio",
-			Model:            "tts-1",
-		},
+	// Mock response data for the new API structure
+	speechResult := AudioSpeechesUsageResult{
+		Object:           "audio_speeches_usage_result",
+		Characters:       1000,
+		NumModelRequests: 1,
+		ProjectID:        "proj_audio",
+		Model:            "tts-1",
 	}
 
-	mockBucket := AudioSpeechesUsageBucket{
-		Object:    "usage_bucket",
-		StartTime: 1672531200,
-		EndTime:   1672617600,
-		Results:   mockResults,
-	}
+	mockTimestamp := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	unixTimestamp := mockTimestamp.Unix()
 
+	// Create response for the new audio speeches usage API structure
 	response := AudioSpeechesUsageResponse{
-		Object:   "list",
-		Data:     []AudioSpeechesUsageBucket{mockBucket},
-		HasMore:  false,
-		NextPage: "",
+		Object: "list",
+		Data: []AudioSpeechesUsageBucket{
+			{
+				Object:    "audio_speeches_usage_bucket",
+				StartTime: unixTimestamp,
+				EndTime:   unixTimestamp + 3600,
+				Results:   []AudioSpeechesUsageResult{speechResult},
+			},
+		},
+		HasMore: false,
 	}
 
 	// Register mock response
 	h.mockResponse("GET", usageAudioSpeechesEndpoint, 200, response)
 
-	// Test GetAudioSpeechesUsage
+	// Test GetAudioSpeechesUsage with no params
 	usage, err := h.client.GetAudioSpeechesUsage(nil)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 		return
 	}
+
 	if len(usage.Data) != 1 {
-		t.Errorf("Expected 1 usage bucket, got %d", len(usage.Data))
+		t.Errorf("Expected 1 usage record, got %d", len(usage.Data))
 		return
 	}
+
 	if len(usage.Data[0].Results) != 1 {
-		t.Errorf("Expected 1 result, got %d", len(usage.Data[0].Results))
+		t.Errorf("Expected 1 result in the bucket, got %d", len(usage.Data[0].Results))
 		return
 	}
-	result := usage.Data[0].Results[0]
-	if result.Characters != 1000 {
-		t.Errorf("Expected Characters 1000, got %d", result.Characters)
+
+	if usage.Data[0].Results[0].ProjectID != "proj_audio" {
+		t.Errorf("Expected ProjectID proj_audio, got %s", usage.Data[0].Results[0].ProjectID)
 	}
-	if result.Model != "tts-1" {
-		t.Errorf("Expected Model tts-1, got %s", result.Model)
+
+	if usage.Data[0].Results[0].Model != "tts-1" {
+		t.Errorf("Expected Model tts-1, got %s", usage.Data[0].Results[0].Model)
 	}
 
 	// Verify the request was made
@@ -344,54 +369,58 @@ func TestGetAudioTranscriptionsUsage(t *testing.T) {
 	h := newTestHelper(t)
 	defer h.cleanup()
 
-	// Mock response data
-	mockResults := []AudioTranscriptionsUsageResult{
-		{
-			Object:           "usage_result",
-			Seconds:          120,
-			NumModelRequests: 1,
-			ProjectID:        "proj_trans",
-			Model:            "whisper-1",
-		},
+	// Mock response data for the new API structure
+	transResult := AudioTranscriptionsUsageResult{
+		Object:           "audio_transcriptions_usage_result",
+		Seconds:          120,
+		NumModelRequests: 1,
+		ProjectID:        "proj_trans",
+		Model:            "whisper-1",
 	}
 
-	mockBucket := AudioTranscriptionsUsageBucket{
-		Object:    "usage_bucket",
-		StartTime: 1672531200,
-		EndTime:   1672617600,
-		Results:   mockResults,
-	}
+	mockTimestamp := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	unixTimestamp := mockTimestamp.Unix()
 
+	// Create response for the new audio transcriptions usage API structure
 	response := AudioTranscriptionsUsageResponse{
-		Object:   "list",
-		Data:     []AudioTranscriptionsUsageBucket{mockBucket},
-		HasMore:  false,
-		NextPage: "",
+		Object: "list",
+		Data: []AudioTranscriptionsUsageBucket{
+			{
+				Object:    "audio_transcriptions_usage_bucket",
+				StartTime: unixTimestamp,
+				EndTime:   unixTimestamp + 3600,
+				Results:   []AudioTranscriptionsUsageResult{transResult},
+			},
+		},
+		HasMore: false,
 	}
 
 	// Register mock response
 	h.mockResponse("GET", usageAudioTranscriptionsEndpoint, 200, response)
 
-	// Test GetAudioTranscriptionsUsage
+	// Test GetAudioTranscriptionsUsage with no params
 	usage, err := h.client.GetAudioTranscriptionsUsage(nil)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 		return
 	}
+
 	if len(usage.Data) != 1 {
-		t.Errorf("Expected 1 usage bucket, got %d", len(usage.Data))
+		t.Errorf("Expected 1 usage record, got %d", len(usage.Data))
 		return
 	}
+
 	if len(usage.Data[0].Results) != 1 {
-		t.Errorf("Expected 1 result, got %d", len(usage.Data[0].Results))
+		t.Errorf("Expected 1 result in the bucket, got %d", len(usage.Data[0].Results))
 		return
 	}
-	result := usage.Data[0].Results[0]
-	if result.Seconds != 120 {
-		t.Errorf("Expected Seconds 120, got %d", result.Seconds)
+
+	if usage.Data[0].Results[0].ProjectID != "proj_trans" {
+		t.Errorf("Expected ProjectID proj_trans, got %s", usage.Data[0].Results[0].ProjectID)
 	}
-	if result.Model != "whisper-1" {
-		t.Errorf("Expected Model whisper-1, got %s", result.Model)
+
+	if usage.Data[0].Results[0].Model != "whisper-1" {
+		t.Errorf("Expected Model whisper-1, got %s", usage.Data[0].Results[0].Model)
 	}
 
 	// Verify the request was made
@@ -402,49 +431,56 @@ func TestGetVectorStoresUsage(t *testing.T) {
 	h := newTestHelper(t)
 	defer h.cleanup()
 
-	// Mock response data
-	mockResults := []VectorStoresUsageResult{
-		{
-			Object:     "usage_result",
-			UsageBytes: 10000000,
-			ProjectID:  "proj_vector",
-		},
+	// Mock response data for the new API structure
+	vectorResult := VectorStoresUsageResult{
+		Object:     "vector_stores_usage_result",
+		UsageBytes: 10000000,
+		ProjectID:  "proj_vector",
 	}
 
-	mockBucket := VectorStoresUsageBucket{
-		Object:    "usage_bucket",
-		StartTime: 1672531200,
-		EndTime:   1672617600,
-		Results:   mockResults,
-	}
+	mockTimestamp := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	unixTimestamp := mockTimestamp.Unix()
 
+	// Create response for the new vector stores usage API structure
 	response := VectorStoresUsageResponse{
-		Object:   "list",
-		Data:     []VectorStoresUsageBucket{mockBucket},
-		HasMore:  false,
-		NextPage: "",
+		Object: "list",
+		Data: []VectorStoresUsageBucket{
+			{
+				Object:    "vector_stores_usage_bucket",
+				StartTime: unixTimestamp,
+				EndTime:   unixTimestamp + 3600,
+				Results:   []VectorStoresUsageResult{vectorResult},
+			},
+		},
+		HasMore: false,
 	}
 
 	// Register mock response
 	h.mockResponse("GET", usageVectorStoresEndpoint, 200, response)
 
-	// Test GetVectorStoresUsage
+	// Test GetVectorStoresUsage with no params
 	usage, err := h.client.GetVectorStoresUsage(nil)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 		return
 	}
+
 	if len(usage.Data) != 1 {
-		t.Errorf("Expected 1 usage bucket, got %d", len(usage.Data))
+		t.Errorf("Expected 1 usage record, got %d", len(usage.Data))
 		return
 	}
+
 	if len(usage.Data[0].Results) != 1 {
-		t.Errorf("Expected 1 result, got %d", len(usage.Data[0].Results))
+		t.Errorf("Expected 1 result in the bucket, got %d", len(usage.Data[0].Results))
 		return
 	}
-	result := usage.Data[0].Results[0]
-	if result.UsageBytes != 10000000 {
-		t.Errorf("Expected UsageBytes 10000000, got %d", result.UsageBytes)
+
+	if usage.Data[0].Results[0].ProjectID != "proj_vector" {
+		t.Errorf("Expected ProjectID proj_vector, got %s", usage.Data[0].Results[0].ProjectID)
+	}
+
+	if usage.Data[0].Results[0].UsageBytes != 10000000 {
+		t.Errorf("Expected UsageBytes 10000000, got %d", usage.Data[0].Results[0].UsageBytes)
 	}
 
 	// Verify the request was made
@@ -455,49 +491,56 @@ func TestGetCodeInterpreterUsage(t *testing.T) {
 	h := newTestHelper(t)
 	defer h.cleanup()
 
-	// Mock response data
-	mockResults := []CodeInterpreterUsageResult{
-		{
-			Object:      "usage_result",
-			NumSessions: 5,
-			ProjectID:   "proj_code",
-		},
+	// Mock response data for the new API structure
+	codeResult := CodeInterpreterUsageResult{
+		Object:      "code_interpreter_usage_result",
+		NumSessions: 3,
+		ProjectID:   "proj_code",
 	}
 
-	mockBucket := CodeInterpreterUsageBucket{
-		Object:    "usage_bucket",
-		StartTime: 1672531200,
-		EndTime:   1672617600,
-		Results:   mockResults,
-	}
+	mockTimestamp := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	unixTimestamp := mockTimestamp.Unix()
 
+	// Create response for the new code interpreter usage API structure
 	response := CodeInterpreterUsageResponse{
-		Object:   "list",
-		Data:     []CodeInterpreterUsageBucket{mockBucket},
-		HasMore:  false,
-		NextPage: "",
+		Object: "list",
+		Data: []CodeInterpreterUsageBucket{
+			{
+				Object:    "code_interpreter_usage_bucket",
+				StartTime: unixTimestamp,
+				EndTime:   unixTimestamp + 3600,
+				Results:   []CodeInterpreterUsageResult{codeResult},
+			},
+		},
+		HasMore: false,
 	}
 
 	// Register mock response
 	h.mockResponse("GET", usageCodeInterpreterEndpoint, 200, response)
 
-	// Test GetCodeInterpreterUsage
+	// Test GetCodeInterpreterUsage with no params
 	usage, err := h.client.GetCodeInterpreterUsage(nil)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 		return
 	}
+
 	if len(usage.Data) != 1 {
-		t.Errorf("Expected 1 usage bucket, got %d", len(usage.Data))
+		t.Errorf("Expected 1 usage record, got %d", len(usage.Data))
 		return
 	}
+
 	if len(usage.Data[0].Results) != 1 {
-		t.Errorf("Expected 1 result, got %d", len(usage.Data[0].Results))
+		t.Errorf("Expected 1 result in the bucket, got %d", len(usage.Data[0].Results))
 		return
 	}
-	result := usage.Data[0].Results[0]
-	if result.NumSessions != 5 {
-		t.Errorf("Expected NumSessions 5, got %d", result.NumSessions)
+
+	if usage.Data[0].Results[0].ProjectID != "proj_code" {
+		t.Errorf("Expected ProjectID proj_code, got %s", usage.Data[0].Results[0].ProjectID)
+	}
+
+	if usage.Data[0].Results[0].NumSessions != 3 {
+		t.Errorf("Expected NumSessions 3, got %d", usage.Data[0].Results[0].NumSessions)
 	}
 
 	// Verify the request was made
@@ -508,36 +551,37 @@ func TestGetCostsUsage(t *testing.T) {
 	h := newTestHelper(t)
 	defer h.cleanup()
 
-	// Mock response data
-	mockResults := []CostsUsageResult{
-		{
-			Object: "usage_result",
-			Amount: CostAmount{
-				Value:    150.25,
-				Currency: "USD",
-			},
-			ProjectID: "proj_costs",
+	// Mock response data for the new API structure
+	costResult := CostsUsageResult{
+		Object: "costs_usage_result",
+		Amount: CostAmount{
+			Value:    150.25,
+			Currency: "USD",
 		},
+		ProjectID: "proj_costs",
 	}
 
-	mockBucket := CostsUsageBucket{
-		Object:    "usage_bucket",
-		StartTime: 1672531200, // 2023-01-01 00:00:00 UTC
-		EndTime:   1672617600, // 2023-01-02 00:00:00 UTC
-		Results:   mockResults,
-	}
+	mockTimestamp := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	unixTimestamp := mockTimestamp.Unix()
 
+	// Create response for the new costs usage API structure
 	response := CostsUsageResponse{
-		Object:   "list",
-		Data:     []CostsUsageBucket{mockBucket},
-		HasMore:  false,
-		NextPage: "",
+		Object: "list",
+		Data: []CostsUsageBucket{
+			{
+				Object:    "costs_usage_bucket",
+				StartTime: unixTimestamp,
+				EndTime:   unixTimestamp + 3600,
+				Results:   []CostsUsageResult{costResult},
+			},
+		},
+		HasMore: false,
 	}
 
 	// Register mock response
 	h.mockResponse("GET", usageCostsEndpoint, 200, response)
 
-	// Test GetCostsUsage
+	// Test GetCostsUsage with no params
 	usage, err := h.client.GetCostsUsage(nil)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
@@ -545,27 +589,28 @@ func TestGetCostsUsage(t *testing.T) {
 	}
 
 	if len(usage.Data) != 1 {
-		t.Errorf("Expected 1 usage bucket, got %d", len(usage.Data))
+		t.Errorf("Expected 1 usage record, got %d", len(usage.Data))
 		return
 	}
 
 	if len(usage.Data[0].Results) != 1 {
-		t.Errorf("Expected 1 result in bucket, got %d", len(usage.Data[0].Results))
+		t.Errorf("Expected 1 result in the bucket, got %d", len(usage.Data[0].Results))
 		return
 	}
 
-	result := usage.Data[0].Results[0]
-	if result.Amount.Value != 150.25 {
-		t.Errorf("Expected Amount 150.25, got %f", result.Amount.Value)
-	}
-	if result.Amount.Currency != "USD" {
-		t.Errorf("Expected Currency USD, got %s", result.Amount.Currency)
-	}
-	if result.ProjectID != "proj_costs" {
-		t.Errorf("Expected ProjectID proj_costs, got %s", result.ProjectID)
+	if usage.Data[0].Results[0].ProjectID != "proj_costs" {
+		t.Errorf("Expected ProjectID proj_costs, got %s", usage.Data[0].Results[0].ProjectID)
 	}
 
-	// Verify request was made
+	if usage.Data[0].Results[0].Amount.Value != 150.25 {
+		t.Errorf("Expected Amount.Value 150.25, got %f", usage.Data[0].Results[0].Amount.Value)
+	}
+
+	if usage.Data[0].Results[0].Amount.Currency != "USD" {
+		t.Errorf("Expected Amount.Currency USD, got %s", usage.Data[0].Results[0].Amount.Currency)
+	}
+
+	// Verify the request was made
 	h.assertRequest("GET", usageCostsEndpoint, 1)
 }
 
@@ -573,62 +618,63 @@ func TestUsageWithPagination(t *testing.T) {
 	h := newTestHelper(t)
 	defer h.cleanup()
 
-	// Mock response data for first page
-	mockResults1 := []CompletionsUsageResult{
-		{
-			Object:           "usage_result",
-			InputTokens:      10,
-			OutputTokens:     20,
-			NumModelRequests: 1,
-			ProjectID:        "proj_123",
-			Model:            "gpt-4",
-		},
-		{
-			Object:           "usage_result",
-			InputTokens:      15,
-			OutputTokens:     25,
-			NumModelRequests: 1,
-			ProjectID:        "proj_123",
-			Model:            "gpt-4",
-		},
+	// Mock response data for the new API pagination structure
+	mockTimestamp := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	unixTimestamp := mockTimestamp.Unix()
+
+	// Create first page response
+	result1 := CompletionsUsageResult{
+		Object:           "completions_usage_result",
+		InputTokens:      10,
+		OutputTokens:     20,
+		NumModelRequests: 1,
+		ProjectID:        "proj_123",
+		Model:            "gpt-4",
 	}
 
-	firstPageBucket := CompletionsUsageBucket{
-		Object:    "usage_bucket",
-		StartTime: 1672531200,
-		EndTime:   1672617600,
-		Results:   mockResults1,
+	result2 := CompletionsUsageResult{
+		Object:           "completions_usage_result",
+		InputTokens:      15,
+		OutputTokens:     25,
+		NumModelRequests: 1,
+		ProjectID:        "proj_123",
+		Model:            "gpt-4",
 	}
 
 	firstPageResponse := CompletionsUsageResponse{
-		Object:   "list",
-		Data:     []CompletionsUsageBucket{firstPageBucket},
-		HasMore:  true,
-		NextPage: "next_page_token",
-	}
-
-	// Second page data
-	mockResults2 := []CompletionsUsageResult{
-		{
-			Object:           "usage_result",
-			InputTokens:      20,
-			OutputTokens:     30,
-			NumModelRequests: 1,
-			ProjectID:        "proj_123",
-			Model:            "gpt-4",
+		Object: "list",
+		Data: []CompletionsUsageBucket{
+			{
+				Object:    "completions_usage_bucket",
+				StartTime: unixTimestamp,
+				EndTime:   unixTimestamp + 3600,
+				Results:   []CompletionsUsageResult{result1, result2},
+			},
 		},
+		HasMore:  true,
+		NextPage: "page2",
 	}
 
-	secondPageBucket := CompletionsUsageBucket{
-		Object:    "usage_bucket",
-		StartTime: 1672617600,
-		EndTime:   1672704000,
-		Results:   mockResults2,
+	// Create second page response
+	result3 := CompletionsUsageResult{
+		Object:           "completions_usage_result",
+		InputTokens:      30,
+		OutputTokens:     40,
+		NumModelRequests: 1,
+		ProjectID:        "proj_123",
+		Model:            "gpt-4",
 	}
 
 	secondPageResponse := CompletionsUsageResponse{
-		Object:   "list",
-		Data:     []CompletionsUsageBucket{secondPageBucket},
+		Object: "list",
+		Data: []CompletionsUsageBucket{
+			{
+				Object:    "completions_usage_bucket",
+				StartTime: unixTimestamp,
+				EndTime:   unixTimestamp + 3600,
+				Results:   []CompletionsUsageResult{result3},
+			},
+		},
 		HasMore:  false,
 		NextPage: "",
 	}
@@ -640,9 +686,12 @@ func TestUsageWithPagination(t *testing.T) {
 			query := req.URL.Query()
 			page := query.Get("page")
 
-			if page == "next_page_token" {
+			if page == "page2" {
+				// Return second page if "page" parameter is set to page2
 				return httpmock.NewJsonResponse(200, secondPageResponse)
 			}
+
+			// Otherwise return first page
 			return httpmock.NewJsonResponse(200, firstPageResponse)
 		})
 
@@ -653,16 +702,28 @@ func TestUsageWithPagination(t *testing.T) {
 		return
 	}
 
-	if len(firstPage.Data) != 1 || len(firstPage.Data[0].Results) != 2 {
-		t.Errorf("Expected 1 bucket with 2 results in first page")
+	// Validate first page response
+	totalFirstPageResults := 0
+	for _, bucket := range firstPage.Data {
+		totalFirstPageResults += len(bucket.Results)
+	}
+
+	if totalFirstPageResults != 2 {
+		t.Errorf("Expected 2 results in first page, got %d", totalFirstPageResults)
 		return
 	}
+
 	if !firstPage.HasMore {
 		t.Errorf("Expected HasMore to be true for first page")
 		return
 	}
 
-	// Test second page using page parameter
+	if firstPage.NextPage != "page2" {
+		t.Errorf("Expected NextPage to be 'page2', got %s", firstPage.NextPage)
+		return
+	}
+
+	// Test second page using page parameter with the NextPage from first page
 	secondPage, err := h.client.GetCompletionsUsage(map[string]string{
 		"limit": "2",
 		"page":  firstPage.NextPage,
@@ -672,10 +733,17 @@ func TestUsageWithPagination(t *testing.T) {
 		return
 	}
 
-	if len(secondPage.Data) != 1 || len(secondPage.Data[0].Results) != 1 {
-		t.Errorf("Expected 1 bucket with 1 result in second page")
+	// Validate second page response
+	totalSecondPageResults := 0
+	for _, bucket := range secondPage.Data {
+		totalSecondPageResults += len(bucket.Results)
+	}
+
+	if totalSecondPageResults != 1 {
+		t.Errorf("Expected 1 result in second page, got %d", totalSecondPageResults)
 		return
 	}
+
 	if secondPage.HasMore {
 		t.Errorf("Expected HasMore to be false for second page")
 		return
@@ -689,6 +757,7 @@ func TestUsageWithPagination(t *testing.T) {
 			count += callCountInfo[key]
 		}
 	}
+
 	if count != 2 {
 		t.Errorf("Expected 2 calls to GET %s, got %d", usageCompletionsEndpoint, count)
 	}

@@ -25,7 +25,7 @@ func main() {
 			cmd.ProjectsCommand(),
 			cmd.ProjectUsersCommand(),
 			cmd.ProjectServiceAccountsCommand(),
-			cmd.ProjectApiKeysCommand(),
+			cmd.ProjectAPIKeysCommand(),
 			cmd.ProjectRateLimitsCommand(),
 			cmd.UsageCommand(),
 		},
@@ -38,14 +38,12 @@ func main() {
 					if value == "" {
 						return nil
 					}
-
 					validFormats := []string{"pretty", "json", "jsonl"}
 					for _, format := range validFormats {
 						if format == value {
 							return nil
 						}
 					}
-
 					return fmt.Errorf("invalid output format: %s (valid formats: %v)", value, validFormats)
 				},
 			},

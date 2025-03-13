@@ -186,7 +186,7 @@ func getCompletionsUsage(ctx context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-// outputCompletionsUsageResponse handles output formatting for the completions usage response
+// outputCompletionsUsageResponse handles output formatting for the completions usage response.
 func outputCompletionsUsageResponse(response *openaiorgs.CompletionsUsageResponse, outputFormat string, verbose bool) error {
 	switch outputFormat {
 	case "json":
@@ -200,14 +200,14 @@ func outputCompletionsUsageResponse(response *openaiorgs.CompletionsUsageRespons
 	}
 }
 
-// outputCompletionsUsageJSON outputs the completions usage response as JSON
-func outputCompletionsUsageJSON(response *openaiorgs.CompletionsUsageResponse, verbose bool) error {
+// outputCompletionsUsageJSON outputs the completions usage response as JSON.
+func outputCompletionsUsageJSON(response *openaiorgs.CompletionsUsageResponse, _ bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(response)
 }
 
-// outputCompletionsUsageJSONL outputs the completions usage response as JSONL
+// outputCompletionsUsageJSONL outputs the completions usage response as JSONL.
 func outputCompletionsUsageJSONL(response *openaiorgs.CompletionsUsageResponse, verbose bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 
@@ -254,7 +254,7 @@ func outputCompletionsUsageJSONL(response *openaiorgs.CompletionsUsageResponse, 
 	return nil
 }
 
-// outputCompletionsUsagePretty outputs the completions usage response in a human-readable format
+// outputCompletionsUsagePretty outputs the completions usage response in a human-readable format.
 func outputCompletionsUsagePretty(response *openaiorgs.CompletionsUsageResponse, verbose bool) error {
 	if verbose {
 		fmt.Printf("=== Completions Usage Summary ===\n")
@@ -346,7 +346,7 @@ func getEmbeddingsUsage(ctx context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-// outputEmbeddingsUsageResponse handles output formatting for the embeddings usage response
+// outputEmbeddingsUsageResponse handles output formatting for the embeddings usage response.
 func outputEmbeddingsUsageResponse(response *openaiorgs.EmbeddingsUsageResponse, outputFormat string, verbose bool) error {
 	switch outputFormat {
 	case "json":
@@ -360,14 +360,14 @@ func outputEmbeddingsUsageResponse(response *openaiorgs.EmbeddingsUsageResponse,
 	}
 }
 
-// outputEmbeddingsUsageJSON outputs the embeddings usage response as JSON
-func outputEmbeddingsUsageJSON(response *openaiorgs.EmbeddingsUsageResponse, verbose bool) error {
+// outputEmbeddingsUsageJSON outputs the embeddings usage response as JSON.
+func outputEmbeddingsUsageJSON(response *openaiorgs.EmbeddingsUsageResponse, _ bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(response)
 }
 
-// outputEmbeddingsUsageJSONL outputs the embeddings usage response as JSONL
+// outputEmbeddingsUsageJSONL outputs the embeddings usage response as JSONL.
 func outputEmbeddingsUsageJSONL(response *openaiorgs.EmbeddingsUsageResponse, verbose bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 
@@ -414,7 +414,7 @@ func outputEmbeddingsUsageJSONL(response *openaiorgs.EmbeddingsUsageResponse, ve
 	return nil
 }
 
-// outputEmbeddingsUsagePretty outputs the embeddings usage response in a human-readable format
+// outputEmbeddingsUsagePretty outputs the embeddings usage response in a human-readable format.
 func outputEmbeddingsUsagePretty(response *openaiorgs.EmbeddingsUsageResponse, verbose bool) error {
 	if verbose {
 		fmt.Printf("=== Embeddings Usage Summary ===\n")
@@ -504,7 +504,7 @@ func getModerationsUsage(ctx context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-// outputModerationsUsageResponse handles output formatting for the moderations usage response
+// outputModerationsUsageResponse handles output formatting for the moderations usage response.
 func outputModerationsUsageResponse(response *openaiorgs.ModerationsUsageResponse, outputFormat string, verbose bool) error {
 	switch outputFormat {
 	case "json":
@@ -518,14 +518,14 @@ func outputModerationsUsageResponse(response *openaiorgs.ModerationsUsageRespons
 	}
 }
 
-// outputModerationsUsageJSON outputs the moderations usage response as JSON
-func outputModerationsUsageJSON(response *openaiorgs.ModerationsUsageResponse, verbose bool) error {
+// outputModerationsUsageJSON outputs the moderations usage response as JSON.
+func outputModerationsUsageJSON(response *openaiorgs.ModerationsUsageResponse, _ bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(response)
 }
 
-// outputModerationsUsageJSONL outputs the moderations usage response as JSONL
+// outputModerationsUsageJSONL outputs the moderations usage response as JSONL.
 func outputModerationsUsageJSONL(response *openaiorgs.ModerationsUsageResponse, verbose bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 
@@ -572,7 +572,7 @@ func outputModerationsUsageJSONL(response *openaiorgs.ModerationsUsageResponse, 
 	return nil
 }
 
-// outputModerationsUsagePretty outputs the moderations usage response in a human-readable format
+// outputModerationsUsagePretty outputs the moderations usage response in a human-readable format.
 func outputModerationsUsagePretty(response *openaiorgs.ModerationsUsageResponse, verbose bool) error {
 	if verbose {
 		fmt.Printf("=== Moderations Usage Summary ===\n")
@@ -662,7 +662,7 @@ func getImagesUsage(ctx context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-// outputImagesUsageResponse handles output formatting for the images usage response
+// outputImagesUsageResponse handles output formatting for the images usage response.
 func outputImagesUsageResponse(response *openaiorgs.ImagesUsageResponse, outputFormat string, verbose bool) error {
 	switch outputFormat {
 	case "json":
@@ -676,14 +676,14 @@ func outputImagesUsageResponse(response *openaiorgs.ImagesUsageResponse, outputF
 	}
 }
 
-// outputImagesUsageJSON outputs the images usage response as JSON
-func outputImagesUsageJSON(response *openaiorgs.ImagesUsageResponse, verbose bool) error {
+// outputImagesUsageJSON outputs the images usage response as JSON.
+func outputImagesUsageJSON(response *openaiorgs.ImagesUsageResponse, _ bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(response)
 }
 
-// outputImagesUsageJSONL outputs the images usage response as JSONL
+// outputImagesUsageJSONL outputs the images usage response as JSONL.
 func outputImagesUsageJSONL(response *openaiorgs.ImagesUsageResponse, verbose bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 
@@ -730,7 +730,7 @@ func outputImagesUsageJSONL(response *openaiorgs.ImagesUsageResponse, verbose bo
 	return nil
 }
 
-// outputImagesUsagePretty outputs the images usage response in a human-readable format
+// outputImagesUsagePretty outputs the images usage response in a human-readable format.
 func outputImagesUsagePretty(response *openaiorgs.ImagesUsageResponse, verbose bool) error {
 	if verbose {
 		fmt.Printf("=== Images Usage Summary ===\n")
@@ -821,7 +821,7 @@ func getAudioSpeechesUsage(ctx context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-// outputAudioSpeechesUsageResponse handles output formatting for the audio speeches usage response
+// outputAudioSpeechesUsageResponse handles output formatting for the audio speeches usage response.
 func outputAudioSpeechesUsageResponse(response *openaiorgs.AudioSpeechesUsageResponse, outputFormat string, verbose bool) error {
 	switch outputFormat {
 	case "json":
@@ -835,14 +835,14 @@ func outputAudioSpeechesUsageResponse(response *openaiorgs.AudioSpeechesUsageRes
 	}
 }
 
-// outputAudioSpeechesUsageJSON outputs the audio speeches usage response as JSON
-func outputAudioSpeechesUsageJSON(response *openaiorgs.AudioSpeechesUsageResponse, verbose bool) error {
+// outputAudioSpeechesUsageJSON outputs the audio speeches usage response as JSON.
+func outputAudioSpeechesUsageJSON(response *openaiorgs.AudioSpeechesUsageResponse, _ bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(response)
 }
 
-// outputAudioSpeechesUsageJSONL outputs the audio speeches usage response as JSONL
+// outputAudioSpeechesUsageJSONL outputs the audio speeches usage response as JSONL.
 func outputAudioSpeechesUsageJSONL(response *openaiorgs.AudioSpeechesUsageResponse, verbose bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 	// First line: metadata if verbose
@@ -885,7 +885,7 @@ func outputAudioSpeechesUsageJSONL(response *openaiorgs.AudioSpeechesUsageRespon
 	return nil
 }
 
-// outputAudioSpeechesUsagePretty outputs the audio speeches usage response in a human-readable format
+// outputAudioSpeechesUsagePretty outputs the audio speeches usage response in a human-readable format.
 func outputAudioSpeechesUsagePretty(response *openaiorgs.AudioSpeechesUsageResponse, verbose bool) error {
 	if verbose {
 		fmt.Printf("=== Audio Speeches Usage Summary ===\n")
@@ -965,7 +965,7 @@ func getAudioTranscriptionsUsage(ctx context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-// outputAudioTranscriptionsUsageResponse handles output formatting for the audio transcriptions usage response
+// outputAudioTranscriptionsUsageResponse handles output formatting for the audio transcriptions usage response.
 func outputAudioTranscriptionsUsageResponse(response *openaiorgs.AudioTranscriptionsUsageResponse, outputFormat string, verbose bool) error {
 	switch outputFormat {
 	case "json":
@@ -979,14 +979,14 @@ func outputAudioTranscriptionsUsageResponse(response *openaiorgs.AudioTranscript
 	}
 }
 
-// outputAudioTranscriptionsUsageJSON outputs the audio transcriptions usage response as JSON
-func outputAudioTranscriptionsUsageJSON(response *openaiorgs.AudioTranscriptionsUsageResponse, verbose bool) error {
+// outputAudioTranscriptionsUsageJSON outputs the audio transcriptions usage response as JSON.
+func outputAudioTranscriptionsUsageJSON(response *openaiorgs.AudioTranscriptionsUsageResponse, _ bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(response)
 }
 
-// outputAudioTranscriptionsUsageJSONL outputs the audio transcriptions usage response as JSONL
+// outputAudioTranscriptionsUsageJSONL outputs the audio transcriptions usage response as JSONL.
 func outputAudioTranscriptionsUsageJSONL(response *openaiorgs.AudioTranscriptionsUsageResponse, verbose bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 	// First line: metadata if verbose
@@ -1029,7 +1029,7 @@ func outputAudioTranscriptionsUsageJSONL(response *openaiorgs.AudioTranscription
 	return nil
 }
 
-// outputAudioTranscriptionsUsagePretty outputs the audio transcriptions usage response in a human-readable format
+// outputAudioTranscriptionsUsagePretty outputs the audio transcriptions usage response in a human-readable format.
 func outputAudioTranscriptionsUsagePretty(response *openaiorgs.AudioTranscriptionsUsageResponse, verbose bool) error {
 	if verbose {
 		fmt.Printf("=== Audio Transcriptions Usage Summary ===\n")
@@ -1109,7 +1109,7 @@ func getVectorStoresUsage(ctx context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-// outputVectorStoresUsageResponse handles output formatting for the vector stores usage response
+// outputVectorStoresUsageResponse handles output formatting for the vector stores usage response.
 func outputVectorStoresUsageResponse(response *openaiorgs.VectorStoresUsageResponse, outputFormat string, verbose bool) error {
 	switch outputFormat {
 	case "json":
@@ -1123,14 +1123,14 @@ func outputVectorStoresUsageResponse(response *openaiorgs.VectorStoresUsageRespo
 	}
 }
 
-// outputVectorStoresUsageJSON outputs the vector stores usage response as JSON
-func outputVectorStoresUsageJSON(response *openaiorgs.VectorStoresUsageResponse, verbose bool) error {
+// outputVectorStoresUsageJSON outputs the vector stores usage response as JSON.
+func outputVectorStoresUsageJSON(response *openaiorgs.VectorStoresUsageResponse, _ bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(response)
 }
 
-// outputVectorStoresUsageJSONL outputs the vector stores usage response as JSONL
+// outputVectorStoresUsageJSONL outputs the vector stores usage response as JSONL.
 func outputVectorStoresUsageJSONL(response *openaiorgs.VectorStoresUsageResponse, verbose bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 	// First line: metadata if verbose
@@ -1173,7 +1173,7 @@ func outputVectorStoresUsageJSONL(response *openaiorgs.VectorStoresUsageResponse
 	return nil
 }
 
-// outputVectorStoresUsagePretty outputs the vector stores usage response in a human-readable format
+// outputVectorStoresUsagePretty outputs the vector stores usage response in a human-readable format.
 func outputVectorStoresUsagePretty(response *openaiorgs.VectorStoresUsageResponse, verbose bool) error {
 	if verbose {
 		fmt.Printf("=== Vector Stores Usage Summary ===\n")
@@ -1243,7 +1243,7 @@ func getCodeInterpreterUsage(ctx context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-// outputCodeInterpreterUsageResponse handles output formatting for the code interpreter usage response
+// outputCodeInterpreterUsageResponse handles output formatting for the code interpreter usage response.
 func outputCodeInterpreterUsageResponse(response *openaiorgs.CodeInterpreterUsageResponse, outputFormat string, verbose bool) error {
 	switch outputFormat {
 	case "json":
@@ -1257,14 +1257,14 @@ func outputCodeInterpreterUsageResponse(response *openaiorgs.CodeInterpreterUsag
 	}
 }
 
-// outputCodeInterpreterUsageJSON outputs the code interpreter usage response as JSON
-func outputCodeInterpreterUsageJSON(response *openaiorgs.CodeInterpreterUsageResponse, verbose bool) error {
+// outputCodeInterpreterUsageJSON outputs the code interpreter usage response as JSON.
+func outputCodeInterpreterUsageJSON(response *openaiorgs.CodeInterpreterUsageResponse, _ bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(response)
 }
 
-// outputCodeInterpreterUsageJSONL outputs the code interpreter usage response as JSONL
+// outputCodeInterpreterUsageJSONL outputs the code interpreter usage response as JSONL.
 func outputCodeInterpreterUsageJSONL(response *openaiorgs.CodeInterpreterUsageResponse, verbose bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 	// First line: metadata if verbose
@@ -1307,7 +1307,7 @@ func outputCodeInterpreterUsageJSONL(response *openaiorgs.CodeInterpreterUsageRe
 	return nil
 }
 
-// outputCodeInterpreterUsagePretty outputs the code interpreter usage response in a human-readable format
+// outputCodeInterpreterUsagePretty outputs the code interpreter usage response in a human-readable format.
 func outputCodeInterpreterUsagePretty(response *openaiorgs.CodeInterpreterUsageResponse, verbose bool) error {
 	if verbose {
 		fmt.Printf("=== Code Interpreter Usage Summary ===\n")
@@ -1377,7 +1377,7 @@ func getCostsUsage(ctx context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-// outputCostsUsageResponse handles output formatting for the costs usage response
+// outputCostsUsageResponse handles output formatting for the costs usage response.
 func outputCostsUsageResponse(response *openaiorgs.CostsUsageResponse, outputFormat string, verbose bool) error {
 	switch outputFormat {
 	case "json":
@@ -1391,14 +1391,14 @@ func outputCostsUsageResponse(response *openaiorgs.CostsUsageResponse, outputFor
 	}
 }
 
-// outputCostsUsageJSON outputs the costs usage response as JSON
-func outputCostsUsageJSON(response *openaiorgs.CostsUsageResponse, verbose bool) error {
+// outputCostsUsageJSON outputs the costs usage response as JSON.
+func outputCostsUsageJSON(response *openaiorgs.CostsUsageResponse, _ bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(response)
 }
 
-// outputCostsUsageJSONL outputs the costs usage response as JSONL
+// outputCostsUsageJSONL outputs the costs usage response as JSONL.
 func outputCostsUsageJSONL(response *openaiorgs.CostsUsageResponse, verbose bool) error {
 	encoder := json.NewEncoder(os.Stdout)
 	// First line: metadata if verbose
@@ -1441,7 +1441,7 @@ func outputCostsUsageJSONL(response *openaiorgs.CostsUsageResponse, verbose bool
 	return nil
 }
 
-// outputCostsUsagePretty outputs the costs usage response in a human-readable format
+// outputCostsUsagePretty outputs the costs usage response in a human-readable format.
 func outputCostsUsagePretty(response *openaiorgs.CostsUsageResponse, verbose bool) error {
 	if verbose {
 		fmt.Printf("=== Costs Usage Summary ===\n")

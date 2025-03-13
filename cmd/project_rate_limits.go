@@ -84,7 +84,7 @@ func modifyProjectRateLimitsCommand() *cli.Command {
 	}
 }
 
-func printProjectRateLimitsJson(projectRateLimits *openaiorgs.ListResponse[openaiorgs.ProjectRateLimit]) error {
+func printProjectRateLimitsJSON(projectRateLimits *openaiorgs.ListResponse[openaiorgs.ProjectRateLimit]) error {
 	marshalled, err := json.Marshal(projectRateLimits.Data)
 	if err != nil {
 		return wrapError("json marshalling error", err)
@@ -130,7 +130,7 @@ func printProjectRateLimitsTable(projectRateLimits *openaiorgs.ListResponse[open
 	return nil
 }
 
-func printProjectRateLimitJson(projectRateLimit *openaiorgs.ProjectRateLimit) error {
+func printProjectRateLimitJSON(projectRateLimit *openaiorgs.ProjectRateLimit) error {
 	marshalled, err := json.Marshal(projectRateLimit)
 	if err != nil {
 		return wrapError("json marshalling error", err)
@@ -186,13 +186,13 @@ func listProjectRateLimits(ctx context.Context, cmd *cli.Command) error {
 
 	switch cmd.String("output") {
 	case "json":
-		return printProjectRateLimitsJson(projectRateLimits)
+		return printProjectRateLimitsJSON(projectRateLimits)
 	default:
 		return printProjectRateLimitsTable(projectRateLimits)
 	}
 }
 
-func validateModifyProjectRateLimitContext(ctx context.Context, cmd *cli.Command) error {
+func validateModifyProjectRateLimitContext(_ context.Context, cmd *cli.Command) error {
 	if cmd.String("project-id") == "" {
 		return errors.New("project-id is required")
 	}
@@ -217,18 +217,15 @@ func modifyProjectRateLimit(ctx context.Context, cmd *cli.Command) error {
 	if err := validateModifyProjectRateLimitContext(ctx, cmd); err != nil {
 		return err
 	}
-
 	client := newClient(ctx, cmd)
-
 	fields := openaiorgs.ProjectRateLimitRequestFields{
-		MaxRequestsPer1Minute:       int64(cmd.Int("max-requests-per-1-minute")),
-		MaxTokensPer1Minute:         int64(cmd.Int("max-tokens-per-1-minute")),
-		MaxImagesPer1Minute:         int64(cmd.Int("max-images-per-1-minute")),
-		MaxAudioMegabytesPer1Minute: int64(cmd.Int("max-audio-megabytes-per-1-minute")),
-		MaxRequestsPer1Day:          int64(cmd.Int("max-requests-per-1-day")),
-		Batch1DayMaxInputTokens:     int64(cmd.Int("batch-1-day-max-input-tokens")),
+		MaxRequestsPer1Minute:       cmd.Int("max-requests-per-1-minute"),
+		MaxTokensPer1Minute:         cmd.Int("max-tokens-per-1-minute"),
+		MaxImagesPer1Minute:         cmd.Int("max-images-per-1-minute"),
+		MaxAudioMegabytesPer1Minute: cmd.Int("max-audio-megabytes-per-1-minute"),
+		MaxRequestsPer1Day:          cmd.Int("max-requests-per-1-day"),
+		Batch1DayMaxInputTokens:     cmd.Int("batch-1-day-max-input-tokens"),
 	}
-
 	projectRateLimit, err := client.ModifyProjectRateLimit(
 		cmd.String("project-id"),
 		cmd.String("rate-limit-id"),
@@ -237,10 +234,9 @@ func modifyProjectRateLimit(ctx context.Context, cmd *cli.Command) error {
 	if err != nil {
 		return wrapError("modify project rate limit", err)
 	}
-
 	switch cmd.String("output") {
 	case "json":
-		return printProjectRateLimitJson(projectRateLimit)
+		return printProjectRateLimitJSON(projectRateLimit)
 	default:
 		return printProjectRateLimitTable(projectRateLimit)
 	}
