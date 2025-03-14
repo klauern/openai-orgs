@@ -396,7 +396,6 @@ func (c *Client) GetCompletionsUsage(queryParams map[string]string) (*Completion
 
 	resp, err := c.client.R().
 		SetQueryParams(params).
-		ExpectContentType("application/json").
 		Get(usageCompletionsEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("error making GET request: %v", err)
@@ -404,6 +403,11 @@ func (c *Client) GetCompletionsUsage(queryParams map[string]string) (*Completion
 
 	if resp.IsError() {
 		return nil, fmt.Errorf("API request failed with status code %d: %s", resp.StatusCode(), string(resp.Body()))
+	}
+
+	contentType := resp.Header().Get("Content-Type")
+	if contentType != "application/json" {
+		return nil, fmt.Errorf("expected Content-Type \"application/json\", got %q", contentType)
 	}
 
 	var completionsResp CompletionsUsageResponse
@@ -437,7 +441,6 @@ func (c *Client) GetEmbeddingsUsage(queryParams map[string]string) (*EmbeddingsU
 
 	resp, err := c.client.R().
 		SetQueryParams(params).
-		ExpectContentType("application/json").
 		Get(usageEmbeddingsEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("error making GET request: %v", err)
@@ -445,6 +448,11 @@ func (c *Client) GetEmbeddingsUsage(queryParams map[string]string) (*EmbeddingsU
 
 	if resp.IsError() {
 		return nil, fmt.Errorf("API request failed with status code %d: %s", resp.StatusCode(), string(resp.Body()))
+	}
+
+	contentType := resp.Header().Get("Content-Type")
+	if contentType != "application/json" {
+		return nil, fmt.Errorf("expected Content-Type \"application/json\", got %q", contentType)
 	}
 
 	var embeddingsResp EmbeddingsUsageResponse
@@ -478,7 +486,6 @@ func (c *Client) GetModerationsUsage(queryParams map[string]string) (*Moderation
 
 	resp, err := c.client.R().
 		SetQueryParams(params).
-		ExpectContentType("application/json").
 		Get(usageModerationsEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("error making GET request: %v", err)
@@ -486,6 +493,11 @@ func (c *Client) GetModerationsUsage(queryParams map[string]string) (*Moderation
 
 	if resp.IsError() {
 		return nil, fmt.Errorf("API request failed with status code %d: %s", resp.StatusCode(), string(resp.Body()))
+	}
+
+	contentType := resp.Header().Get("Content-Type")
+	if contentType != "application/json" {
+		return nil, fmt.Errorf("expected Content-Type \"application/json\", got %q", contentType)
 	}
 
 	var moderationsResp ModerationsUsageResponse
@@ -519,7 +531,6 @@ func (c *Client) GetImagesUsage(queryParams map[string]string) (*ImagesUsageResp
 
 	resp, err := c.client.R().
 		SetQueryParams(params).
-		ExpectContentType("application/json").
 		Get(usageImagesEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("error making GET request: %v", err)
@@ -527,6 +538,11 @@ func (c *Client) GetImagesUsage(queryParams map[string]string) (*ImagesUsageResp
 
 	if resp.IsError() {
 		return nil, fmt.Errorf("API request failed with status code %d: %s", resp.StatusCode(), string(resp.Body()))
+	}
+
+	contentType := resp.Header().Get("Content-Type")
+	if contentType != "application/json" {
+		return nil, fmt.Errorf("expected Content-Type \"application/json\", got %q", contentType)
 	}
 
 	var imagesResp ImagesUsageResponse
@@ -560,7 +576,6 @@ func (c *Client) GetAudioSpeechesUsage(queryParams map[string]string) (*AudioSpe
 
 	resp, err := c.client.R().
 		SetQueryParams(params).
-		ExpectContentType("application/json").
 		Get(usageAudioSpeechesEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("error making GET request: %v", err)
@@ -568,6 +583,11 @@ func (c *Client) GetAudioSpeechesUsage(queryParams map[string]string) (*AudioSpe
 
 	if resp.IsError() {
 		return nil, fmt.Errorf("API request failed with status code %d: %s", resp.StatusCode(), string(resp.Body()))
+	}
+
+	contentType := resp.Header().Get("Content-Type")
+	if contentType != "application/json" {
+		return nil, fmt.Errorf("expected Content-Type \"application/json\", got %q", contentType)
 	}
 
 	var audioSpeechesResp AudioSpeechesUsageResponse
@@ -601,7 +621,6 @@ func (c *Client) GetAudioTranscriptionsUsage(queryParams map[string]string) (*Au
 
 	resp, err := c.client.R().
 		SetQueryParams(params).
-		ExpectContentType("application/json").
 		Get(usageAudioTranscriptionsEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("error making GET request: %v", err)
@@ -609,6 +628,11 @@ func (c *Client) GetAudioTranscriptionsUsage(queryParams map[string]string) (*Au
 
 	if resp.IsError() {
 		return nil, fmt.Errorf("API request failed with status code %d: %s", resp.StatusCode(), string(resp.Body()))
+	}
+
+	contentType := resp.Header().Get("Content-Type")
+	if contentType != "application/json" {
+		return nil, fmt.Errorf("expected Content-Type \"application/json\", got %q", contentType)
 	}
 
 	var audioTranscriptionsResp AudioTranscriptionsUsageResponse
@@ -642,7 +666,6 @@ func (c *Client) GetVectorStoresUsage(queryParams map[string]string) (*VectorSto
 
 	resp, err := c.client.R().
 		SetQueryParams(params).
-		ExpectContentType("application/json").
 		Get(usageVectorStoresEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("error making GET request: %v", err)
@@ -650,6 +673,11 @@ func (c *Client) GetVectorStoresUsage(queryParams map[string]string) (*VectorSto
 
 	if resp.IsError() {
 		return nil, fmt.Errorf("API request failed with status code %d: %s", resp.StatusCode(), string(resp.Body()))
+	}
+
+	contentType := resp.Header().Get("Content-Type")
+	if contentType != "application/json" {
+		return nil, fmt.Errorf("expected Content-Type \"application/json\", got %q", contentType)
 	}
 
 	var vectorStoresResp VectorStoresUsageResponse
@@ -683,7 +711,6 @@ func (c *Client) GetCodeInterpreterUsage(queryParams map[string]string) (*CodeIn
 
 	resp, err := c.client.R().
 		SetQueryParams(params).
-		ExpectContentType("application/json").
 		Get(usageCodeInterpreterEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("error making GET request: %v", err)
@@ -691,6 +718,11 @@ func (c *Client) GetCodeInterpreterUsage(queryParams map[string]string) (*CodeIn
 
 	if resp.IsError() {
 		return nil, fmt.Errorf("API request failed with status code %d: %s", resp.StatusCode(), string(resp.Body()))
+	}
+
+	contentType := resp.Header().Get("Content-Type")
+	if contentType != "application/json" {
+		return nil, fmt.Errorf("expected Content-Type \"application/json\", got %q", contentType)
 	}
 
 	var codeInterpreterResp CodeInterpreterUsageResponse
@@ -724,7 +756,6 @@ func (c *Client) GetCostsUsage(queryParams map[string]string) (*CostsUsageRespon
 
 	resp, err := c.client.R().
 		SetQueryParams(params).
-		ExpectContentType("application/json").
 		Get(usageCostsEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("error making GET request: %v", err)
@@ -732,6 +763,11 @@ func (c *Client) GetCostsUsage(queryParams map[string]string) (*CostsUsageRespon
 
 	if resp.IsError() {
 		return nil, fmt.Errorf("API request failed with status code %d: %s", resp.StatusCode(), string(resp.Body()))
+	}
+
+	contentType := resp.Header().Get("Content-Type")
+	if contentType != "application/json" {
+		return nil, fmt.Errorf("expected Content-Type \"application/json\", got %q", contentType)
 	}
 
 	var costsResp CostsUsageResponse

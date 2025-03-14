@@ -1,7 +1,10 @@
 package openaiorgs
 
 import (
+	"fmt"
+	"io"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -764,19 +767,212 @@ func TestUsageWithPagination(t *testing.T) {
 }
 
 func TestUsageErrorHandling(t *testing.T) {
+	endpoints := []string{
+		usageCompletionsEndpoint,
+		usageEmbeddingsEndpoint,
+		usageModerationsEndpoint,
+		usageImagesEndpoint,
+		usageAudioSpeechesEndpoint,
+		usageAudioTranscriptionsEndpoint,
+		usageCodeInterpreterEndpoint,
+		usageCostsEndpoint,
+	}
+
+	testCases := []struct {
+		name      string
+		setupMock func(h *testHelper, endpoint string)
+		wantErr   string
+	}{
+		{
+			name: "Network Error",
+			setupMock: func(h *testHelper, endpoint string) {
+				httpmock.RegisterResponder("GET", h.client.BaseURL+endpoint,
+					func(req *http.Request) (*http.Response, error) {
+						return nil, fmt.Errorf("network error")
+					})
+			},
+			wantErr: "network error",
+		},
+		{
+			name: "Invalid JSON Response",
+			setupMock: func(h *testHelper, endpoint string) {
+				httpmock.RegisterResponder("GET", h.client.BaseURL+endpoint,
+					func(req *http.Request) (*http.Response, error) {
+						return &http.Response{
+							Status:     "200 OK",
+							StatusCode: http.StatusOK,
+							Body:       io.NopCloser(strings.NewReader(`{"invalid json`)),
+							Header:     http.Header{"Content-Type": []string{"application/json"}},
+							Request:    req,
+						}, nil
+					})
+			},
+			wantErr: "error unmarshaling response",
+		},
+		{
+			name: "Unauthorized Error",
+			setupMock: func(h *testHelper, endpoint string) {
+				httpmock.RegisterResponder("GET", h.client.BaseURL+endpoint,
+					httpmock.NewStringResponder(http.StatusUnauthorized, `{"error": "unauthorized"}`))
+			},
+			wantErr: "API request failed with status code 401",
+		},
+		{
+			name: "Server Error",
+			setupMock: func(h *testHelper, endpoint string) {
+				httpmock.RegisterResponder("GET", h.client.BaseURL+endpoint,
+					httpmock.NewStringResponder(http.StatusInternalServerError, `{"error": "internal server error"}`))
+			},
+			wantErr: "API request failed with status code 500",
+		},
+		{
+			name: "Invalid Content Type",
+			setupMock: func(h *testHelper, endpoint string) {
+				httpmock.RegisterResponder("GET", h.client.BaseURL+endpoint,
+					func(req *http.Request) (*http.Response, error) {
+						return &http.Response{
+							Status:     "200 OK",
+							StatusCode: http.StatusOK,
+							Body:       io.NopCloser(strings.NewReader(`{"data": []}`)),
+							Header:     http.Header{"Content-Type": []string{"text/plain"}},
+							Request:    req,
+						}, nil
+					})
+			},
+			wantErr: "expected Content-Type \"application/json\"",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, endpoint := range endpoints {
+				t.Run(endpoint, func(t *testing.T) {
+					// Create a new test helper for each test case
+					h := newTestHelper(t)
+					defer h.cleanup()
+
+					// Set up the mock for this test case
+					tc.setupMock(h, endpoint)
+
+					// Create query params
+					queryParams := map[string]string{
+						"start_time": "1234567890",
+					}
+
+					// Call the appropriate usage function based on the endpoint
+					var err error
+					switch endpoint {
+					case usageCompletionsEndpoint:
+						_, err = h.client.GetCompletionsUsage(queryParams)
+					case usageEmbeddingsEndpoint:
+						_, err = h.client.GetEmbeddingsUsage(queryParams)
+					case usageModerationsEndpoint:
+						_, err = h.client.GetModerationsUsage(queryParams)
+					case usageImagesEndpoint:
+						_, err = h.client.GetImagesUsage(queryParams)
+					case usageAudioSpeechesEndpoint:
+						_, err = h.client.GetAudioSpeechesUsage(queryParams)
+					case usageAudioTranscriptionsEndpoint:
+						_, err = h.client.GetAudioTranscriptionsUsage(queryParams)
+					case usageCodeInterpreterEndpoint:
+						_, err = h.client.GetCodeInterpreterUsage(queryParams)
+					case usageCostsEndpoint:
+						_, err = h.client.GetCostsUsage(queryParams)
+					}
+
+					// Verify the error
+					if err == nil {
+						t.Errorf("expected error containing %q, got nil", tc.wantErr)
+						return
+					}
+					if !strings.Contains(err.Error(), tc.wantErr) {
+						t.Errorf("expected error containing %q, got %q", tc.wantErr, err.Error())
+					}
+				})
+			}
+		})
+	}
+}
+
+func TestUsageWithInvalidQueryParams(t *testing.T) {
 	h := newTestHelper(t)
 	defer h.cleanup()
 
-	// Register error response
-	h.mockErrorResponse("GET", usageCompletionsEndpoint, 401, "Unauthorized")
+	// Set up mock response for invalid query parameters
+	h.mockResponse("GET", usageCompletionsEndpoint, http.StatusBadRequest, map[string]interface{}{
+		"error": "invalid query parameters",
+	})
 
-	// Test error handling
-	_, err := h.client.GetCompletionsUsage(nil)
+	// Test with invalid query parameters
+	queryParams := map[string]string{
+		"invalid_param": "value",
+	}
+
+	_, err := h.client.GetCompletionsUsage(queryParams)
 	if err == nil {
-		t.Errorf("Expected error, got nil")
+		t.Error("expected error for invalid query parameters, got nil")
 		return
 	}
 
-	// Verify request was made
-	h.assertRequest("GET", usageCompletionsEndpoint, 1)
+	if !strings.Contains(err.Error(), "API request failed with status code 400") {
+		t.Errorf("expected error containing 'API request failed with status code 400', got %q", err.Error())
+	}
+}
+
+func TestUsageWithEmptyResponse(t *testing.T) {
+	h := newTestHelper(t)
+	defer h.cleanup()
+
+	// Set up mock response with empty data
+	h.mockResponse("GET", usageCompletionsEndpoint, http.StatusOK, map[string]interface{}{
+		"object": "list",
+		"data":   []interface{}{},
+	})
+
+	// Test with valid query parameters
+	queryParams := map[string]string{
+		"start_time": "1234567890",
+	}
+
+	resp, err := h.client.GetCompletionsUsage(queryParams)
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	if resp == nil {
+		t.Error("expected non-nil response")
+		return
+	}
+
+	if len(resp.Data) != 0 {
+		t.Errorf("expected empty data array, got %d items", len(resp.Data))
+	}
+}
+
+func TestUsageWithNilQueryParams(t *testing.T) {
+	h := newTestHelper(t)
+	defer h.cleanup()
+
+	// Set up mock response for successful empty response
+	h.mockResponse("GET", usageCompletionsEndpoint, http.StatusOK, map[string]interface{}{
+		"object": "list",
+		"data":   []interface{}{},
+	})
+
+	// Test with nil query parameters
+	resp, err := h.client.GetCompletionsUsage(nil)
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	if resp == nil {
+		t.Error("expected non-nil response")
+		return
+	}
+
+	if len(resp.Data) != 0 {
+		t.Errorf("expected empty data array, got %d items", len(resp.Data))
+	}
 }
