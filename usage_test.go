@@ -976,3 +976,79 @@ func TestUsageWithNilQueryParams(t *testing.T) {
 		t.Errorf("expected empty data array, got %d items", len(resp.Data))
 	}
 }
+
+func TestGetVectorStoresUsageErrors(t *testing.T) {
+	tests := []struct {
+		name      string
+		setupMock func(h *testHelper)
+		wantErr   string
+	}{
+		{
+			name: "GET request error",
+			setupMock: func(h *testHelper) {
+				httpmock.RegisterResponder("GET", h.client.BaseURL+usageVectorStoresEndpoint,
+					func(req *http.Request) (*http.Response, error) {
+						return nil, fmt.Errorf("network error")
+					})
+			},
+			wantErr: "network error",
+		},
+		{
+			name: "API error response",
+			setupMock: func(h *testHelper) {
+				httpmock.RegisterResponder("GET", h.client.BaseURL+usageVectorStoresEndpoint,
+					httpmock.NewStringResponder(http.StatusInternalServerError, `{"error": "server error"}`))
+			},
+			wantErr: "API request failed with status code 500",
+		},
+		{
+			name: "Invalid content type",
+			setupMock: func(h *testHelper) {
+				httpmock.RegisterResponder("GET", h.client.BaseURL+usageVectorStoresEndpoint,
+					func(req *http.Request) (*http.Response, error) {
+						return &http.Response{
+							Status:     "200 OK",
+							StatusCode: http.StatusOK,
+							Body:       io.NopCloser(strings.NewReader(`{"data": []}`)),
+							Header:     http.Header{"Content-Type": []string{"text/plain"}},
+							Request:    req,
+						}, nil
+					})
+			},
+			wantErr: "expected Content-Type \"application/json\"",
+		},
+		{
+			name: "JSON unmarshal error",
+			setupMock: func(h *testHelper) {
+				httpmock.RegisterResponder("GET", h.client.BaseURL+usageVectorStoresEndpoint,
+					func(req *http.Request) (*http.Response, error) {
+						return &http.Response{
+							Status:     "200 OK",
+							StatusCode: http.StatusOK,
+							Body:       io.NopCloser(strings.NewReader(`{"invalid json`)),
+							Header:     http.Header{"Content-Type": []string{"application/json"}},
+							Request:    req,
+						}, nil
+					})
+			},
+			wantErr: "error unmarshaling response",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := newTestHelper(t)
+			defer h.cleanup()
+
+			tt.setupMock(h)
+
+			_, err := h.client.GetVectorStoresUsage(map[string]string{"start_time": "1234567890"})
+			if err == nil {
+				t.Fatal("expected error, got nil")
+			}
+			if !strings.Contains(err.Error(), tt.wantErr) {
+				t.Errorf("expected error containing %q, got %q", tt.wantErr, err.Error())
+			}
+		})
+	}
+}
