@@ -7,19 +7,19 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func ProjectApiKeysCommand() *cli.Command {
+func ProjectAPIKeysCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "project-api-keys",
 		Usage: "Manage project API keys",
 		Commands: []*cli.Command{
-			listProjectApiKeysCommand(),
-			retrieveProjectApiKeyCommand(),
-			deleteProjectApiKeyCommand(),
+			listProjectAPIKeysCommand(),
+			retrieveProjectAPIKeyCommand(),
+			deleteProjectAPIKeyCommand(),
 		},
 	}
 }
 
-func listProjectApiKeysCommand() *cli.Command {
+func listProjectAPIKeysCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "list",
 		Usage: "List all project API keys",
@@ -28,11 +28,11 @@ func listProjectApiKeysCommand() *cli.Command {
 			limitFlag,
 			afterFlag,
 		},
-		Action: listProjectApiKeys,
+		Action: listProjectAPIKeys,
 	}
 }
 
-func retrieveProjectApiKeyCommand() *cli.Command {
+func retrieveProjectAPIKeyCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "retrieve",
 		Usage: "Retrieve a specific project API key",
@@ -40,11 +40,11 @@ func retrieveProjectApiKeyCommand() *cli.Command {
 			projectIDFlag,
 			idFlag,
 		},
-		Action: retrieveProjectApiKey,
+		Action: retrieveProjectAPIKey,
 	}
 }
 
-func deleteProjectApiKeyCommand() *cli.Command {
+func deleteProjectAPIKeyCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "delete",
 		Usage: "Delete a project API key",
@@ -52,15 +52,15 @@ func deleteProjectApiKeyCommand() *cli.Command {
 			projectIDFlag,
 			idFlag,
 		},
-		Action: deleteProjectApiKey,
+		Action: deleteProjectAPIKey,
 	}
 }
 
-func listProjectApiKeys(ctx context.Context, cmd *cli.Command) error {
+func listProjectAPIKeys(ctx context.Context, cmd *cli.Command) error {
 	client := newClient(ctx, cmd)
 
 	limit := int(cmd.Int("limit"))
-	projectApiKeys, err := client.ListProjectApiKeys(
+	projectAPIKeys, err := client.ListProjectApiKeys(
 		cmd.String("project-id"),
 		limit,
 		cmd.String("after"),
@@ -71,10 +71,10 @@ func listProjectApiKeys(ctx context.Context, cmd *cli.Command) error {
 
 	data := TableData{
 		Headers: []string{"ID", "Name", "Redacted Value", "Created At", "Owner"},
-		Rows:    make([][]string, len(projectApiKeys.Data)),
+		Rows:    make([][]string, len(projectAPIKeys.Data)),
 	}
 
-	for i, key := range projectApiKeys.Data {
+	for i, key := range projectAPIKeys.Data {
 		data.Rows[i] = []string{
 			key.ID,
 			key.Name,
@@ -88,10 +88,10 @@ func listProjectApiKeys(ctx context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-func retrieveProjectApiKey(ctx context.Context, cmd *cli.Command) error {
+func retrieveProjectAPIKey(ctx context.Context, cmd *cli.Command) error {
 	client := newClient(ctx, cmd)
 
-	projectApiKey, err := client.RetrieveProjectApiKey(
+	projectAPIKey, err := client.RetrieveProjectApiKey(
 		cmd.String("project-id"),
 		cmd.String("id"),
 	)
@@ -101,17 +101,17 @@ func retrieveProjectApiKey(ctx context.Context, cmd *cli.Command) error {
 
 	fmt.Printf("Project API Key details:\n")
 	fmt.Printf("ID: %s\nName: %s\nRedacted Value: %s\nCreated At: %s\n",
-		projectApiKey.ID,
-		projectApiKey.Name,
-		projectApiKey.RedactedValue,
-		projectApiKey.CreatedAt.String(),
+		projectAPIKey.ID,
+		projectAPIKey.Name,
+		projectAPIKey.RedactedValue,
+		projectAPIKey.CreatedAt.String(),
 	)
-	fmt.Printf("Owner: %s (%s)\n", projectApiKey.Owner.Name, projectApiKey.Owner.Type)
+	fmt.Printf("Owner: %s (%s)\n", projectAPIKey.Owner.Name, projectAPIKey.Owner.Type)
 
 	return nil
 }
 
-func deleteProjectApiKey(ctx context.Context, cmd *cli.Command) error {
+func deleteProjectAPIKey(ctx context.Context, cmd *cli.Command) error {
 	client := newClient(ctx, cmd)
 
 	err := client.DeleteProjectApiKey(

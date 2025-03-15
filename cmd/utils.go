@@ -9,16 +9,16 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-// Constants should be grouped at the top
+// Constants should be grouped at the top.
 const (
 	DefaultBaseURL = openaiorgs.DefaultBaseURL
 
-	// Common output formats
+	// Common output formats.
 	OutputFormatPretty = "pretty"
 	OutputFormatJSON   = "json"
 )
 
-// Common flag definitions grouped together
+// Common flag definitions grouped together.
 var (
 	projectIDFlag = &cli.StringFlag{
 		Name:     "project-id",
@@ -71,7 +71,7 @@ var (
 	}
 )
 
-// Interfaces and types grouped together
+// Interfaces and types grouped together.
 type CommandProvider interface {
 	Command() *cli.Command
 	Subcommands() []*cli.Command
@@ -82,7 +82,7 @@ type TableData struct {
 	Rows    [][]string
 }
 
-// Base type and its methods grouped together
+// Base type and its methods grouped together.
 type BaseCommand struct {
 	Name     string
 	Usage    string
@@ -101,7 +101,7 @@ func (b *BaseCommand) Subcommands() []*cli.Command {
 	return b.Commands
 }
 
-func newClient(ctx context.Context, cmd *cli.Command) *openaiorgs.Client {
+func newClient(_ context.Context, cmd *cli.Command) *openaiorgs.Client {
 	return openaiorgs.NewClient(openaiorgs.DefaultBaseURL, cmd.String("api-key"))
 }
 
