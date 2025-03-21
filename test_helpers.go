@@ -17,6 +17,8 @@ type testHelper struct {
 // newTestHelper creates a new test helper with mocked HTTP client
 func newTestHelper(t *testing.T) *testHelper {
 	client := NewClient(testBaseURL, "test-token")
+	// Disable retries for tests
+	client.client.SetRetryCount(0)
 	// Enable HTTP mocking
 	httpmock.ActivateNonDefault(client.client.GetClient())
 
