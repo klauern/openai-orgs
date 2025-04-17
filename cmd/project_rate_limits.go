@@ -90,7 +90,10 @@ func printProjectRateLimitsJSON(projectRateLimits *openaiorgs.ListResponse[opena
 		return wrapError("json marshalling error", err)
 	}
 
-	os.Stdout.Write(marshalled)
+	_, err = os.Stdout.Write(marshalled)
+	if err != nil {
+		return wrapError("writing to stdout", err)
+	}
 
 	return nil
 }
@@ -136,7 +139,10 @@ func printProjectRateLimitJSON(projectRateLimit *openaiorgs.ProjectRateLimit) er
 		return wrapError("json marshalling error", err)
 	}
 
-	os.Stdout.Write(marshalled)
+	_, err = os.Stdout.Write(marshalled)
+	if err != nil {
+		return wrapError("writing to stdout", err)
+	}
 
 	return nil
 }
