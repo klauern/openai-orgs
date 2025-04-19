@@ -1,5 +1,10 @@
 package openaiorgs
 
+import (
+	"fmt"
+	"strings"
+)
+
 // Common response type for paginated lists
 type ListResponse[T any] struct {
 	Object  string `json:"object"`
@@ -7,6 +12,22 @@ type ListResponse[T any] struct {
 	FirstID string `json:"first_id"`
 	LastID  string `json:"last_id"`
 	HasMore bool   `json:"has_more"`
+}
+
+// String returns a pretty-printed string representation of the ListResponse
+func (lr *ListResponse[T]) String() string {
+	var result strings.Builder
+	result.WriteString(fmt.Sprintf("Object: %s\n", lr.Object))
+	result.WriteString(fmt.Sprintf("First ID: %s\n", lr.FirstID))
+	result.WriteString(fmt.Sprintf("Last ID: %s\n", lr.LastID))
+	result.WriteString(fmt.Sprintf("Has More: %v\n", lr.HasMore))
+	result.WriteString("Data:\n")
+
+	for i, item := range lr.Data {
+		result.WriteString(fmt.Sprintf("  [%d] %+v\n", i, item))
+	}
+
+	return result.String()
 }
 
 // Common owner types
@@ -43,4 +64,17 @@ func ParseRoleType(s string) RoleType {
 	default:
 		return ""
 	}
+}
+
+// String returns a human-readable string representation of the Owner
+func (o *Owner) String() string {
+	ownerInfo := "unknown"
+	switch {
+	case o.User != nil:
+		ownerInfo = fmt.Sprintf("user:%s", o.User.Email)
+	case o.SA != nil:
+		ownerInfo = fmt.Sprintf("sa:%s", o.SA.Name)
+	}
+	return fmt.Sprintf("Owner{ID: %s, Name: %s, Type: %s, Info: %s}",
+		o.ID, o.Name, o.Type, ownerInfo)
 }

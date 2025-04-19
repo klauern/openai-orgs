@@ -16,6 +16,12 @@ type ProjectRateLimit struct {
 	Batch1DayMaxInputTokens     int64  `json:"batch_1_day_max_input_tokens"`
 }
 
+// String returns a human-readable string representation of the ProjectRateLimit
+func (prl *ProjectRateLimit) String() string {
+	return fmt.Sprintf("ProjectRateLimit{ID: %s, Model: %s, MaxReq/Min: %d, MaxTokens/Min: %d}",
+		prl.ID, prl.Model, prl.MaxRequestsPer1Minute, prl.MaxTokensPer1Minute)
+}
+
 func (c *Client) ListProjectRateLimits(limit int, after string, projectId string) (*ListResponse[ProjectRateLimit], error) {
 	queryParams := make(map[string]string)
 	if limit > 0 {

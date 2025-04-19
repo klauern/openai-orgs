@@ -50,3 +50,9 @@ func (c *Client) ModifyProjectUser(projectID string, userID string, role string)
 func (c *Client) DeleteProjectUser(projectID string, userID string) error {
 	return Delete[ProjectUser](c.client, fmt.Sprintf(ProjectUsersListEndpoint+"/%s", projectID, userID))
 }
+
+// String returns a human-readable string representation of the ProjectUser
+func (pu *ProjectUser) String() string {
+	return fmt.Sprintf("ProjectUser{ID: %s, Name: %s, Email: %s, Role: %s}",
+		pu.ID, pu.Name, pu.Email, pu.Role)
+}

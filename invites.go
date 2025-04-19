@@ -73,3 +73,13 @@ func (c *Client) DeleteInvite(id string) error {
 
 	return nil
 }
+
+// String returns a human-readable string representation of the Invite
+func (i *Invite) String() string {
+	acceptedInfo := ""
+	if i.AcceptedAt != nil {
+		acceptedInfo = fmt.Sprintf(", Accepted: %s", i.AcceptedAt.String())
+	}
+	return fmt.Sprintf("Invite{ID: %s, Email: %s, Role: %s, Status: %s%s}",
+		i.ID, i.Email, i.Role, i.Status, acceptedInfo)
+}

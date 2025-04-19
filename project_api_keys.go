@@ -13,6 +13,20 @@ type ProjectApiKey struct {
 	Owner         Owner       `json:"owner"`
 }
 
+// String returns a human-readable string representation of the ProjectApiKey
+func (pak *ProjectApiKey) String() string {
+	ownerInfo := "no owner"
+	if pak.Owner.Name != "" {
+		ownerInfo = fmt.Sprintf("%s(%s)", pak.Owner.Name, pak.Owner.Type)
+	}
+	name := pak.Name
+	if name == "" {
+		name = "unnamed"
+	}
+	return fmt.Sprintf("ProjectApiKey{ID: %s, Name: %s, Owner: %s}",
+		pak.ID, name, ownerInfo)
+}
+
 func (c *Client) ListProjectApiKeys(projectID string, limit int, after string) (*ListResponse[ProjectApiKey], error) {
 	queryParams := make(map[string]string)
 	if limit > 0 {

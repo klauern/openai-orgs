@@ -1,6 +1,9 @@
 package openaiorgs
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 const AdminAPIKeysEndpoint = "/organization/admin_api_keys"
 
@@ -45,4 +48,14 @@ func (c *Client) RetrieveAdminAPIKey(apiKeyID string) (*AdminAPIKey, error) {
 // DeleteAdminAPIKey deletes an organization API key
 func (c *Client) DeleteAdminAPIKey(apiKeyID string) error {
 	return Delete[AdminAPIKey](c.client, fmt.Sprintf("%s/%s", AdminAPIKeysEndpoint, apiKeyID))
+}
+
+// String returns a human-readable string representation of the AdminAPIKey
+func (ak *AdminAPIKey) String() string {
+	scopeInfo := "no scopes"
+	if len(ak.Scopes) > 0 {
+		scopeInfo = fmt.Sprintf("scopes:%s", strings.Join(ak.Scopes, ","))
+	}
+	return fmt.Sprintf("AdminAPIKey{ID: %s, Name: %s, %s}",
+		ak.ID, ak.Name, scopeInfo)
 }
