@@ -33,3 +33,8 @@ tasks:
       - test
     cmds:
       - go tool cover -html=coverage.out
+
+  mcp-dev:
+    desc: Run the modelcontexprotocol inspector
+    cmds:
+      - npx @modelcontextprotocol/inspector go run cmd/mcp/main.go
