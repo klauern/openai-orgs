@@ -354,3 +354,22 @@ func (c *Client) ListAuditLogs(params *AuditLogListParams) (*ListResponse[AuditL
 
 	return Get[AuditLog](c.client, AuditLogsListEndpoint, queryParams)
 }
+
+// String returns a human-readable string representation of the AuditLog
+func (al *AuditLog) String() string {
+	projectInfo := "no project"
+	if al.Project != nil {
+		projectInfo = fmt.Sprintf("%s(%s)", al.Project.Name, al.Project.ID)
+	}
+
+	actorInfo := "unknown"
+	switch {
+	case al.Actor.Session != nil:
+		actorInfo = fmt.Sprintf("user:%s", al.Actor.Session.User.Email)
+	case al.Actor.APIKey != nil:
+		actorInfo = fmt.Sprintf("apikey:%s", al.Actor.APIKey.User.Email)
+	}
+
+	return fmt.Sprintf("AuditLog{ID: %s, Type: %s, Project: %s, Actor: %s, Time: %s}",
+		al.ID, al.Type, projectInfo, actorInfo, al.EffectiveAt.String())
+}

@@ -374,6 +374,16 @@ type CostsUsage struct {
 	Period   string  `json:"period"`
 }
 
+// String returns a human-readable string representation of the UsageRecord
+func (ur *UsageRecord) String() string {
+	userInfo := ""
+	if ur.UserID != "" {
+		userInfo = fmt.Sprintf(", UserID: %s", ur.UserID)
+	}
+	return fmt.Sprintf("UsageRecord{ID: %s, Type: %s, Cost: %.2f, ProjectID: %s%s, Time: %s}",
+		ur.ID, ur.Type, ur.Cost, ur.ProjectID, userInfo, ur.Timestamp.Format(time.RFC3339))
+}
+
 // GetCompletionsUsage retrieves completions usage data
 //
 // Parameters:

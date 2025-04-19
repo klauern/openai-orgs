@@ -21,6 +21,16 @@ type ProjectServiceAccountAPIKey struct {
 	ID        string      `json:"id"`
 }
 
+// String returns a human-readable string representation of the ProjectServiceAccount
+func (psa *ProjectServiceAccount) String() string {
+	apiKeyInfo := "no key"
+	if psa.APIKey != nil {
+		apiKeyInfo = fmt.Sprintf("key:%s", psa.APIKey.ID)
+	}
+	return fmt.Sprintf("ProjectServiceAccount{ID: %s, Name: %s, Role: %s, APIKey: %s}",
+		psa.ID, psa.Name, psa.Role, apiKeyInfo)
+}
+
 func (c *Client) ListProjectServiceAccounts(projectID string, limit int, after string) (*ListResponse[ProjectServiceAccount], error) {
 	queryParams := make(map[string]string)
 	if limit > 0 {

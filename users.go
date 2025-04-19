@@ -53,3 +53,9 @@ func (c *Client) ModifyUserRole(id string, role string) error {
 
 	return nil
 }
+
+// String returns a human-readable string representation of the User
+func (u *User) String() string {
+	return fmt.Sprintf("User{ID: %s, Name: %s, Email: %s, Role: %s}",
+		u.ID, u.Name, u.Email, u.Role)
+}

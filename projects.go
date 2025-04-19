@@ -45,3 +45,12 @@ func (c *Client) ModifyProject(id string, name string) (*Project, error) {
 func (c *Client) ArchiveProject(id string) (*Project, error) {
 	return Post[Project](c.client, ProjectsListEndpoint+"/"+id+"/archive", nil)
 }
+
+// String returns a human-readable string representation of the Project
+func (p *Project) String() string {
+	status := p.Status
+	if p.ArchivedAt != nil {
+		status = "archived"
+	}
+	return fmt.Sprintf("Project{ID: %s, Name: %s, Status: %s}", p.ID, p.Name, status)
+}
