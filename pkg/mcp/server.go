@@ -12,19 +12,15 @@ const (
 	`
 )
 
-type Server struct {
-	*server.MCPServer
-}
-
-func NewServer() (*Server, error) {
+func NewMCPServer() *server.MCPServer {
 	mcpServer := server.NewMCPServer(
 		serverName,
 		version,
 		server.WithInstructions(instructions),
 		server.WithLogging(),
-		server.WithResourceCapabilities(true, true),
-		server.WithPromptCapabilities(true),
+		server.WithToolCapabilities(true),
 	)
 
-	return &Server{mcpServer}, nil
+	AddTools(mcpServer)
+	return mcpServer
 }
