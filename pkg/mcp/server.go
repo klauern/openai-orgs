@@ -19,8 +19,10 @@ func NewMCPServer() *server.MCPServer {
 		server.WithInstructions(instructions),
 		server.WithLogging(),
 		server.WithToolCapabilities(true),
+		server.WithResourceCapabilities(true, true),
 	)
 
 	AddTools(mcpServer)
+	AddResources(mcpServer)
 	return mcpServer
 }
