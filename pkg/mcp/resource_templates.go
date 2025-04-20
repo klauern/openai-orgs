@@ -24,7 +24,7 @@ const (
 )
 
 // templateHandler is a generic handler for resource templates
-type templateHandler func(ctx context.Context, client *openaiorgs.Client, uri *ResourceURI) (interface{}, error)
+type templateHandler func(ctx context.Context, client *openaiorgs.Client, uri *ResourceURI) (any, error)
 
 // AddResourceTemplates adds resource template capabilities to the MCP server
 func AddResourceTemplates(s *server.MCPServer) {
@@ -115,20 +115,20 @@ func createTemplateHandler(h templateHandler, mimeType string) func(context.Cont
 }
 
 // Individual handlers for each template type
-func handleProject(_ context.Context, client *openaiorgs.Client, uri *ResourceURI) (interface{}, error) {
+func handleProject(_ context.Context, client *openaiorgs.Client, uri *ResourceURI) (any, error) {
 	return client.RetrieveProject(uri.ProjectID)
 }
 
-func handleMember(_ context.Context, client *openaiorgs.Client, uri *ResourceURI) (interface{}, error) {
+func handleMember(_ context.Context, client *openaiorgs.Client, uri *ResourceURI) (any, error) {
 	return client.RetrieveUser(uri.MemberID)
 }
 
-func handleProjectServiceAccount(_ context.Context, client *openaiorgs.Client, uri *ResourceURI) (interface{}, error) {
+func handleProjectServiceAccount(_ context.Context, client *openaiorgs.Client, uri *ResourceURI) (any, error) {
 	return client.RetrieveProjectServiceAccount(uri.ProjectID, uri.ServiceAccount)
 }
 
-func handleUsage(_ context.Context, client *openaiorgs.Client, uri *ResourceURI) (interface{}, error) {
-	usageData := make(map[string]interface{})
+func handleUsage(_ context.Context, client *openaiorgs.Client, uri *ResourceURI) (any, error) {
+	usageData := make(map[string]any)
 	params := map[string]string{
 		"start_time": "0",
 		"project_id": uri.ProjectID,

@@ -27,7 +27,7 @@ const (
 )
 
 // resourceHandler is a generic handler for resources
-type resourceHandler func(ctx context.Context, client *openaiorgs.Client, params map[string]interface{}) (interface{}, error)
+type resourceHandler func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error)
 
 // AddResources adds static resource capabilities to the MCP server
 func AddResources(s *server.MCPServer) {
@@ -88,7 +88,7 @@ func createResourceHandler(h resourceHandler, mimeType string) func(context.Cont
 		client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, authToken)
 
 		// Extract pagination and other parameters
-		params := make(map[string]interface{})
+		params := make(map[string]any)
 		if request.Params.Arguments != nil {
 			params = request.Params.Arguments
 		}
@@ -123,21 +123,21 @@ func createResourceHandler(h resourceHandler, mimeType string) func(context.Cont
 }
 
 // Individual handlers for each resource type
-func handleActiveProjects(_ context.Context, client *openaiorgs.Client, params map[string]interface{}) (interface{}, error) {
+func handleActiveProjects(_ context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
 	limit, after := getPaginationFromParams(params)
 	return client.ListProjects(limit, after, true)
 }
 
-func handleCurrentMembers(_ context.Context, client *openaiorgs.Client, params map[string]interface{}) (interface{}, error) {
+func handleCurrentMembers(_ context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
 	limit, after := getPaginationFromParams(params)
 	return client.ListUsers(limit, after)
 }
 
-func handleUsageDashboard(_ context.Context, client *openaiorgs.Client, _ map[string]interface{}) (interface{}, error) {
+func handleUsageDashboard(_ context.Context, client *openaiorgs.Client, _ map[string]any) (any, error) {
 	startTime := time.Now().AddDate(0, -1, 0).Format(time.RFC3339) // Last month
 	params := map[string]string{"start_time": startTime}
 
-	usageData := make(map[string]interface{})
+	usageData := make(map[string]any)
 
 	if completions, err := client.GetCompletionsUsage(params); err == nil {
 		usageData["completions"] = completions
@@ -154,10 +154,10 @@ func handleUsageDashboard(_ context.Context, client *openaiorgs.Client, _ map[st
 
 // Helper functions
 
-func getPaginationFromParams(params map[string]interface{}) (limit int, after string) {
+func getPaginationFromParams(params map[string]any) (limit int, after string) {
 	limit = defaultPageSize
 
-	if pagination, ok := params["pagination"].(map[string]interface{}); ok {
+	if pagination, ok := params["pagination"].(map[string]any); ok {
 		if afterVal, ok := pagination["after"].(string); ok {
 			after = afterVal
 		}
@@ -318,7 +318,7 @@ func updateUsageDashboard(ctx context.Context) {
 	startTime := time.Now().AddDate(0, -1, 0).Format(time.RFC3339)
 	params := map[string]string{"start_time": startTime}
 
-	usageData := make(map[string]interface{})
+	usageData := make(map[string]any)
 	if completions, err := client.GetCompletionsUsage(params); err == nil {
 		usageData["completions"] = completions
 	}

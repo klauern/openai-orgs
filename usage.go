@@ -44,14 +44,14 @@ type UsageResponse struct {
 
 // UsageRecord represents a single usage record
 type UsageRecord struct {
-	ID           string      `json:"id"`
-	Object       string      `json:"object"`
-	Timestamp    time.Time   `json:"timestamp"`
-	Type         UsageType   `json:"type"`
-	UsageDetails interface{} `json:"usage_details"`
-	Cost         float64     `json:"cost"`
-	ProjectID    string      `json:"project_id"`
-	UserID       string      `json:"user_id,omitempty"`
+	ID           string    `json:"id"`
+	Object       string    `json:"object"`
+	Timestamp    time.Time `json:"timestamp"`
+	Type         UsageType `json:"type"`
+	UsageDetails any       `json:"usage_details"`
+	Cost         float64   `json:"cost"`
+	ProjectID    string    `json:"project_id"`
+	UserID       string    `json:"user_id,omitempty"`
 }
 
 // BaseUsageResponse represents the common structure for new usage endpoints
@@ -88,18 +88,18 @@ type CompletionsUsageBucket struct {
 
 // CompletionsUsageResult represents a single completions usage record
 type CompletionsUsageResult struct {
-	Object            string      `json:"object"`
-	InputTokens       int         `json:"input_tokens"`
-	OutputTokens      int         `json:"output_tokens"`
-	InputCachedTokens int         `json:"input_cached_tokens"`
-	InputAudioTokens  int         `json:"input_audio_tokens"`
-	OutputAudioTokens int         `json:"output_audio_tokens"`
-	NumModelRequests  int         `json:"num_model_requests"`
-	ProjectID         string      `json:"project_id"`
-	UserID            string      `json:"user_id"`
-	APIKeyID          string      `json:"api_key_id"`
-	Model             string      `json:"model"`
-	Batch             interface{} `json:"batch"`
+	Object            string `json:"object"`
+	InputTokens       int    `json:"input_tokens"`
+	OutputTokens      int    `json:"output_tokens"`
+	InputCachedTokens int    `json:"input_cached_tokens"`
+	InputAudioTokens  int    `json:"input_audio_tokens"`
+	OutputAudioTokens int    `json:"output_audio_tokens"`
+	NumModelRequests  int    `json:"num_model_requests"`
+	ProjectID         string `json:"project_id"`
+	UserID            string `json:"user_id"`
+	APIKeyID          string `json:"api_key_id"`
+	Model             string `json:"model"`
+	Batch             any    `json:"batch"`
 }
 
 // EmbeddingsUsageResponse represents the response from the embeddings usage endpoint
@@ -303,10 +303,10 @@ type CostsUsageBucket struct {
 
 // CostsUsageResult represents a single costs usage record
 type CostsUsageResult struct {
-	Object    string      `json:"object"`
-	Amount    CostAmount  `json:"amount"`
-	LineItem  interface{} `json:"line_item"`
-	ProjectID string      `json:"project_id"`
+	Object    string     `json:"object"`
+	Amount    CostAmount `json:"amount"`
+	LineItem  any        `json:"line_item"`
+	ProjectID string     `json:"project_id"`
 }
 
 // CostAmount represents the monetary amount for a cost

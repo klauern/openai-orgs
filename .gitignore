@@ -3,3 +3,5 @@ dist/
 /.env*
 
 coverage.out
+
+/llm-workbooks/

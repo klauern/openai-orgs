@@ -25,7 +25,7 @@ type AuditLog struct {
 	EffectiveAt UnixSeconds   `json:"effective_at"`
 	Project     *AuditProject `json:"project,omitempty"`
 	Actor       Actor         `json:"actor"`
-	Details     interface{}   `json:"-"` // This will be unmarshaled based on Type
+	Details     any           `json:"-"` // This will be unmarshaled based on Type
 }
 
 // AuditProject represents project information in audit logs
@@ -252,7 +252,7 @@ func (a *AuditLog) UnmarshalJSON(data []byte) error {
 	}
 
 	// Parse the details based on the event type
-	var details interface{}
+	var details any
 	switch raw.Type {
 	case "api_key.created":
 		details = &APIKeyCreated{}

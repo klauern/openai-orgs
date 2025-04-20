@@ -76,16 +76,16 @@ func TestParseAuditLogPayload(t *testing.T) {
 
 	tests := map[string]struct {
 		logType string
-		payload map[string]interface{}
-		want    interface{}
+		payload map[string]any
+		want    any
 		wantErr bool
 	}{
 		// API Key events
 		"api_key.created": {
 			logType: "api_key.created",
-			payload: map[string]interface{}{
+			payload: map[string]any{
 				"id": "key_123",
-				"data": map[string]interface{}{
+				"data": map[string]any{
 					"scopes": []string{"read", "write"},
 				},
 			},
@@ -100,9 +100,9 @@ func TestParseAuditLogPayload(t *testing.T) {
 		},
 		"api_key.updated": {
 			logType: "api_key.updated",
-			payload: map[string]interface{}{
+			payload: map[string]any{
 				"id": "key_123",
-				"changes_requested": map[string]interface{}{
+				"changes_requested": map[string]any{
 					"scopes": []string{"read"},
 				},
 			},
@@ -117,16 +117,16 @@ func TestParseAuditLogPayload(t *testing.T) {
 		},
 		"api_key.deleted": {
 			logType: "api_key.deleted",
-			payload: map[string]interface{}{"id": "key_123"},
+			payload: map[string]any{"id": "key_123"},
 			want:    &APIKeyDeleted{ID: "key_123"},
 		},
 
 		// Invite events
 		"invite.sent": {
 			logType: "invite.sent",
-			payload: map[string]interface{}{
+			payload: map[string]any{
 				"id": "inv_123",
-				"data": map[string]interface{}{
+				"data": map[string]any{
 					"email": "test@example.com",
 				},
 			},
@@ -141,19 +141,19 @@ func TestParseAuditLogPayload(t *testing.T) {
 		},
 		"invite.accepted": {
 			logType: "invite.accepted",
-			payload: map[string]interface{}{"id": "inv_123"},
+			payload: map[string]any{"id": "inv_123"},
 			want:    &InviteAccepted{ID: "inv_123"},
 		},
 		"invite.deleted": {
 			logType: "invite.deleted",
-			payload: map[string]interface{}{"id": "inv_123"},
+			payload: map[string]any{"id": "inv_123"},
 			want:    &InviteDeleted{ID: "inv_123"},
 		},
 
 		// Login/Logout events
 		"login.failed": {
 			logType: "login.failed",
-			payload: map[string]interface{}{
+			payload: map[string]any{
 				"error_code":    "invalid_credentials",
 				"error_message": "Invalid email or password",
 			},
@@ -164,15 +164,15 @@ func TestParseAuditLogPayload(t *testing.T) {
 		},
 		"login.succeeded": {
 			logType: "login.succeeded",
-			payload: map[string]interface{}{
+			payload: map[string]any{
 				"object":       "audit.event",
 				"id":           "login_123",
 				"type":         "login.succeeded",
 				"effective_at": testTime.Unix(),
-				"actor": map[string]interface{}{
+				"actor": map[string]any{
 					"type": "session",
-					"session": map[string]interface{}{
-						"user": map[string]interface{}{
+					"session": map[string]any{
+						"user": map[string]any{
 							"id":    "user_123",
 							"email": "test@example.com",
 						},
@@ -199,9 +199,9 @@ func TestParseAuditLogPayload(t *testing.T) {
 		// Organization events
 		"organization.updated": {
 			logType: "organization.updated",
-			payload: map[string]interface{}{
+			payload: map[string]any{
 				"id": "org_123",
-				"changes_requested": map[string]interface{}{
+				"changes_requested": map[string]any{
 					"name": "New Org Name",
 				},
 			},
@@ -218,9 +218,9 @@ func TestParseAuditLogPayload(t *testing.T) {
 		// Project events
 		"project.created": {
 			logType: "project.created",
-			payload: map[string]interface{}{
+			payload: map[string]any{
 				"id": "proj_123",
-				"data": map[string]interface{}{
+				"data": map[string]any{
 					"name":  "test-project",
 					"title": "Test Project",
 				},
@@ -238,9 +238,9 @@ func TestParseAuditLogPayload(t *testing.T) {
 		},
 		"project.updated": {
 			logType: "project.updated",
-			payload: map[string]interface{}{
+			payload: map[string]any{
 				"id": "proj_123",
-				"changes_requested": map[string]interface{}{
+				"changes_requested": map[string]any{
 					"title": "Updated Project",
 				},
 			},
@@ -255,7 +255,7 @@ func TestParseAuditLogPayload(t *testing.T) {
 		},
 		"project.archived": {
 			logType: "project.archived",
-			payload: map[string]interface{}{"id": "proj_123"},
+			payload: map[string]any{"id": "proj_123"},
 			want:    &ProjectArchived{ID: "proj_123"},
 		},
 	}

@@ -899,7 +899,7 @@ func TestUsageWithInvalidQueryParams(t *testing.T) {
 	defer h.cleanup()
 
 	// Set up mock response for invalid query parameters
-	h.mockResponse("GET", usageCompletionsEndpoint, http.StatusBadRequest, map[string]interface{}{
+	h.mockResponse("GET", usageCompletionsEndpoint, http.StatusBadRequest, map[string]any{
 		"error": "invalid query parameters",
 	})
 
@@ -924,9 +924,9 @@ func TestUsageWithEmptyResponse(t *testing.T) {
 	defer h.cleanup()
 
 	// Set up mock response with empty data
-	h.mockResponse("GET", usageCompletionsEndpoint, http.StatusOK, map[string]interface{}{
+	h.mockResponse("GET", usageCompletionsEndpoint, http.StatusOK, map[string]any{
 		"object": "list",
-		"data":   []interface{}{},
+		"data":   []any{},
 	})
 
 	// Test with valid query parameters
@@ -955,9 +955,9 @@ func TestUsageWithNilQueryParams(t *testing.T) {
 	defer h.cleanup()
 
 	// Set up mock response for successful empty response
-	h.mockResponse("GET", usageCompletionsEndpoint, http.StatusOK, map[string]interface{}{
+	h.mockResponse("GET", usageCompletionsEndpoint, http.StatusOK, map[string]any{
 		"object": "list",
-		"data":   []interface{}{},
+		"data":   []any{},
 	})
 
 	// Test with nil query parameters

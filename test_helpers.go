@@ -29,7 +29,7 @@ func newTestHelper(t *testing.T) *testHelper {
 }
 
 // mockResponse registers a mock response for a given method, endpoint, and response
-func (h *testHelper) mockResponse(method, endpoint string, statusCode int, response interface{}) {
+func (h *testHelper) mockResponse(method, endpoint string, statusCode int, response any) {
 	responder := func(req *http.Request) (*http.Response, error) {
 		// Return the response directly without any conditions
 		resp, err := httpmock.NewJsonResponse(statusCode, response)
@@ -44,10 +44,10 @@ func (h *testHelper) mockResponse(method, endpoint string, statusCode int, respo
 }
 
 // mockListResponse is a helper for mocking paginated list responses
-func (h *testHelper) mockListResponse(method, endpoint string, items interface{}) { //nolint:unused
-	response := ListResponse[interface{}]{
+func (h *testHelper) mockListResponse(method, endpoint string, items any) { //nolint:unused
+	response := ListResponse[any]{
 		Object:  "list",
-		Data:    []interface{}{items},
+		Data:    []any{items},
 		FirstID: "first_id",
 		LastID:  "last_id",
 		HasMore: false,

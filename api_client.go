@@ -85,7 +85,7 @@ func Get[T any](client *resty.Client, endpoint string, queryParams map[string]st
 	return &listResp, nil
 }
 
-func Post[T any](client *resty.Client, endpoint string, body interface{}) (*T, error) {
+func Post[T any](client *resty.Client, endpoint string, body any) (*T, error) {
 	resp, err := client.R().
 		SetBody(body).
 		ExpectContentType("application/json").

@@ -33,7 +33,7 @@ func (c *Client) ListAdminAPIKeys(limit int, after string) (*ListResponse[AdminA
 
 // CreateAdminAPIKey creates a new organization API key
 func (c *Client) CreateAdminAPIKey(name string, scopes []string) (*AdminAPIKey, error) {
-	body := map[string]interface{}{
+	body := map[string]any{
 		"name":   name,
 		"scopes": scopes,
 	}
