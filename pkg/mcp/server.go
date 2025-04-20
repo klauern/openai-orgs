@@ -24,5 +24,6 @@ func NewMCPServer() *server.MCPServer {
 
 	AddTools(mcpServer)
 	AddResources(mcpServer)
+	AddResourceTemplates(mcpServer)
 	return mcpServer
 }
