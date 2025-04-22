@@ -75,7 +75,7 @@ func listProjectAPIKeys(ctx context.Context, cmd *cli.Command) error {
 		if err != nil {
 			return fmt.Errorf("failed to marshal API keys: %w", err)
 		}
-		fmt.Println(string(data))
+		fmt.Printf("Retrieved %d API keys.\n", len(apiKeys.Data))
 	default:
 		data := TableData{
 			Headers: []string{"ID", "Name", "Created At", "Owner"},
