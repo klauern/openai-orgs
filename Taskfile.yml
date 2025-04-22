@@ -34,6 +34,22 @@ tasks:
     cmds:
       - go tool cover -html=coverage.out
 
+  check-docs:
+    desc: Check for missing documentation in Go files
+    cmds:
+      - |
+        for file in $(find . -name "*.go" -not -path "./vendor/*"); do
+          if ! go doc $file | grep -q "^Package\|^FUNCTIONS\|^TYPES"; then
+            echo "Missing documentation in $file"
+          fi
+        done
+
+  docs-server:
+    desc: Start a local documentation server
+    cmds:
+      - go install golang.org/x/tools/cmd/godoc@latest
+      - godoc -http=:6060
+
   mcp-dev:
     desc: Run the modelcontexprotocol inspector
     cmds:

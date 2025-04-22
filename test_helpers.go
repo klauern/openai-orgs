@@ -7,14 +7,21 @@ import (
 	"github.com/jarcoal/httpmock"
 )
 
+// testBaseURL is the mock API endpoint used for testing.
 const testBaseURL = "https://api.openai.com/v1"
 
+// testHelper provides utilities for testing the OpenAI Organizations API client.
+// It handles HTTP mocking, response registration, and test assertions.
 type testHelper struct {
+	// client is the OpenAI Organizations API client being tested.
 	client *Client
-	t      *testing.T
+	// t is the testing context for making assertions and reporting failures.
+	t *testing.T
 }
 
-// newTestHelper creates a new test helper with mocked HTTP client
+// newTestHelper creates a new test helper with a mocked HTTP client.
+// It disables retries and activates HTTP mocking for the client.
+// The returned helper should be used for a single test and cleaned up afterward.
 func newTestHelper(t *testing.T) *testHelper {
 	client := NewClient(testBaseURL, "test-token")
 	// Disable retries for tests
@@ -28,7 +35,14 @@ func newTestHelper(t *testing.T) *testHelper {
 	}
 }
 
-// mockResponse registers a mock response for a given method, endpoint, and response
+// mockResponse registers a mock response for a given HTTP method and endpoint.
+// It will return the specified response with the given status code when the endpoint is called.
+//
+// Parameters:
+//   - method: HTTP method (GET, POST, etc.)
+//   - endpoint: API endpoint path (without base URL)
+//   - statusCode: HTTP status code to return
+//   - response: Response body to return (will be JSON encoded)
 func (h *testHelper) mockResponse(method, endpoint string, statusCode int, response any) {
 	responder := func(req *http.Request) (*http.Response, error) {
 		// Return the response directly without any conditions
@@ -43,7 +57,13 @@ func (h *testHelper) mockResponse(method, endpoint string, statusCode int, respo
 	httpmock.RegisterResponder(method, testBaseURL+endpoint, responder)
 }
 
-// mockListResponse is a helper for mocking paginated list responses
+// mockListResponse is a helper for mocking paginated list responses.
+// It creates a ListResponse with the provided items and registers it as a mock response.
+//
+// Parameters:
+//   - method: HTTP method (GET, POST, etc.)
+//   - endpoint: API endpoint path (without base URL)
+//   - items: The items to include in the list response
 func (h *testHelper) mockListResponse(method, endpoint string, items any) { //nolint:unused
 	response := ListResponse[any]{
 		Object:  "list",
@@ -55,12 +75,21 @@ func (h *testHelper) mockListResponse(method, endpoint string, items any) { //no
 	h.mockResponse(method, endpoint, http.StatusOK, response)
 }
 
-// cleanup removes all registered mocks
+// cleanup removes all registered HTTP mocks.
+// This should be called after each test to ensure a clean state.
 func (h *testHelper) cleanup() {
 	httpmock.Reset()
 }
 
-// assertRequest verifies that a specific request was made
+// assertRequest verifies that a specific HTTP request was made the expected number of times.
+// It checks both exact endpoint matches and endpoints with query parameters.
+//
+// Parameters:
+//   - method: HTTP method to check (GET, POST, etc.)
+//   - endpoint: API endpoint path to check (without base URL)
+//   - times: Expected number of calls to this endpoint
+//
+// The test will fail if the actual number of calls doesn't match the expected count.
 func (h *testHelper) assertRequest(method, endpoint string, times int) {
 	// Original code only checks exact endpoint match
 	count := httpmock.GetCallCountInfo()[method+" "+testBaseURL+endpoint]
