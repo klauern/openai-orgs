@@ -35,6 +35,6 @@ tasks:
       - go tool cover -html=coverage.out
 
   mcp-dev:
-    desc: Run the modelcontexprotocol inspector
+    desc: Run the modelcontextprotocol inspector
     cmds:
       - npx @modelcontextprotocol/inspector -e OPENAI_API_KEY=$OPENAI_API_KEY go run cmd/mcp/main.go
