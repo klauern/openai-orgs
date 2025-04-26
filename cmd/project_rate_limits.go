@@ -225,12 +225,12 @@ func modifyProjectRateLimit(ctx context.Context, cmd *cli.Command) error {
 	}
 	client := newClient(ctx, cmd)
 	fields := openaiorgs.ProjectRateLimitRequestFields{
-		MaxRequestsPer1Minute:       cmd.Int("max-requests-per-1-minute"),
-		MaxTokensPer1Minute:         cmd.Int("max-tokens-per-1-minute"),
-		MaxImagesPer1Minute:         cmd.Int("max-images-per-1-minute"),
-		MaxAudioMegabytesPer1Minute: cmd.Int("max-audio-megabytes-per-1-minute"),
-		MaxRequestsPer1Day:          cmd.Int("max-requests-per-1-day"),
-		Batch1DayMaxInputTokens:     cmd.Int("batch-1-day-max-input-tokens"),
+		MaxRequestsPer1Minute:       int64(cmd.Int("max-requests-per-1-minute")),
+		MaxTokensPer1Minute:         int64(cmd.Int("max-tokens-per-1-minute")),
+		MaxImagesPer1Minute:         int64(cmd.Int("max-images-per-1-minute")),
+		MaxAudioMegabytesPer1Minute: int64(cmd.Int("max-audio-megabytes-per-1-minute")),
+		MaxRequestsPer1Day:          int64(cmd.Int("max-requests-per-1-day")),
+		Batch1DayMaxInputTokens:     int64(cmd.Int("batch-1-day-max-input-tokens")),
 	}
 	projectRateLimit, err := client.ModifyProjectRateLimit(
 		cmd.String("project-id"),
