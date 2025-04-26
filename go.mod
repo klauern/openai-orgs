@@ -4,9 +4,7 @@ go 1.23.3
 
 require github.com/go-resty/resty/v2 v2.16.5
 
-require github.com/urfave/cli/v3 v3.1.1
-
-require go.uber.org/mock v0.5.1 // indirect
+require github.com/urfave/cli/v3 v3.2.0
 
 require (
 	github.com/google/uuid v1.6.0 // indirect
