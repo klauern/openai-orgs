@@ -22,7 +22,7 @@ type ProjectList struct {
 }
 
 // testHandleActiveProjects is a test implementation of the resource handler
-func testHandleActiveProjects(_ context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
+func testHandleActiveProjects(_ context.Context, _ *openaiorgs.Client, _ map[string]any) (any, error) {
 	// For testing, return a simple project list
 	return &ProjectList{
 		Data: []Project{
