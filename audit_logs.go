@@ -25,7 +25,7 @@ type AuditLog struct {
 	EffectiveAt UnixSeconds   `json:"effective_at"`
 	Project     *AuditProject `json:"project,omitempty"`
 	Actor       Actor         `json:"actor"`
-	Details     interface{}   `json:"-"` // This will be unmarshaled based on Type
+	Details     any           `json:"-"` // This will be unmarshaled based on Type
 }
 
 // AuditProject represents project information in audit logs
@@ -252,7 +252,7 @@ func (a *AuditLog) UnmarshalJSON(data []byte) error {
 	}
 
 	// Parse the details based on the event type
-	var details interface{}
+	var details any
 	switch raw.Type {
 	case "api_key.created":
 		details = &APIKeyCreated{}
@@ -353,4 +353,23 @@ func (c *Client) ListAuditLogs(params *AuditLogListParams) (*ListResponse[AuditL
 	}
 
 	return Get[AuditLog](c.client, AuditLogsListEndpoint, queryParams)
+}
+
+// String returns a human-readable string representation of the AuditLog
+func (al *AuditLog) String() string {
+	projectInfo := "no project"
+	if al.Project != nil {
+		projectInfo = fmt.Sprintf("%s(%s)", al.Project.Name, al.Project.ID)
+	}
+
+	actorInfo := "unknown"
+	switch {
+	case al.Actor.Session != nil:
+		actorInfo = fmt.Sprintf("user:%s", al.Actor.Session.User.Email)
+	case al.Actor.APIKey != nil:
+		actorInfo = fmt.Sprintf("apikey:%s", al.Actor.APIKey.User.Email)
+	}
+
+	return fmt.Sprintf("AuditLog{ID: %s, Type: %s, Project: %s, Actor: %s, Time: %s}",
+		al.ID, al.Type, projectInfo, actorInfo, al.EffectiveAt.String())
 }
