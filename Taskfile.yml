@@ -2,55 +2,68 @@ version: "3"
 
 tasks:
   default:
+    desc: List all available tasks
+    cmds:
+      - task --list
+
+  check:
+    desc: Run formatting, linting, and installation checks
     cmds:
       - task: fmt
       - task: lint
       - task: install
 
   build:
+    desc: Build all packages
     cmds:
       - go build -v ./...
 
   install:
+    desc: Build and install packages
     cmds:
       - task: build
       - go install -v ./...
 
   lint:
+    desc: Run golangci-lint
     cmds:
       - golangci-lint run
 
   fmt:
+    desc: Format Go code
     cmds:
       - gofmt -s -w -e .
 
   test:
+    desc: Run tests with coverage
     cmds:
       - go test -v -coverprofile=coverage.out -timeout=120s -parallel=10 ./...
 
   cover:
+    desc: View test coverage report in browser
     deps:
       - test
     cmds:
       - go tool cover -html=coverage.out
 
-  check-docs:
-    desc: Check for missing documentation in Go files
+  mcp:build:
+    desc: Build the MCP binary
     cmds:
-      - |
-        for file in $(find . -name "*.go" -not -path "./vendor/*"); do
-          if ! go doc $file | grep -q "^Package\|^FUNCTIONS\|^TYPES"; then
-            echo "Missing documentation in $file"
-          fi
-        done
+      - go build -v ./cmd/mcp
 
-  docs-server:
-    desc: Start a local documentation server
+  mcp:test:
+    desc: Run tests for the MCP package
     cmds:
-      - go install golang.org/x/tools/cmd/godoc@latest
-      - godoc -http=:6060
+      - go test -v -coverprofile=coverage.mcp.out -timeout=120s ./cmd/mcp/... ./pkg/mcp/...
 
-  mcp-dev:
+  mcp:install:
+    desc: Install the MCP binary to GOPATH
+    deps:
+      - mcp:build
+    cmds:
+      - go install -v ./cmd/mcp
+
+  mcp:dev:
     desc: Run the modelcontexprotocol inspector
     cmds:
       - npx @modelcontextprotocol/inspector -e OPENAI_API_KEY=$OPENAI_API_KEY go run cmd/mcp/main.go
