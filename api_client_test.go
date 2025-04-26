@@ -10,9 +10,9 @@ func TestClient_Get_WithPagination(t *testing.T) {
 	defer h.cleanup()
 
 	// Mock first page response
-	firstPageResponse := ListResponse[map[string]interface{}]{
+	firstPageResponse := ListResponse[map[string]any]{
 		Object: "list",
-		Data: []map[string]interface{}{
+		Data: []map[string]any{
 			{"id": "obj1", "name": "First"},
 			{"id": "obj2", "name": "Second"},
 		},
@@ -24,9 +24,9 @@ func TestClient_Get_WithPagination(t *testing.T) {
 	h.mockResponse("GET", "/test-endpoint", http.StatusOK, firstPageResponse)
 
 	// Mock second page response
-	secondPageResponse := ListResponse[map[string]interface{}]{
+	secondPageResponse := ListResponse[map[string]any]{
 		Object: "list",
-		Data: []map[string]interface{}{
+		Data: []map[string]any{
 			{"id": "obj3", "name": "Third"},
 			{"id": "obj4", "name": "Fourth"},
 		},
@@ -37,7 +37,7 @@ func TestClient_Get_WithPagination(t *testing.T) {
 	h.mockResponse("GET", "/test-endpoint?after=obj2", http.StatusOK, secondPageResponse)
 
 	// First page request
-	firstPage, err := Get[map[string]interface{}](h.client.client, "/test-endpoint", nil)
+	firstPage, err := Get[map[string]any](h.client.client, "/test-endpoint", nil)
 	if err != nil {
 		t.Fatalf("Failed to get first page: %v", err)
 	}
@@ -51,7 +51,7 @@ func TestClient_Get_WithPagination(t *testing.T) {
 	}
 
 	// Second page request with after parameter
-	secondPage, err := Get[map[string]interface{}](h.client.client, "/test-endpoint", map[string]string{
+	secondPage, err := Get[map[string]any](h.client.client, "/test-endpoint", map[string]string{
 		"after": firstPage.LastID,
 	})
 	if err != nil {
