@@ -1,20 +1,22 @@
 module github.com/klauern/openai-orgs
 
-go 1.23.3
+go 1.24.1
 
-require github.com/go-resty/resty/v2 v2.16.5
-
-require github.com/urfave/cli/v3 v3.1.1
-
-require go.uber.org/mock v0.5.1 // indirect
+require (
+	github.com/go-resty/resty/v2 v2.16.5
+	github.com/jarcoal/httpmock v1.4.0
+	github.com/mark3labs/mcp-go v0.23.1
+	github.com/urfave/cli/v3 v3.2.0
+	go.uber.org/mock v0.5.1
+)
 
 require (
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/mark3labs/mcp-go v0.21.1
 	github.com/yosida95/uritemplate/v3 v3.0.2 // indirect
+	golang.org/x/mod v0.18.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
+	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/tools v0.22.0 // indirect
 )
 
-require (
-	github.com/jarcoal/httpmock v1.4.0
-	golang.org/x/net v0.38.0 // indirect
-)
+tool go.uber.org/mock/mockgen
