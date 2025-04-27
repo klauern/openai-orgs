@@ -426,8 +426,20 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement list_project_service_accounts logic
-				return nil, fmt.Errorf("list_project_service_accounts not implemented")
+				projectID := params["projectId"].(string)
+				limit := 0
+				if v, ok := params["limit"]; ok {
+					limit = int(v.(float64))
+				}
+				after := ""
+				if v, ok := params["after"]; ok {
+					after = v.(string)
+				}
+				accounts, err := client.ListProjectServiceAccounts(projectID, limit, after)
+				if err != nil {
+					return nil, fmt.Errorf("failed to list project service accounts: %w", err)
+				}
+				return accounts.String(), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -445,8 +457,13 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement create_project_service_account logic
-				return nil, fmt.Errorf("create_project_service_account not implemented")
+				projectID := params["projectId"].(string)
+				name := params["name"].(string)
+				account, err := client.CreateProjectServiceAccount(projectID, name)
+				if err != nil {
+					return nil, fmt.Errorf("failed to create project service account: %w", err)
+				}
+				return account.String(), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -463,8 +480,13 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement delete_project_service_account logic
-				return nil, fmt.Errorf("delete_project_service_account not implemented")
+				projectID := params["projectId"].(string)
+				serviceAccountID := params["serviceAccountId"].(string)
+				err := client.DeleteProjectServiceAccount(projectID, serviceAccountID)
+				if err != nil {
+					return nil, fmt.Errorf("failed to delete project service account: %w", err)
+				}
+				return fmt.Sprintf("Service account %s deleted from project %s", serviceAccountID, projectID), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -482,8 +504,19 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement list_users logic
-				return nil, fmt.Errorf("list_users not implemented")
+				limit := 0
+				if v, ok := params["limit"]; ok {
+					limit = int(v.(float64))
+				}
+				after := ""
+				if v, ok := params["after"]; ok {
+					after = v.(string)
+				}
+				users, err := client.ListUsers(limit, after)
+				if err != nil {
+					return nil, fmt.Errorf("failed to list users: %w", err)
+				}
+				return users.String(), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -500,8 +533,12 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement retrieve_user logic
-				return nil, fmt.Errorf("retrieve_user not implemented")
+				userID := params["userId"].(string)
+				user, err := client.RetrieveUser(userID)
+				if err != nil {
+					return nil, fmt.Errorf("failed to retrieve user: %w", err)
+				}
+				return user.String(), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -517,8 +554,12 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement delete_user logic
-				return nil, fmt.Errorf("delete_user not implemented")
+				userID := params["userId"].(string)
+				err := client.DeleteUser(userID)
+				if err != nil {
+					return nil, fmt.Errorf("failed to delete user: %w", err)
+				}
+				return fmt.Sprintf("User %s deleted", userID), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -534,8 +575,13 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement modify_user_role logic
-				return nil, fmt.Errorf("modify_user_role not implemented")
+				userID := params["userId"].(string)
+				role := params["role"].(string)
+				err := client.ModifyUserRole(userID, role)
+				if err != nil {
+					return nil, fmt.Errorf("failed to modify user role: %w", err)
+				}
+				return fmt.Sprintf("User %s role updated to %s", userID, role), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -553,14 +599,18 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement list_invites logic
-				return nil, fmt.Errorf("list_invites not implemented")
+				invites, err := client.ListInvites()
+				if err != nil {
+					return nil, fmt.Errorf("failed to list invites: %w", err)
+				}
+				var result string
+				for _, invite := range invites {
+					result += invite.String() + "\n"
+				}
+				return result, nil
 			},
 			ParamSchema{
-				Fields: []ParamField{
-					{Name: "limit", Required: false, Type: reflect.Float64, Description: "Maximum number of invites to return"},
-					{Name: "after", Required: false, Type: reflect.String, Description: "Invite ID to start after (for pagination)"},
-				},
+				Fields: []ParamField{},
 			},
 		),
 	)
@@ -571,8 +621,13 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement create_invite logic
-				return nil, fmt.Errorf("create_invite not implemented")
+				email := params["email"].(string)
+				role := params["role"].(string)
+				invite, err := client.CreateInvite(email, role)
+				if err != nil {
+					return nil, fmt.Errorf("failed to create invite: %w", err)
+				}
+				return invite.String(), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -584,13 +639,38 @@ func AddTools(s *server.MCPServer) {
 	)
 
 	s.AddTool(mcp.NewTool(
+		"retrieve_invite",
+		mcp.WithDescription("Retrieves details of a specific invite by ID"),
+	),
+		GenericToolHandler(
+			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
+				inviteID := params["inviteId"].(string)
+				invite, err := client.RetrieveInvite(inviteID)
+				if err != nil {
+					return nil, fmt.Errorf("failed to retrieve invite: %w", err)
+				}
+				return invite.String(), nil
+			},
+			ParamSchema{
+				Fields: []ParamField{
+					{Name: "inviteId", Required: true, Type: reflect.String, Description: "Invite ID"},
+				},
+			},
+		),
+	)
+
+	s.AddTool(mcp.NewTool(
 		"delete_invite",
 		mcp.WithDescription("Deletes a pending invite by ID"),
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement delete_invite logic
-				return nil, fmt.Errorf("delete_invite not implemented")
+				inviteID := params["inviteId"].(string)
+				err := client.DeleteInvite(inviteID)
+				if err != nil {
+					return nil, fmt.Errorf("failed to delete invite: %w", err)
+				}
+				return fmt.Sprintf("Invite %s deleted", inviteID), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -607,14 +687,132 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement get_usage logic
-				return nil, fmt.Errorf("get_usage not implemented")
+				typeStr := params["type"].(string)
+				startTime := ""
+				if v, ok := params["startTime"]; ok {
+					startTime = v.(string)
+				}
+				endTime := ""
+				if v, ok := params["endTime"]; ok {
+					endTime = v.(string)
+				}
+				queryParams := map[string]string{}
+				if startTime != "" {
+					queryParams["start_time"] = startTime
+				}
+				if endTime != "" {
+					queryParams["end_time"] = endTime
+				}
+				switch typeStr {
+				case "completions":
+					usage, err := client.GetCompletionsUsage(queryParams)
+					if err != nil {
+						return nil, fmt.Errorf("failed to get completions usage: %w", err)
+					}
+					return fmt.Sprintf("%+v", usage), nil
+				case "embeddings":
+					usage, err := client.GetEmbeddingsUsage(queryParams)
+					if err != nil {
+						return nil, fmt.Errorf("failed to get embeddings usage: %w", err)
+					}
+					return fmt.Sprintf("%+v", usage), nil
+				case "moderations":
+					usage, err := client.GetModerationsUsage(queryParams)
+					if err != nil {
+						return nil, fmt.Errorf("failed to get moderations usage: %w", err)
+					}
+					return fmt.Sprintf("%+v", usage), nil
+				case "images":
+					usage, err := client.GetImagesUsage(queryParams)
+					if err != nil {
+						return nil, fmt.Errorf("failed to get images usage: %w", err)
+					}
+					return fmt.Sprintf("%+v", usage), nil
+				case "audio_speeches":
+					usage, err := client.GetAudioSpeechesUsage(queryParams)
+					if err != nil {
+						return nil, fmt.Errorf("failed to get audio speeches usage: %w", err)
+					}
+					return fmt.Sprintf("%+v", usage), nil
+				case "audio_transcriptions":
+					usage, err := client.GetAudioTranscriptionsUsage(queryParams)
+					if err != nil {
+						return nil, fmt.Errorf("failed to get audio transcriptions usage: %w", err)
+					}
+					return fmt.Sprintf("%+v", usage), nil
+				case "vector_stores":
+					usage, err := client.GetVectorStoresUsage(queryParams)
+					if err != nil {
+						return nil, fmt.Errorf("failed to get vector stores usage: %w", err)
+					}
+					return fmt.Sprintf("%+v", usage), nil
+				case "code_interpreter":
+					usage, err := client.GetCodeInterpreterUsage(queryParams)
+					if err != nil {
+						return nil, fmt.Errorf("failed to get code interpreter usage: %w", err)
+					}
+					return fmt.Sprintf("%+v", usage), nil
+				case "costs":
+					usage, err := client.GetCostsUsage(queryParams)
+					if err != nil {
+						return nil, fmt.Errorf("failed to get costs usage: %w", err)
+					}
+					return fmt.Sprintf("%+v", usage), nil
+				default:
+					return nil, fmt.Errorf("unsupported usage type: %s", typeStr)
+				}
 			},
 			ParamSchema{
 				Fields: []ParamField{
 					{Name: "type", Required: true, Type: reflect.String, Description: "Usage type (completions, embeddings, moderations, images, audio_speeches, audio_transcriptions, vector_stores, code_interpreter, costs)"},
 					{Name: "startTime", Required: false, Type: reflect.String, Description: "Start time (RFC3339)"},
 					{Name: "endTime", Required: false, Type: reflect.String, Description: "End time (RFC3339)"},
+				},
+			},
+		),
+	)
+
+	s.AddTool(mcp.NewTool(
+		"retrieve_project_api_key",
+		mcp.WithDescription("Retrieves a specific API key from a project by ID"),
+	),
+		GenericToolHandler(
+			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
+				projectID := params["projectId"].(string)
+				apiKeyID := params["apiKeyId"].(string)
+				key, err := client.RetrieveProjectApiKey(projectID, apiKeyID)
+				if err != nil {
+					return nil, fmt.Errorf("failed to retrieve project API key: %w", err)
+				}
+				return key.String(), nil
+			},
+			ParamSchema{
+				Fields: []ParamField{
+					{Name: "projectId", Required: true, Type: reflect.String, Description: "Project ID"},
+					{Name: "apiKeyId", Required: true, Type: reflect.String, Description: "API Key ID"},
+				},
+			},
+		),
+	)
+
+	s.AddTool(mcp.NewTool(
+		"retrieve_project_service_account",
+		mcp.WithDescription("Retrieves a specific service account from a project by ID"),
+	),
+		GenericToolHandler(
+			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
+				projectID := params["projectId"].(string)
+				serviceAccountID := params["serviceAccountId"].(string)
+				account, err := client.RetrieveProjectServiceAccount(projectID, serviceAccountID)
+				if err != nil {
+					return nil, fmt.Errorf("failed to retrieve project service account: %w", err)
+				}
+				return account.String(), nil
+			},
+			ParamSchema{
+				Fields: []ParamField{
+					{Name: "projectId", Required: true, Type: reflect.String, Description: "Project ID"},
+					{Name: "serviceAccountId", Required: true, Type: reflect.String, Description: "Service Account ID"},
 				},
 			},
 		),
