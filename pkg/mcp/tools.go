@@ -137,8 +137,12 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement create_project logic
-				return nil, fmt.Errorf("create_project not implemented")
+				name := params["name"].(string)
+				project, err := client.CreateProject(name)
+				if err != nil {
+					return nil, fmt.Errorf("failed to create project: %w", err)
+				}
+				return project.String(), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -154,8 +158,12 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement retrieve_project logic
-				return nil, fmt.Errorf("retrieve_project not implemented")
+				id := params["id"].(string)
+				project, err := client.RetrieveProject(id)
+				if err != nil {
+					return nil, fmt.Errorf("failed to retrieve project: %w", err)
+				}
+				return project.String(), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -171,8 +179,13 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement modify_project logic
-				return nil, fmt.Errorf("modify_project not implemented")
+				id := params["id"].(string)
+				name := params["name"].(string)
+				project, err := client.ModifyProject(id, name)
+				if err != nil {
+					return nil, fmt.Errorf("failed to modify project: %w", err)
+				}
+				return project.String(), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -189,8 +202,12 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement archive_project logic
-				return nil, fmt.Errorf("archive_project not implemented")
+				id := params["id"].(string)
+				project, err := client.ArchiveProject(id)
+				if err != nil {
+					return nil, fmt.Errorf("failed to archive project: %w", err)
+				}
+				return project.String(), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -207,8 +224,20 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement list_project_users logic
-				return nil, fmt.Errorf("list_project_users not implemented")
+				projectID := params["projectId"].(string)
+				limit := 0
+				if v, ok := params["limit"]; ok {
+					limit = int(v.(float64))
+				}
+				after := ""
+				if v, ok := params["after"]; ok {
+					after = v.(string)
+				}
+				users, err := client.ListProjectUsers(projectID, limit, after)
+				if err != nil {
+					return nil, fmt.Errorf("failed to list project users: %w", err)
+				}
+				return users.String(), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -226,8 +255,14 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement add_project_user logic
-				return nil, fmt.Errorf("add_project_user not implemented")
+				projectID := params["projectId"].(string)
+				userID := params["userId"].(string)
+				role := params["role"].(string)
+				user, err := client.CreateProjectUser(projectID, userID, role)
+				if err != nil {
+					return nil, fmt.Errorf("failed to add project user: %w", err)
+				}
+				return user.String(), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -245,8 +280,13 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement remove_project_user logic
-				return nil, fmt.Errorf("remove_project_user not implemented")
+				projectID := params["projectId"].(string)
+				userID := params["userId"].(string)
+				err := client.DeleteProjectUser(projectID, userID)
+				if err != nil {
+					return nil, fmt.Errorf("failed to remove project user: %w", err)
+				}
+				return fmt.Sprintf("User %s removed from project %s", userID, projectID), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -263,8 +303,13 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement retrieve_project_user logic
-				return nil, fmt.Errorf("retrieve_project_user not implemented")
+				projectID := params["projectId"].(string)
+				userID := params["userId"].(string)
+				user, err := client.RetrieveProjectUser(projectID, userID)
+				if err != nil {
+					return nil, fmt.Errorf("failed to retrieve project user: %w", err)
+				}
+				return user.String(), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -281,8 +326,14 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement modify_project_user logic
-				return nil, fmt.Errorf("modify_project_user not implemented")
+				projectID := params["projectId"].(string)
+				userID := params["userId"].(string)
+				role := params["role"].(string)
+				user, err := client.ModifyProjectUser(projectID, userID, role)
+				if err != nil {
+					return nil, fmt.Errorf("failed to modify project user: %w", err)
+				}
+				return user.String(), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -301,8 +352,20 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement list_project_api_keys logic
-				return nil, fmt.Errorf("list_project_api_keys not implemented")
+				projectID := params["projectId"].(string)
+				limit := 0
+				if v, ok := params["limit"]; ok {
+					limit = int(v.(float64))
+				}
+				after := ""
+				if v, ok := params["after"]; ok {
+					after = v.(string)
+				}
+				keys, err := client.ListProjectApiKeys(projectID, limit, after)
+				if err != nil {
+					return nil, fmt.Errorf("failed to list project API keys: %w", err)
+				}
+				return keys.String(), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
@@ -320,8 +383,13 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				// TODO: Implement delete_project_api_key logic
-				return nil, fmt.Errorf("delete_project_api_key not implemented")
+				projectID := params["projectId"].(string)
+				apiKeyID := params["apiKeyId"].(string)
+				err := client.DeleteProjectApiKey(projectID, apiKeyID)
+				if err != nil {
+					return nil, fmt.Errorf("failed to delete project API key: %w", err)
+				}
+				return fmt.Sprintf("API key %s deleted from project %s", apiKeyID, projectID), nil
 			},
 			ParamSchema{
 				Fields: []ParamField{
