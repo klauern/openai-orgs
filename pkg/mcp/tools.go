@@ -92,11 +92,12 @@ func (ps *ParamSchema) ExtractAndValidate(req mcp.CallToolRequest) (map[string]a
 			case bool:
 				params[field.Name] = v
 			case string:
-				if v == "true" || v == "1" {
+				switch v {
+				case "true", "1":
 					params[field.Name] = true
-				} else if v == "false" || v == "0" {
+				case "false", "0":
 					params[field.Name] = false
-				} else {
+				default:
 					return nil, fmt.Errorf("parameter '%s' must be a boolean (true/false/1/0)", field.Name)
 				}
 				continue // skip the type check below, already handled
