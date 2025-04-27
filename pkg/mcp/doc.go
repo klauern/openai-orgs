@@ -31,9 +31,23 @@ Resource data is returned in specialized MIME types for proper content handling:
 
 # Tools
 
-The package provides tools for direct organization management operations:
+The package provides a comprehensive set of tools for direct organization management operations, including:
 
-	list_projects - Lists all projects for the authenticated user
+- Project management: list_projects, create_project, retrieve_project, modify_project, archive_project
+- Project user management: list_project_users, add_project_user, remove_project_user, retrieve_project_user, modify_project_user
+- Project API key management: list_project_api_keys, retrieve_project_api_key, delete_project_api_key
+- Project service account management: list_project_service_accounts, create_project_service_account, retrieve_project_service_account, delete_project_service_account
+- User management: list_users, retrieve_user, delete_user, modify_user_role
+- Invite management: list_invites, create_invite, retrieve_invite, delete_invite
+- Usage and billing statistics: get_usage
+
+All tools are implemented using a generic handler and parameter schema pattern, ensuring consistent parameter validation, error handling, and testability. Parameters are registered with mcp.NewTool using type helpers (e.g., mcp.WithString, mcp.WithNumber, mcp.WithBoolean), making them visible and enforced in the MCP Inspector and compatible clients.
+
+# Tool Implementation Framework
+
+- Tools use a GenericToolHandler that takes a ToolHandlerFunc and a ParamSchema, handling parameter extraction, validation, client instantiation, and result formatting.
+- Each tool defines its parameters using a ParamSchema and registers them with mcp.NewTool.
+- The framework is designed for testability, with support for dependency injection and GoMock-based mocks.
 
 # Resource Updates
 
@@ -71,6 +85,12 @@ Resource subscriptions can be enabled through the subscription parameter:
 			}
 		}
 	}
+
+# Testing
+
+- Unit tests for tool handlers use the standard Go testing package and GoMock for interface mocking.
+- The framework supports dependency injection for easier testability.
+- See llm-workbooks/mcp-tests.txt for the current test plan and coverage goals.
 
 For more detailed information about specific components, refer to the individual
 type and function documentation.
