@@ -94,6 +94,13 @@ func GenericToolHandler(handler ToolHandlerFunc, paramSchema ParamSchema) func(c
 }
 
 func AddTools(s *server.MCPServer) {
+	logTool := func(name string, schema ParamSchema) {
+		fmt.Printf("Registering tool: %s\n", name)
+		for _, field := range schema.Fields {
+			fmt.Printf("  Param: %s (required: %v, type: %v, desc: %s)\n", field.Name, field.Required, field.Type, field.Description)
+		}
+	}
+
 	// Project Management
 	s.AddTool(mcp.NewTool(
 		"list_projects",
@@ -129,6 +136,13 @@ func AddTools(s *server.MCPServer) {
 			},
 		),
 	)
+	logTool("list_projects", ParamSchema{
+		Fields: []ParamField{
+			{Name: "limit", Required: false, Type: reflect.Float64, Description: "Maximum number of projects to return (default 100)"},
+			{Name: "after", Required: false, Type: reflect.String, Description: "Project ID to start after (for pagination)"},
+			{Name: "activeOnly", Required: false, Type: reflect.Bool, Description: "If true, only return active projects"},
+		},
+	})
 
 	// --- Project Management ---
 	s.AddTool(mcp.NewTool(
@@ -151,6 +165,11 @@ func AddTools(s *server.MCPServer) {
 			},
 		),
 	)
+	logTool("create_project", ParamSchema{
+		Fields: []ParamField{
+			{Name: "name", Required: true, Type: reflect.String, Description: "Project name"},
+		},
+	})
 
 	s.AddTool(mcp.NewTool(
 		"retrieve_project",
