@@ -7,7 +7,7 @@ require (
 	github.com/jarcoal/httpmock v1.4.0
 	github.com/mark3labs/mcp-go v0.23.1
 	github.com/urfave/cli/v3 v3.3.2
-	go.uber.org/mock v0.5.1
+	go.uber.org/mock v0.5.2
 )
 
 require (
