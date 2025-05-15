@@ -1,0 +1,103 @@
+---
+description: 
+globs: cmd/mcp/*.go,pkg/mcp/**/*
+alwaysApply: false
+---
+# MCP (Model Context Protocol) Development Guidelines
+
+## Core Components
+
+### Server Implementation
+- Always provide server name and version
+- Implement error handling for all server operations
+- Use stdio transport for local development and testing
+
+### Resources
+- Resources should follow URI pattern: `scheme://path`
+- Implement both static and dynamic resources where appropriate
+- Always provide resource descriptions and MIME types
+- Use resource templates for parameterized resources
+
+### Tools
+- Each tool must have:
+  1. Unique name
+  2. Clear description
+  3. Well-defined parameter schema
+  4. Error handling
+- Use `mcp.NewTool()` for tool creation
+- Implement tool handlers with context support
+
+## Code Style
+
+### Function Signatures
+```go
+// Tool handler signature
+func handler(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error)
+
+// Resource handler signature
+func handler(ctx context.Context, request mcp.GetResourceRequest) (*mcp.GetResourceResult, error)
+```
+
+### Error Handling
+- Use descriptive error messages with context
+- Wrap errors using `fmt.Errorf("failed to %s: %w", action, err)`
+- Return appropriate MCP error types
+
+### Parameter Validation
+- Use `mcp.Required()` for mandatory parameters
+- Add parameter descriptions using `mcp.Description()`
+- Use `mcp.Enum()` for fixed value sets
+- Validate all input parameters before processing
+
+## Testing
+
+### Unit Tests
+- Test each tool and resource handler independently
+- Mock external dependencies
+- Test error cases and edge conditions
+- Use context cancellation for timeout tests
+
+### Integration Tests
+- Test full server lifecycle
+- Verify protocol compliance
+- Test tool and resource interactions
+- Validate error handling paths
+
+## Best Practices
+
+### Resource Design
+- Use semantic URI schemes
+- Keep resource paths logical and hierarchical
+- Cache resource results when appropriate
+- Implement proper cleanup in resource handlers
+
+### Tool Design
+- Keep tools focused and single-purpose
+- Use clear, descriptive parameter names
+- Return structured results when possible
+- Document side effects in tool descriptions
+
+### Security
+- Validate all input parameters
+- Implement proper authentication when required
+- Sanitize resource paths
+- Limit tool capabilities appropriately
+
+## Common Commands
+
+- Start server: `server.ServeStdio(s)`
+- Add tool: `s.AddTool(tool, handler)`
+- Add resource: `s.AddResource(resource, handler)`
+- List tools: `s.ListTools()`
+
+## Dependencies
+
+### Required Imports
+```go
+import (
+    "context"
+    "fmt"
+    "github.com/mark3labs/mcp-go/mcp"
+    "github.com/mark3labs/mcp-go/server"
+)
+```
