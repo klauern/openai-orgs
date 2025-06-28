@@ -6,7 +6,13 @@
       "Bash(go test:*)",
       "Bash(git checkout:*)",
       "Bash(git pull:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh api:*)",
+      "Bash(find:*)",
+      "Bash(go mod:*)"
     ],
     "deny": []
   }

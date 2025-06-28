@@ -207,6 +207,23 @@ func deactivateProjectCertificatesCommand() *cli.Command {
 	}
 }
 
+// Helper functions
+
+// splitCommaSeparatedIDs handles comma-separated values in a single string.
+// It takes a slice of strings and returns a flattened slice where any string
+// containing commas is split into separate elements.
+func splitCommaSeparatedIDs(certificateIDs []string) []string {
+	var allIDs []string
+	for _, id := range certificateIDs {
+		if strings.Contains(id, ",") {
+			allIDs = append(allIDs, strings.Split(id, ",")...)
+		} else {
+			allIDs = append(allIDs, id)
+		}
+	}
+	return allIDs
+}
+
 // Action handlers
 
 func listOrgCertificates(ctx context.Context, cmd *cli.Command) error {
@@ -354,15 +371,7 @@ func activateOrgCertificates(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("at least one certificate ID must be provided")
 	}
 
-	// Handle comma-separated values in a single string
-	var allIDs []string
-	for _, id := range certificateIDs {
-		if strings.Contains(id, ",") {
-			allIDs = append(allIDs, strings.Split(id, ",")...)
-		} else {
-			allIDs = append(allIDs, id)
-		}
-	}
+	allIDs := splitCommaSeparatedIDs(certificateIDs)
 
 	response, err := client.ActivateOrganizationCertificates(allIDs)
 	if err != nil {
@@ -385,15 +394,7 @@ func deactivateOrgCertificates(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("at least one certificate ID must be provided")
 	}
 
-	// Handle comma-separated values in a single string
-	var allIDs []string
-	for _, id := range certificateIDs {
-		if strings.Contains(id, ",") {
-			allIDs = append(allIDs, strings.Split(id, ",")...)
-		} else {
-			allIDs = append(allIDs, id)
-		}
-	}
+	allIDs := splitCommaSeparatedIDs(certificateIDs)
 
 	response, err := client.DeactivateOrganizationCertificates(allIDs)
 	if err != nil {
@@ -457,15 +458,7 @@ func activateProjectCertificates(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("at least one certificate ID must be provided")
 	}
 
-	// Handle comma-separated values in a single string
-	var allIDs []string
-	for _, id := range certificateIDs {
-		if strings.Contains(id, ",") {
-			allIDs = append(allIDs, strings.Split(id, ",")...)
-		} else {
-			allIDs = append(allIDs, id)
-		}
-	}
+	allIDs := splitCommaSeparatedIDs(certificateIDs)
 
 	response, err := client.ActivateProjectCertificates(projectID, allIDs)
 	if err != nil {
@@ -489,15 +482,7 @@ func deactivateProjectCertificates(ctx context.Context, cmd *cli.Command) error 
 		return fmt.Errorf("at least one certificate ID must be provided")
 	}
 
-	// Handle comma-separated values in a single string
-	var allIDs []string
-	for _, id := range certificateIDs {
-		if strings.Contains(id, ",") {
-			allIDs = append(allIDs, strings.Split(id, ",")...)
-		} else {
-			allIDs = append(allIDs, id)
-		}
-	}
+	allIDs := splitCommaSeparatedIDs(certificateIDs)
 
 	response, err := client.DeactivateProjectCertificates(projectID, allIDs)
 	if err != nil {
