@@ -29,15 +29,15 @@ type mockCertificateClient interface {
 // Mock implementation
 type mockCertificateClientImpl struct {
 	ListOrganizationCertificatesFunc       func(limit int, after, order string) (*openaiorgs.ListResponse[openaiorgs.Certificate], error)
-	UploadCertificateFunc                   func(content, name string) (*openaiorgs.Certificate, error)
-	GetCertificateFunc                      func(id string, includeContent bool) (*openaiorgs.Certificate, error)
-	ModifyCertificateFunc                   func(id, name string) (*openaiorgs.Certificate, error)
-	DeleteCertificateFunc                   func(id string) (*openaiorgs.CertificateDeletedResponse, error)
-	ActivateOrganizationCertificatesFunc    func(certificateIDs []string) (*openaiorgs.CertificateActivationResponse, error)
-	DeactivateOrganizationCertificatesFunc  func(certificateIDs []string) (*openaiorgs.CertificateActivationResponse, error)
-	ListProjectCertificatesFunc             func(projectID string, limit int, after, order string) (*openaiorgs.ListResponse[openaiorgs.Certificate], error)
-	ActivateProjectCertificatesFunc         func(projectID string, certificateIDs []string) (*openaiorgs.CertificateActivationResponse, error)
-	DeactivateProjectCertificatesFunc       func(projectID string, certificateIDs []string) (*openaiorgs.CertificateActivationResponse, error)
+	UploadCertificateFunc                  func(content, name string) (*openaiorgs.Certificate, error)
+	GetCertificateFunc                     func(id string, includeContent bool) (*openaiorgs.Certificate, error)
+	ModifyCertificateFunc                  func(id, name string) (*openaiorgs.Certificate, error)
+	DeleteCertificateFunc                  func(id string) (*openaiorgs.CertificateDeletedResponse, error)
+	ActivateOrganizationCertificatesFunc   func(certificateIDs []string) (*openaiorgs.CertificateActivationResponse, error)
+	DeactivateOrganizationCertificatesFunc func(certificateIDs []string) (*openaiorgs.CertificateActivationResponse, error)
+	ListProjectCertificatesFunc            func(projectID string, limit int, after, order string) (*openaiorgs.ListResponse[openaiorgs.Certificate], error)
+	ActivateProjectCertificatesFunc        func(projectID string, certificateIDs []string) (*openaiorgs.CertificateActivationResponse, error)
+	DeactivateProjectCertificatesFunc      func(projectID string, certificateIDs []string) (*openaiorgs.CertificateActivationResponse, error)
 }
 
 func (m *mockCertificateClientImpl) ListOrganizationCertificates(limit int, after, order string) (*openaiorgs.ListResponse[openaiorgs.Certificate], error) {
@@ -298,11 +298,11 @@ func TestListOrgCertificatesHandler(t *testing.T) {
 
 func TestUploadCertificateHandler(t *testing.T) {
 	tests := []struct {
-		name    string
-		content string
+		name     string
+		content  string
 		certName string
-		mockFn  func(*mockCertificateClientImpl)
-		wantErr bool
+		mockFn   func(*mockCertificateClientImpl)
+		wantErr  bool
 	}{
 		{
 			name:     "successful upload",
