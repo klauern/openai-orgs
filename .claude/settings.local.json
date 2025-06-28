@@ -12,7 +12,8 @@
       "Bash(gh pr view:*)",
       "Bash(gh api:*)",
       "Bash(find:*)",
-      "Bash(go mod:*)"
+      "Bash(go mod:*)",
+      "Bash(go tool cover:*)"
     ],
     "deny": []
   }

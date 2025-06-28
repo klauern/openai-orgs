@@ -216,9 +216,18 @@ func splitCommaSeparatedIDs(certificateIDs []string) []string {
 	var allIDs []string
 	for _, id := range certificateIDs {
 		if strings.Contains(id, ",") {
-			allIDs = append(allIDs, strings.Split(id, ",")...)
+			parts := strings.Split(id, ",")
+			for _, part := range parts {
+				trimmed := strings.TrimSpace(part)
+				if trimmed != "" {
+					allIDs = append(allIDs, trimmed)
+				}
+			}
 		} else {
-			allIDs = append(allIDs, id)
+			trimmed := strings.TrimSpace(id)
+			if trimmed != "" {
+				allIDs = append(allIDs, trimmed)
+			}
 		}
 	}
 	return allIDs
