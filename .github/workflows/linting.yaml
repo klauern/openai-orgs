@@ -24,9 +24,10 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
+          cache: true
 
       - name: Golangci-lint
         uses: golangci/golangci-lint-action@v8.0.0
-
-      - name: Run golangci-lint
-        run: golangci-lint run --timeout=5m
+        with:
+          # This action has built-in caching for golangci-lint binary and analysis cache
+          # Combined with setup-go cache: true, this provides optimal performance
