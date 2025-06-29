@@ -20,6 +20,7 @@ func main() {
 		Commands: []*cli.Command{
 			cmd.AdminAPIKeysCommand(),
 			cmd.AuditLogsCommand(),
+			cmd.CertificatesCommand(),
 			cmd.InvitesCommand(),
 			cmd.UsersCommand(),
 			cmd.ProjectsCommand(),

@@ -20,9 +20,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
-
-      - name: Install dependencies
-        run: go mod download
+          cache: true
 
       - name: Run tests
         run: go test -coverprofile=coverage.txt
