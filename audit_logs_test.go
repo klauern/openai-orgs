@@ -1,7 +1,9 @@
 package openaiorgs
 
 import (
+	"encoding/json"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -265,6 +267,116 @@ func TestParseAuditLogPayload(t *testing.T) {
 			got := tc.want
 			if !reflect.DeepEqual(tc.want, got) {
 				t.Errorf("parseAuditLogPayload() = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestAuditLogUnmarshalJSON_EdgeCases(t *testing.T) {
+	tests := map[string]struct {
+		input     string
+		expectErr bool
+		errMsg    string
+		want      *AuditLog
+	}{
+		"invalid JSON": {
+			input:     `{"invalid": json}`,
+			expectErr: true,
+		},
+		"unknown audit log type": {
+			input:     `{"id": "log_123", "type": "unknown.event", "effective_at": 1234567890, "details": {}}`,
+			expectErr: true,
+			errMsg:    "unknown audit log type: unknown.event",
+		},
+		"null details": {
+			input: `{"id": "log_123", "type": "api_key.created", "effective_at": 1234567890, "details": null}`,
+			want: &AuditLog{
+				ID:          "log_123",
+				Type:        "api_key.created",
+				EffectiveAt: UnixSeconds(time.Unix(1234567890, 0)),
+				Details:     nil,
+			},
+		},
+		"empty details": {
+			input: `{"id": "log_123", "type": "api_key.created", "effective_at": 1234567890}`,
+			want: &AuditLog{
+				ID:          "log_123",
+				Type:        "api_key.created",
+				EffectiveAt: UnixSeconds(time.Unix(1234567890, 0)),
+				Details:     nil,
+			},
+		},
+		"malformed details JSON": {
+			input:     `{"id": "log_123", "type": "api_key.created", "effective_at": 1234567890, "details": {"invalid": json}}`,
+			expectErr: true,
+			errMsg:    "invalid character",
+		},
+		"valid api_key.created with details": {
+			input: `{"id": "log_123", "type": "api_key.created", "effective_at": 1234567890, "details": {"id": "key_123", "data": {"scopes": ["scope1", "scope2"]}}}`,
+			want: &AuditLog{
+				ID:          "log_123",
+				Type:        "api_key.created",
+				EffectiveAt: UnixSeconds(time.Unix(1234567890, 0)),
+				Details: &APIKeyCreated{
+					ID: "key_123",
+					Data: struct {
+						Scopes []string `json:"scopes"`
+					}{
+						Scopes: []string{"scope1", "scope2"},
+					},
+				},
+			},
+		},
+		"all event types can unmarshal": {
+			input: `{"id": "log_123", "type": "project.archived", "effective_at": 1234567890, "details": {"id": "proj_123"}}`,
+			want: &AuditLog{
+				ID:          "log_123",
+				Type:        "project.archived",
+				EffectiveAt: UnixSeconds(time.Unix(1234567890, 0)),
+				Details: &ProjectArchived{
+					ID: "proj_123",
+				},
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			var log AuditLog
+			err := json.Unmarshal([]byte(tc.input), &log)
+
+			if tc.expectErr {
+				if err == nil {
+					t.Errorf("Expected error but got none")
+					return
+				}
+				if tc.errMsg != "" && !strings.Contains(err.Error(), tc.errMsg) {
+					t.Errorf("Expected error message to contain %q, got %q", tc.errMsg, err.Error())
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Expected no error but got: %v", err)
+				return
+			}
+
+			if tc.want != nil {
+				if log.ID != tc.want.ID {
+					t.Errorf("Expected ID %q, got %q", tc.want.ID, log.ID)
+				}
+				if log.Type != tc.want.Type {
+					t.Errorf("Expected Type %q, got %q", tc.want.Type, log.Type)
+				}
+				if log.EffectiveAt != tc.want.EffectiveAt {
+					t.Errorf("Expected EffectiveAt %v, got %v", tc.want.EffectiveAt, log.EffectiveAt)
+				}
+				if tc.want.Details == nil && log.Details != nil {
+					t.Errorf("Expected Details to be nil, got %v", log.Details)
+				}
+				if tc.want.Details != nil && log.Details == nil {
+					t.Errorf("Expected Details to be non-nil, got nil")
+				}
 			}
 		})
 	}

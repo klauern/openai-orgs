@@ -50,4 +50,18 @@ type OpenAIOrgsClient interface {
 
 	// Audit Logs
 	ListAuditLogs(params *AuditLogListParams) (*ListResponse[AuditLog], error)
+
+	// Organization Certificates
+	ListOrganizationCertificates(limit int, after string, order string) (*ListResponse[Certificate], error)
+	UploadCertificate(content string, name string) (*Certificate, error)
+	GetCertificate(certificateID string, includeContent bool) (*Certificate, error)
+	ModifyCertificate(certificateID string, name string) (*Certificate, error)
+	DeleteCertificate(certificateID string) (*CertificateDeletedResponse, error)
+	ActivateOrganizationCertificates(certificateIDs []string) (*CertificateActivationResponse, error)
+	DeactivateOrganizationCertificates(certificateIDs []string) (*CertificateActivationResponse, error)
+
+	// Project Certificates
+	ListProjectCertificates(projectID string, limit int, after string, order string) (*ListResponse[Certificate], error)
+	ActivateProjectCertificates(projectID string, certificateIDs []string) (*CertificateActivationResponse, error)
+	DeactivateProjectCertificates(projectID string, certificateIDs []string) (*CertificateActivationResponse, error)
 }
