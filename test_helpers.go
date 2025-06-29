@@ -57,23 +57,6 @@ func (h *testHelper) mockResponse(method, endpoint string, statusCode int, respo
 	httpmock.RegisterResponder(method, testBaseURL+endpoint, responder)
 }
 
-// mockListResponse is a helper for mocking paginated list responses.
-// It creates a ListResponse with the provided items and registers it as a mock response.
-//
-// Parameters:
-//   - method: HTTP method (GET, POST, etc.)
-//   - endpoint: API endpoint path (without base URL)
-//   - items: The items to include in the list response
-func (h *testHelper) mockListResponse(method, endpoint string, items any) { //nolint:unused
-	response := ListResponse[any]{
-		Object:  "list",
-		Data:    []any{items},
-		FirstID: "first_id",
-		LastID:  "last_id",
-		HasMore: false,
-	}
-	h.mockResponse(method, endpoint, http.StatusOK, response)
-}
 
 // cleanup removes all registered HTTP mocks.
 // This should be called after each test to ensure a clean state.
