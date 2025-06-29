@@ -57,7 +57,6 @@ func (h *testHelper) mockResponse(method, endpoint string, statusCode int, respo
 	httpmock.RegisterResponder(method, testBaseURL+endpoint, responder)
 }
 
-
 // cleanup removes all registered HTTP mocks.
 // This should be called after each test to ensure a clean state.
 func (h *testHelper) cleanup() {
