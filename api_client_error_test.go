@@ -99,6 +99,7 @@ func TestNewClient_EdgeCases(t *testing.T) {
 		client := NewClient("", "test-token")
 		if client == nil {
 			t.Error("Expected client to be created with default baseURL")
+			return
 		}
 		// Check that it uses the default base URL
 		if !strings.Contains(client.BaseURL, "api.openai.com") {
@@ -111,6 +112,7 @@ func TestNewClient_EdgeCases(t *testing.T) {
 		client := NewClient(customURL, "test-token")
 		if client == nil {
 			t.Error("Expected client to be created with custom baseURL")
+			return
 		}
 		if client.BaseURL != customURL {
 			t.Errorf("Expected baseURL to be %s, got: %s", customURL, client.BaseURL)
