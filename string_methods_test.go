@@ -34,12 +34,12 @@ func TestString_Methods(t *testing.T) {
 
 	t.Run("User.String", func(t *testing.T) {
 		user := User{
-			Object:    "organization.user",
-			ID:        "user_123",
-			Name:      "John Doe",
-			Email:     "john@example.com",
-			Role:      "owner",
-			AddedAt:   UnixSeconds(testTime),
+			Object:  "organization.user",
+			ID:      "user_123",
+			Name:    "John Doe",
+			Email:   "john@example.com",
+			Role:    "owner",
+			AddedAt: UnixSeconds(testTime),
 		}
 
 		result := user.String()
@@ -169,11 +169,11 @@ func TestString_Methods(t *testing.T) {
 
 	t.Run("ProjectServiceAccount.String", func(t *testing.T) {
 		serviceAccount := ProjectServiceAccount{
-			Object:     "organization.project.service_account",
-			ID:         "sa_123",
-			Name:       "Test Service Account",
-			Role:       "member",
-			CreatedAt:  UnixSeconds(testTime),
+			Object:    "organization.project.service_account",
+			ID:        "sa_123",
+			Name:      "Test Service Account",
+			Role:      "member",
+			CreatedAt: UnixSeconds(testTime),
 		}
 
 		result := serviceAccount.String()
