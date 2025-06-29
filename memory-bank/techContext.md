@@ -6,7 +6,7 @@
 - resty/v2 (HTTP client)
 - urfave/cli/v3 (CLI framework)
 - jarcoal/httpmock (HTTP mocking for tests)
-- uber.go/mock (interface mocking)
+- uber-go/mock (interface mocking)
 
 ## Development Setup
 
