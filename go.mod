@@ -6,7 +6,7 @@ require (
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/jarcoal/httpmock v1.4.0
 	github.com/mark3labs/mcp-go v0.32.0
-	github.com/urfave/cli/v3 v3.3.8
+	github.com/urfave/cli/v3 v3.5.0
 	go.uber.org/mock v0.5.2
 )
 
