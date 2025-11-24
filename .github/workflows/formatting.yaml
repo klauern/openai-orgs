@@ -21,7 +21,7 @@ jobs:
       pull-requests: write # For commenting on PRs
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.head_ref }} # Important for PR support
 
