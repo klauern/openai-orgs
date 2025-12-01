@@ -78,7 +78,11 @@ func (ps *ParamSchema) ToMCPParameterSchema() map[string]any {
 // Returns a map of validated parameters or an error if validation fails
 func (ps *ParamSchema) ExtractAndValidate(req mcp.CallToolRequest) (map[string]any, error) {
 	params := make(map[string]any)
-	args := req.Params.Arguments
+	args, ok := req.Params.Arguments.(map[string]any)
+	if !ok {
+		// If Arguments is nil or not a map, treat as empty
+		args = make(map[string]any)
+	}
 	for _, field := range ps.Fields {
 		val, ok := args[field.Name]
 		if !ok {
