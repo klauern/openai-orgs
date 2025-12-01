@@ -471,6 +471,12 @@ func TestAuditLogUnmarshalJSON_EdgeCases(t *testing.T) {
 			expectErr: true,
 			errMsg:    "invalid character",
 		},
+		"event details type mismatch": {
+			// Valid JSON but wrong type for the expected struct field (id should be string, not number)
+			input:     `{"id": "log_123", "type": "api_key.deleted", "effective_at": 1234567890, "api_key.deleted": {"id": 12345}}`,
+			expectErr: true,
+			errMsg:    "failed to unmarshal details",
+		},
 		"valid api_key.created with dynamic key": {
 			input: `{"id": "log_123", "type": "api_key.created", "effective_at": 1234567890, "api_key.created": {"id": "key_123", "data": {"scopes": ["scope1", "scope2"]}}}`,
 			want: &AuditLog{
@@ -795,6 +801,12 @@ func TestAuditLogWithDynamicEventKey(t *testing.T) {
 		},
 		"logout.succeeded with no details": {
 			input:       `{"id": "log_123", "type": "logout.succeeded", "effective_at": 1234567890, "actor": {"type": "session"}}`,
+			wantType:    "logout.succeeded",
+			wantDetails: nil,
+		},
+		"logout.succeeded with event data still returns nil": {
+			// Even if logout.succeeded has event data, we return nil details per the spec
+			input:       `{"id": "log_123", "type": "logout.succeeded", "effective_at": 1234567890, "actor": {"type": "session"}, "logout.succeeded": {}}`,
 			wantType:    "logout.succeeded",
 			wantDetails: nil,
 		},
