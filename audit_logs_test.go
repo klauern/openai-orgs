@@ -550,39 +550,40 @@ func TestAuditLogUnmarshalJSON_EdgeCases(t *testing.T) {
 
 // TestSessionWithIPAddressDetails tests that ja3, ja4, and ip_address_details are correctly parsed
 func TestSessionWithIPAddressDetails(t *testing.T) {
+	// Using synthetic/anonymized test data per RFC 5737 (documentation IP ranges)
 	input := `{
 		"object": "organization.audit_log",
-		"id": "audit_log-PaILxsC4mrLvPYdakaGGtaMy",
+		"id": "audit_log-TestAuditLogId123456789",
 		"type": "invite.deleted",
 		"effective_at": 1759243237,
 		"project": {
-			"id": "proj_8E9dKUupvJVY2Ge9c3R4TwhH",
+			"id": "proj_TestProjectId12345678",
 			"name": "Default project"
 		},
 		"actor": {
 			"type": "session",
 			"session": {
 				"user": {
-					"id": "user-4e88SmmkWl80jnhGaAMau4Uk",
-					"email": "nklauer@zendesk.com"
+					"id": "user-TestUserId1234567890",
+					"email": "user@example.com"
 				},
-				"ip_address": "216.198.0.23",
+				"ip_address": "203.0.113.1",
 				"user_agent": "go-resty/2.16.2 (https://github.com/go-resty/resty)",
-				"ja3": "e69402f870ecf542b4f017b0ed32936a",
-				"ja4": "t13d1312h2_f57a46bbacb6_ab7e3b40a677",
+				"ja3": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+				"ja4": "t13d1312h2_abcdef123456_1234567890ab",
 				"ip_address_details": {
-					"country": "US",
-					"city": "Portland",
-					"region": "Oregon",
-					"region_code": "OR",
-					"asn": "16509",
-					"latitude": "45.52345",
-					"longitude": "-122.67621"
+					"country": "XX",
+					"city": "Test City",
+					"region": "Test Region",
+					"region_code": "TR",
+					"asn": "12345",
+					"latitude": "0.0",
+					"longitude": "0.0"
 				}
 			}
 		},
 		"invite.deleted": {
-			"id": "invite-hhPjGZ2Zu09bzFhWoPUWacUb"
+			"id": "invite-TestInviteId123456789"
 		}
 	}`
 
@@ -598,8 +599,8 @@ func TestSessionWithIPAddressDetails(t *testing.T) {
 	}
 
 	// Verify basic fields
-	if log.ID != "audit_log-PaILxsC4mrLvPYdakaGGtaMy" {
-		t.Errorf("Expected ID 'audit_log-PaILxsC4mrLvPYdakaGGtaMy', got %q", log.ID)
+	if log.ID != "audit_log-TestAuditLogId123456789" {
+		t.Errorf("Expected ID 'audit_log-TestAuditLogId123456789', got %q", log.ID)
 	}
 	if log.Type != "invite.deleted" {
 		t.Errorf("Expected Type 'invite.deleted', got %q", log.Type)
@@ -611,11 +612,11 @@ func TestSessionWithIPAddressDetails(t *testing.T) {
 	}
 
 	session := log.Actor.Session
-	if session.JA3 != "e69402f870ecf542b4f017b0ed32936a" {
-		t.Errorf("Expected JA3 'e69402f870ecf542b4f017b0ed32936a', got %q", session.JA3)
+	if session.JA3 != "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4" {
+		t.Errorf("Expected JA3 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4', got %q", session.JA3)
 	}
-	if session.JA4 != "t13d1312h2_f57a46bbacb6_ab7e3b40a677" {
-		t.Errorf("Expected JA4 't13d1312h2_f57a46bbacb6_ab7e3b40a677', got %q", session.JA4)
+	if session.JA4 != "t13d1312h2_abcdef123456_1234567890ab" {
+		t.Errorf("Expected JA4 't13d1312h2_abcdef123456_1234567890ab', got %q", session.JA4)
 	}
 
 	// Verify IP address details
@@ -624,26 +625,26 @@ func TestSessionWithIPAddressDetails(t *testing.T) {
 	}
 
 	ipDetails := session.IPAddressDetails
-	if ipDetails.Country != "US" {
-		t.Errorf("Expected Country 'US', got %q", ipDetails.Country)
+	if ipDetails.Country != "XX" {
+		t.Errorf("Expected Country 'XX', got %q", ipDetails.Country)
 	}
-	if ipDetails.City != "Portland" {
-		t.Errorf("Expected City 'Portland', got %q", ipDetails.City)
+	if ipDetails.City != "Test City" {
+		t.Errorf("Expected City 'Test City', got %q", ipDetails.City)
 	}
-	if ipDetails.Region != "Oregon" {
-		t.Errorf("Expected Region 'Oregon', got %q", ipDetails.Region)
+	if ipDetails.Region != "Test Region" {
+		t.Errorf("Expected Region 'Test Region', got %q", ipDetails.Region)
 	}
-	if ipDetails.RegionCode != "OR" {
-		t.Errorf("Expected RegionCode 'OR', got %q", ipDetails.RegionCode)
+	if ipDetails.RegionCode != "TR" {
+		t.Errorf("Expected RegionCode 'TR', got %q", ipDetails.RegionCode)
 	}
-	if ipDetails.ASN != "16509" {
-		t.Errorf("Expected ASN '16509', got %q", ipDetails.ASN)
+	if ipDetails.ASN != "12345" {
+		t.Errorf("Expected ASN '12345', got %q", ipDetails.ASN)
 	}
-	if ipDetails.Latitude != "45.52345" {
-		t.Errorf("Expected Latitude '45.52345', got %q", ipDetails.Latitude)
+	if ipDetails.Latitude != "0.0" {
+		t.Errorf("Expected Latitude '0.0', got %q", ipDetails.Latitude)
 	}
-	if ipDetails.Longitude != "-122.67621" {
-		t.Errorf("Expected Longitude '-122.67621', got %q", ipDetails.Longitude)
+	if ipDetails.Longitude != "0.0" {
+		t.Errorf("Expected Longitude '0.0', got %q", ipDetails.Longitude)
 	}
 
 	// Verify event details
@@ -651,7 +652,7 @@ func TestSessionWithIPAddressDetails(t *testing.T) {
 	if !ok {
 		t.Fatalf("Expected Details to be *InviteDeleted, got %T", log.Details)
 	}
-	if details.ID != "invite-hhPjGZ2Zu09bzFhWoPUWacUb" {
+	if details.ID != "invite-TestInviteId123456789" {
 		t.Errorf("Expected invite ID 'invite-hhPjGZ2Zu09bzFhWoPUWacUb', got %q", details.ID)
 	}
 }
