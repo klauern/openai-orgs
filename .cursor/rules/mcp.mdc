@@ -1,5 +1,5 @@
 ---
-description:
+description: MCP (Model Context Protocol) Development Guidelines
 globs: cmd/mcp/*.go,pkg/mcp/**/*
 alwaysApply: false
 ---
