@@ -1,0 +1,9 @@
+---
+globs: "*_test.go"
+---
+# Go Testing Guidelines
+
+- NEVER use `github.com/stretchr/testify`
+- Use [test_helpers.go](mdc:test_helpers.go) patterns: `newTestHelper(t)`
+- Mock HTTP with `httpmock`, not API behavior
+- Generate interfaces for testability

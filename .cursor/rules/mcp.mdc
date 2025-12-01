@@ -1,5 +1,5 @@
 ---
-description: 
+description:
 globs: cmd/mcp/*.go,pkg/mcp/**/*
 alwaysApply: false
 ---
@@ -76,6 +76,8 @@ func handler(ctx context.Context, request mcp.GetResourceRequest) (*mcp.GetResou
 - Use clear, descriptive parameter names
 - Return structured results when possible
 - Document side effects in tool descriptions
+- Use GenericToolHandler with ToolHandlerFunc and ParamSchema for validation
+- See [tools.go](mdc:pkg/mcp/tools.go) for the handler pattern
 
 ### Security
 - Validate all input parameters
