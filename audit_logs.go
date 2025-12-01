@@ -20,6 +20,7 @@ type AuditLogListResponse struct {
 
 // AuditLog represents the main audit log object
 type AuditLog struct {
+	Object      string        `json:"object,omitempty"`
 	ID          string        `json:"id"`
 	Type        string        `json:"type"`
 	EffectiveAt UnixSeconds   `json:"effective_at"`
@@ -43,9 +44,23 @@ type Actor struct {
 
 // Session represents user session information
 type Session struct {
-	User      AuditUser `json:"user"`
-	IPAddress string    `json:"ip_address"`
-	UserAgent string    `json:"user_agent"`
+	User             AuditUser         `json:"user"`
+	IPAddress        string            `json:"ip_address"`
+	UserAgent        string            `json:"user_agent"`
+	JA3              string            `json:"ja3,omitempty"`
+	JA4              string            `json:"ja4,omitempty"`
+	IPAddressDetails *IPAddressDetails `json:"ip_address_details,omitempty"`
+}
+
+// IPAddressDetails contains geolocation information for an IP address
+type IPAddressDetails struct {
+	Country    string `json:"country,omitempty"`
+	City       string `json:"city,omitempty"`
+	Region     string `json:"region,omitempty"`
+	RegionCode string `json:"region_code,omitempty"`
+	ASN        string `json:"asn,omitempty"`
+	Latitude   string `json:"latitude,omitempty"`
+	Longitude  string `json:"longitude,omitempty"`
 }
 
 // APIKeyActor represents API key information in the actor field
@@ -221,32 +236,43 @@ type AuditLogListParams struct {
 	Before      string       `json:"before,omitempty"`
 }
 
-// Add this type to store the raw event data
+// rawAuditLog is used internally to parse audit log JSON with dynamic event keys
 type rawAuditLog struct {
-	ID          string          `json:"id"`
-	Type        string          `json:"type"`
-	EffectiveAt UnixSeconds     `json:"effective_at"`
-	Project     *AuditProject   `json:"project,omitempty"`
-	Actor       Actor           `json:"actor"`
-	Details     json.RawMessage `json:"details"` // Store the raw JSON temporarily
+	Object      string        `json:"object,omitempty"`
+	ID          string        `json:"id"`
+	Type        string        `json:"type"`
+	EffectiveAt UnixSeconds   `json:"effective_at"`
+	Project     *AuditProject `json:"project,omitempty"`
+	Actor       Actor         `json:"actor"`
 }
 
-// Add UnmarshalJSON to AuditLog to handle the event-specific details
+// UnmarshalJSON handles the event-specific details using dynamic keys.
+// The OpenAI API returns event details under a key matching the event type
+// (e.g., "invite.deleted": {...}) rather than a static "details" key.
 func (a *AuditLog) UnmarshalJSON(data []byte) error {
+	// First, unmarshal the common fields
 	var raw rawAuditLog
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
 	}
 
 	// Copy the common fields
+	a.Object = raw.Object
 	a.ID = raw.ID
 	a.Type = raw.Type
 	a.EffectiveAt = raw.EffectiveAt
 	a.Project = raw.Project
 	a.Actor = raw.Actor
 
-	// If details is empty or null, return early
-	if len(raw.Details) == 0 || string(raw.Details) == "null" {
+	// Now unmarshal into a map to extract the dynamic event key
+	var rawMap map[string]json.RawMessage
+	if err := json.Unmarshal(data, &rawMap); err != nil {
+		return err
+	}
+
+	// Look for event details under the dynamic key (e.g., "invite.deleted")
+	eventData, hasEventData := rawMap[raw.Type]
+	if !hasEventData || len(eventData) == 0 || string(eventData) == "null" {
 		a.Details = nil
 		return nil
 	}
@@ -272,6 +298,10 @@ func (a *AuditLog) UnmarshalJSON(data []byte) error {
 		details = &LoginSucceeded{}
 	case "logout.failed":
 		details = &LogoutFailed{}
+	case "logout.succeeded":
+		// logout.succeeded has no additional details
+		a.Details = nil
+		return nil
 	case "organization.updated":
 		details = &OrganizationUpdated{}
 	case "project.created":
@@ -297,10 +327,18 @@ func (a *AuditLog) UnmarshalJSON(data []byte) error {
 	case "user.deleted":
 		details = &UserDeleted{}
 	default:
-		return fmt.Errorf("unknown audit log type: %s", raw.Type)
+		// For unknown event types, store the raw JSON as a map
+		var rawDetails map[string]any
+		if err := json.Unmarshal(eventData, &rawDetails); err != nil {
+			// If we can't parse as a map, just store nil
+			a.Details = nil
+			return nil
+		}
+		a.Details = rawDetails
+		return nil
 	}
 
-	if err := json.Unmarshal(raw.Details, details); err != nil {
+	if err := json.Unmarshal(eventData, details); err != nil {
 		return fmt.Errorf("failed to unmarshal details for type %s: %w", raw.Type, err)
 	}
 
