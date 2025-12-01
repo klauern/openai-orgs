@@ -447,6 +447,16 @@ func TestAuditLogUnmarshalJSON_EdgeCases(t *testing.T) {
 				Details:     map[string]any{"some": "data"},
 			},
 		},
+		"unknown event type with array value returns nil details": {
+			// When unknown event type has non-object JSON (like an array), store nil
+			input: `{"id": "log_123", "type": "unknown.array", "effective_at": 1234567890, "unknown.array": ["item1", "item2"]}`,
+			want: &AuditLog{
+				ID:          "log_123",
+				Type:        "unknown.array",
+				EffectiveAt: UnixSeconds(time.Unix(1234567890, 0)),
+				Details:     nil,
+			},
+		},
 		"no event details": {
 			input: `{"id": "log_123", "type": "api_key.created", "effective_at": 1234567890}`,
 			want: &AuditLog{
@@ -772,6 +782,11 @@ func TestAuditLogWithDynamicEventKey(t *testing.T) {
 			input:       `{"id": "log_123", "type": "login.failed", "effective_at": 1234567890, "actor": {"type": "session"}, "login.failed": {"error_code": "invalid_credentials", "error_message": "Bad password"}}`,
 			wantType:    "login.failed",
 			wantDetails: &LoginFailed{ErrorCode: "invalid_credentials", ErrorMessage: "Bad password"},
+		},
+		"login.succeeded": {
+			input:       `{"id": "log_123", "type": "login.succeeded", "effective_at": 1234567890, "actor": {"type": "session"}, "login.succeeded": {"object": "audit.event", "id": "login_456", "type": "login.succeeded", "effective_at": 1234567890, "actor": {"type": "session"}}}`,
+			wantType:    "login.succeeded",
+			wantDetails: &LoginSucceeded{Object: "audit.event", ID: "login_456", Type: "login.succeeded", EffectiveAt: 1234567890, Actor: Actor{Type: "session"}},
 		},
 		"logout.failed": {
 			input:       `{"id": "log_123", "type": "logout.failed", "effective_at": 1234567890, "actor": {"type": "session"}, "logout.failed": {"error_code": "session_expired", "error_message": "Session already expired"}}`,
