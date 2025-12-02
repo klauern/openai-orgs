@@ -411,3 +411,30 @@ func (al *AuditLog) String() string {
 	return fmt.Sprintf("AuditLog{ID: %s, Type: %s, Project: %s, Actor: %s, Time: %s}",
 		al.ID, al.Type, projectInfo, actorInfo, al.EffectiveAt.String())
 }
+
+// MarshalJSON implements json.Marshaler to properly serialize the AuditLog
+// including the event-specific details under the dynamic key (e.g., "invite.deleted")
+func (al AuditLog) MarshalJSON() ([]byte, error) {
+	// Create a map to hold all fields
+	result := make(map[string]any)
+
+	// Add standard fields
+	if al.Object != "" {
+		result["object"] = al.Object
+	}
+	result["id"] = al.ID
+	result["type"] = al.Type
+	result["effective_at"] = al.EffectiveAt
+	result["actor"] = al.Actor
+
+	if al.Project != nil {
+		result["project"] = al.Project
+	}
+
+	// Add event-specific details under the dynamic key
+	if al.Details != nil && al.Type != "" {
+		result[al.Type] = al.Details
+	}
+
+	return json.Marshal(result)
+}

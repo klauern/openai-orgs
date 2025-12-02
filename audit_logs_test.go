@@ -921,3 +921,464 @@ func TestAuditLogWithDynamicEventKey(t *testing.T) {
 		})
 	}
 }
+
+// TestAuditLogMarshalJSON tests the MarshalJSON method for proper serialization
+func TestAuditLogMarshalJSON(t *testing.T) {
+	testTime := time.Date(2024, 3, 14, 12, 0, 0, 0, time.UTC)
+
+	tests := map[string]struct {
+		log            AuditLog
+		wantKeys       []string       // keys that must be present
+		wantAbsentKeys []string       // keys that must NOT be present
+		wantDynamicKey string         // the dynamic event key (e.g., "invite.deleted")
+		checkValue     map[string]any // specific values to check
+	}{
+		"full audit log with all fields": {
+			log: AuditLog{
+				Object:      "organization.audit_log",
+				ID:          "audit_log-123",
+				Type:        "invite.deleted",
+				EffectiveAt: UnixSeconds(testTime),
+				Project: &AuditProject{
+					ID:   "proj_123",
+					Name: "Test Project",
+				},
+				Actor: Actor{
+					Type: "session",
+					Session: &Session{
+						User: AuditUser{
+							ID:    "user_123",
+							Email: "test@example.com",
+						},
+						IPAddress: "127.0.0.1",
+					},
+				},
+				Details: &InviteDeleted{ID: "invite-456"},
+			},
+			wantKeys:       []string{"object", "id", "type", "effective_at", "actor", "project", "invite.deleted"},
+			wantDynamicKey: "invite.deleted",
+		},
+		"audit log without object field": {
+			log: AuditLog{
+				ID:          "audit_log-123",
+				Type:        "api_key.created",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor: Actor{
+					Type: "session",
+				},
+				Details: &APIKeyCreated{
+					ID: "key_123",
+					Data: struct {
+						Scopes []string `json:"scopes"`
+					}{Scopes: []string{"read"}},
+				},
+			},
+			wantKeys:       []string{"id", "type", "effective_at", "actor", "api_key.created"},
+			wantAbsentKeys: []string{"object", "project"},
+			wantDynamicKey: "api_key.created",
+		},
+		"audit log without project": {
+			log: AuditLog{
+				Object:      "organization.audit_log",
+				ID:          "audit_log-456",
+				Type:        "login.succeeded",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor: Actor{
+					Type: "session",
+				},
+				Project: nil,
+				Details: &LoginSucceeded{
+					Object: "audit.event",
+					ID:     "login_789",
+					Type:   "login.succeeded",
+				},
+			},
+			wantKeys:       []string{"object", "id", "type", "effective_at", "actor", "login.succeeded"},
+			wantAbsentKeys: []string{"project"},
+			wantDynamicKey: "login.succeeded",
+		},
+		"audit log without details": {
+			log: AuditLog{
+				Object:      "organization.audit_log",
+				ID:          "audit_log-789",
+				Type:        "logout.succeeded",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor: Actor{
+					Type: "session",
+				},
+				Details: nil,
+			},
+			wantKeys:       []string{"object", "id", "type", "effective_at", "actor"},
+			wantAbsentKeys: []string{"project", "logout.succeeded"},
+		},
+		"audit log with empty type and nil details": {
+			log: AuditLog{
+				ID:          "audit_log-000",
+				Type:        "",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor: Actor{
+					Type: "unknown",
+				},
+				Details: nil,
+			},
+			wantKeys:       []string{"id", "type", "effective_at", "actor"},
+			wantAbsentKeys: []string{"object", "project"},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			data, err := json.Marshal(tc.log)
+			if err != nil {
+				t.Fatalf("MarshalJSON failed: %v", err)
+			}
+
+			// Parse the result to check structure
+			var result map[string]any
+			if err := json.Unmarshal(data, &result); err != nil {
+				t.Fatalf("Failed to unmarshal result: %v", err)
+			}
+
+			// Check required keys are present
+			for _, key := range tc.wantKeys {
+				if _, ok := result[key]; !ok {
+					t.Errorf("Expected key %q to be present, but it was missing. Got keys: %v", key, getKeys(result))
+				}
+			}
+
+			// Check absent keys are not present
+			for _, key := range tc.wantAbsentKeys {
+				if _, ok := result[key]; ok {
+					t.Errorf("Expected key %q to be absent, but it was present", key)
+				}
+			}
+
+			// Check dynamic key contains the details
+			if tc.wantDynamicKey != "" {
+				if _, ok := result[tc.wantDynamicKey]; !ok {
+					t.Errorf("Expected dynamic key %q to be present", tc.wantDynamicKey)
+				}
+			}
+		})
+	}
+}
+
+// TestAuditLogMarshalJSON_RoundTrip tests that unmarshal -> marshal produces equivalent JSON
+func TestAuditLogMarshalJSON_RoundTrip(t *testing.T) {
+	tests := map[string]struct {
+		input string
+	}{
+		"invite.deleted with full details": {
+			input: `{"object":"organization.audit_log","id":"audit_log-123","type":"invite.deleted","effective_at":1710417600,"project":{"id":"proj_123","name":"Test Project"},"actor":{"type":"session","session":{"user":{"id":"user_123","email":"test@example.com"},"ip_address":"127.0.0.1","user_agent":"test-agent"}},"invite.deleted":{"id":"invite-456"}}`,
+		},
+		"api_key.created with scopes": {
+			input: `{"object":"organization.audit_log","id":"audit_log-456","type":"api_key.created","effective_at":1710417600,"actor":{"type":"session","session":{"user":{"id":"user_123","email":"test@example.com"}}},"api_key.created":{"id":"key_123","data":{"scopes":["read","write"]}}}`,
+		},
+		"project.created": {
+			input: `{"id":"audit_log-789","type":"project.created","effective_at":1710417600,"actor":{"type":"api_key","api_key":{"type":"user","user":{"id":"user_456","email":"apikey@example.com"}}},"project.created":{"id":"proj_new","data":{"name":"new-project","title":"New Project"}}}`,
+		},
+		"login.failed": {
+			input: `{"id":"audit_log-000","type":"login.failed","effective_at":1710417600,"actor":{"type":"session"},"login.failed":{"error_code":"invalid_credentials","error_message":"Bad password"}}`,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			// Unmarshal the input
+			var log AuditLog
+			if err := json.Unmarshal([]byte(tc.input), &log); err != nil {
+				t.Fatalf("Failed to unmarshal input: %v", err)
+			}
+
+			// Marshal it back
+			output, err := json.Marshal(log)
+			if err != nil {
+				t.Fatalf("Failed to marshal: %v", err)
+			}
+
+			// Parse both to compare structure (not exact string, as key order may differ)
+			var inputMap, outputMap map[string]any
+			if err := json.Unmarshal([]byte(tc.input), &inputMap); err != nil {
+				t.Fatalf("Failed to parse input: %v", err)
+			}
+			if err := json.Unmarshal(output, &outputMap); err != nil {
+				t.Fatalf("Failed to parse output: %v", err)
+			}
+
+			// Check that all input keys are present in output
+			for key := range inputMap {
+				if _, ok := outputMap[key]; !ok {
+					t.Errorf("Key %q present in input but missing in output", key)
+				}
+			}
+
+			// Check that output doesn't have extra unexpected keys
+			for key := range outputMap {
+				if _, ok := inputMap[key]; !ok {
+					t.Errorf("Key %q present in output but not in input", key)
+				}
+			}
+
+			// Verify the dynamic event key is preserved
+			if log.Type != "" && log.Details != nil {
+				if _, ok := outputMap[log.Type]; !ok {
+					t.Errorf("Dynamic key %q missing in output", log.Type)
+				}
+			}
+		})
+	}
+}
+
+// TestAuditLogMarshalJSON_SpecificEventTypes tests MarshalJSON with various event types
+func TestAuditLogMarshalJSON_SpecificEventTypes(t *testing.T) {
+	testTime := time.Date(2024, 3, 14, 12, 0, 0, 0, time.UTC)
+
+	tests := map[string]struct {
+		log         AuditLog
+		wantTypeKey string
+	}{
+		"api_key.updated": {
+			log: AuditLog{
+				ID:          "log_1",
+				Type:        "api_key.updated",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor:       Actor{Type: "session"},
+				Details: &APIKeyUpdated{
+					ID: "key_123",
+					ChangesRequested: struct {
+						Scopes []string `json:"scopes"`
+					}{Scopes: []string{"write"}},
+				},
+			},
+			wantTypeKey: "api_key.updated",
+		},
+		"api_key.deleted": {
+			log: AuditLog{
+				ID:          "log_2",
+				Type:        "api_key.deleted",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor:       Actor{Type: "session"},
+				Details:     &APIKeyDeleted{ID: "key_456"},
+			},
+			wantTypeKey: "api_key.deleted",
+		},
+		"invite.sent": {
+			log: AuditLog{
+				ID:          "log_3",
+				Type:        "invite.sent",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor:       Actor{Type: "session"},
+				Details: &InviteSent{
+					ID: "inv_123",
+					Data: struct {
+						Email string `json:"email"`
+					}{Email: "new@example.com"},
+				},
+			},
+			wantTypeKey: "invite.sent",
+		},
+		"invite.accepted": {
+			log: AuditLog{
+				ID:          "log_4",
+				Type:        "invite.accepted",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor:       Actor{Type: "session"},
+				Details:     &InviteAccepted{ID: "inv_456"},
+			},
+			wantTypeKey: "invite.accepted",
+		},
+		"organization.updated": {
+			log: AuditLog{
+				ID:          "log_5",
+				Type:        "organization.updated",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor:       Actor{Type: "session"},
+				Details: &OrganizationUpdated{
+					ID: "org_123",
+					ChangesRequested: struct {
+						Name string `json:"name,omitempty"`
+					}{Name: "New Org Name"},
+				},
+			},
+			wantTypeKey: "organization.updated",
+		},
+		"project.updated": {
+			log: AuditLog{
+				ID:          "log_6",
+				Type:        "project.updated",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor:       Actor{Type: "session"},
+				Details: &ProjectUpdated{
+					ID: "proj_123",
+					ChangesRequested: struct {
+						Title string `json:"title"`
+					}{Title: "Updated Title"},
+				},
+			},
+			wantTypeKey: "project.updated",
+		},
+		"project.archived": {
+			log: AuditLog{
+				ID:          "log_7",
+				Type:        "project.archived",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor:       Actor{Type: "session"},
+				Details:     &ProjectArchived{ID: "proj_789"},
+			},
+			wantTypeKey: "project.archived",
+		},
+		"rate_limit.updated": {
+			log: AuditLog{
+				ID:          "log_8",
+				Type:        "rate_limit.updated",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor:       Actor{Type: "session"},
+				Details: &RateLimitUpdated{
+					ID: "rl_123",
+					ChangesRequested: struct {
+						MaxRequestsPer1Minute       int `json:"max_requests_per_1_minute,omitempty"`
+						MaxTokensPer1Minute         int `json:"max_tokens_per_1_minute,omitempty"`
+						MaxImagesPer1Minute         int `json:"max_images_per_1_minute,omitempty"`
+						MaxAudioMegabytesPer1Minute int `json:"max_audio_megabytes_per_1_minute,omitempty"`
+						MaxRequestsPer1Day          int `json:"max_requests_per_1_day,omitempty"`
+						Batch1DayMaxInputTokens     int `json:"batch_1_day_max_input_tokens,omitempty"`
+					}{MaxRequestsPer1Minute: 100},
+				},
+			},
+			wantTypeKey: "rate_limit.updated",
+		},
+		"rate_limit.deleted": {
+			log: AuditLog{
+				ID:          "log_9",
+				Type:        "rate_limit.deleted",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor:       Actor{Type: "session"},
+				Details:     &RateLimitDeleted{ID: "rl_456"},
+			},
+			wantTypeKey: "rate_limit.deleted",
+		},
+		"service_account.created": {
+			log: AuditLog{
+				ID:          "log_10",
+				Type:        "service_account.created",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor:       Actor{Type: "session"},
+				Details: &ServiceAccountCreated{
+					ID: "sa_123",
+					Data: struct {
+						Role string `json:"role"`
+					}{Role: "member"},
+				},
+			},
+			wantTypeKey: "service_account.created",
+		},
+		"service_account.updated": {
+			log: AuditLog{
+				ID:          "log_11",
+				Type:        "service_account.updated",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor:       Actor{Type: "session"},
+				Details: &ServiceAccountUpdated{
+					ID: "sa_456",
+					ChangesRequested: struct {
+						Role string `json:"role"`
+					}{Role: "owner"},
+				},
+			},
+			wantTypeKey: "service_account.updated",
+		},
+		"service_account.deleted": {
+			log: AuditLog{
+				ID:          "log_12",
+				Type:        "service_account.deleted",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor:       Actor{Type: "session"},
+				Details:     &ServiceAccountDeleted{ID: "sa_789"},
+			},
+			wantTypeKey: "service_account.deleted",
+		},
+		"user.added": {
+			log: AuditLog{
+				ID:          "log_13",
+				Type:        "user.added",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor:       Actor{Type: "session"},
+				Details: &UserAdded{
+					ID: "user_123",
+					Data: struct {
+						Role string `json:"role"`
+					}{Role: "member"},
+				},
+			},
+			wantTypeKey: "user.added",
+		},
+		"user.updated": {
+			log: AuditLog{
+				ID:          "log_14",
+				Type:        "user.updated",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor:       Actor{Type: "session"},
+				Details: &UserUpdated{
+					ID: "user_456",
+					ChangesRequested: struct {
+						Role string `json:"role"`
+					}{Role: "owner"},
+				},
+			},
+			wantTypeKey: "user.updated",
+		},
+		"user.deleted": {
+			log: AuditLog{
+				ID:          "log_15",
+				Type:        "user.deleted",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor:       Actor{Type: "session"},
+				Details:     &UserDeleted{ID: "user_789"},
+			},
+			wantTypeKey: "user.deleted",
+		},
+		"logout.failed": {
+			log: AuditLog{
+				ID:          "log_16",
+				Type:        "logout.failed",
+				EffectiveAt: UnixSeconds(testTime),
+				Actor:       Actor{Type: "session"},
+				Details:     &LogoutFailed{ErrorCode: "session_expired", ErrorMessage: "Session expired"},
+			},
+			wantTypeKey: "logout.failed",
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			data, err := json.Marshal(tc.log)
+			if err != nil {
+				t.Fatalf("MarshalJSON failed: %v", err)
+			}
+
+			var result map[string]any
+			if err := json.Unmarshal(data, &result); err != nil {
+				t.Fatalf("Failed to unmarshal result: %v", err)
+			}
+
+			// Verify the dynamic key is present
+			if _, ok := result[tc.wantTypeKey]; !ok {
+				t.Errorf("Expected dynamic key %q to be present in marshaled output. Got keys: %v", tc.wantTypeKey, getKeys(result))
+			}
+
+			// Verify type field matches
+			if typeVal, ok := result["type"].(string); !ok || typeVal != tc.wantTypeKey {
+				t.Errorf("Expected type field to be %q, got %v", tc.wantTypeKey, result["type"])
+			}
+		})
+	}
+}
+
+// getKeys returns the keys of a map for debugging
+func getKeys(m map[string]any) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
