@@ -1,0 +1,17 @@
+---
+alwaysApply: true
+---
+# OpenAI Orgs CLI
+
+Go CLI + API client for OpenAI Platform Administration APIs.
+
+## Quick Reference
+- Entry: [cmd/openai-orgs/main.go](mdc:cmd/openai-orgs/main.go)
+- API Client: [api_client.go](mdc:api_client.go)
+- Types: [types.go](mdc:types.go) | Interfaces: [interfaces.go](mdc:interfaces.go)
+- Tests: Use [test_helpers.go](mdc:test_helpers.go) patterns
+
+## Commands
+Run `task --list` for all tasks. Key commands:
+- Build: `task build` | Test: `task test` | Lint: `task lint`
+- MCP: `task mcp:build` | `task mcp:dev`

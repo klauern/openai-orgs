@@ -89,7 +89,7 @@ func createResourceHandler(h resourceHandler, mimeType string) func(context.Cont
 
 		// Extract pagination and other parameters
 		params := make(map[string]any)
-		if request.Params.Arguments != nil {
+		if len(request.Params.Arguments) > 0 {
 			params = request.Params.Arguments
 		}
 
@@ -110,12 +110,14 @@ func createResourceHandler(h resourceHandler, mimeType string) func(context.Cont
 		}
 
 		// Handle subscription if requested
-		if sub, ok := request.Params.Arguments["subscribe"].(bool); ok && sub {
-			ch := subManager.subscribe(request.Params.URI)
-			go func() {
-				<-ctx.Done()
-				subManager.unsubscribe(request.Params.URI, ch)
-			}()
+		if len(request.Params.Arguments) > 0 {
+			if sub, ok := request.Params.Arguments["subscribe"].(bool); ok && sub {
+				ch := subManager.subscribe(request.Params.URI)
+				go func() {
+					<-ctx.Done()
+					subManager.unsubscribe(request.Params.URI, ch)
+				}()
+			}
 		}
 
 		return []mcp.ResourceContents{contents}, nil
