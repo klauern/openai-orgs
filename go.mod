@@ -3,7 +3,7 @@ module github.com/klauern/openai-orgs
 go 1.24.1
 
 require (
-	github.com/go-resty/resty/v2 v2.17.0
+	github.com/go-resty/resty/v2 v2.17.1
 	github.com/jarcoal/httpmock v1.4.1
 	github.com/mark3labs/mcp-go v0.32.0
 	github.com/urfave/cli/v3 v3.6.1
