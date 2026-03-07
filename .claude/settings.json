@@ -14,7 +14,11 @@
       "Bash(find:*)",
       "Bash(go mod:*)",
       "Bash(go tool cover:*)",
-      "Bash(go list:*)"
+      "Bash(go list:*)",
+      "Skill(pull-requests:pr)",
+      "Skill(dev-utilities:gh-checks)",
+      "Bash(go tool:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
