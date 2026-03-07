@@ -2,115 +2,12 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 	"testing"
 	"time"
 
 	openaiorgs "github.com/klauern/openai-orgs"
 )
-
-// Mock client interface for testing project API keys
-type mockProjectAPIKeyClient interface {
-	ListProjectApiKeys(projectID string, limit int, after string) (*openaiorgs.ListResponse[openaiorgs.ProjectApiKey], error)
-	RetrieveProjectApiKey(projectID, apiKeyID string) (*openaiorgs.ProjectApiKey, error)
-	DeleteProjectApiKey(projectID, apiKeyID string) error
-}
-
-// Mock implementation
-type mockProjectAPIKeyClientImpl struct {
-	ListProjectApiKeysFunc    func(projectID string, limit int, after string) (*openaiorgs.ListResponse[openaiorgs.ProjectApiKey], error)
-	RetrieveProjectApiKeyFunc func(projectID, apiKeyID string) (*openaiorgs.ProjectApiKey, error)
-	DeleteProjectApiKeyFunc   func(projectID, apiKeyID string) error
-}
-
-func (m *mockProjectAPIKeyClientImpl) ListProjectApiKeys(projectID string, limit int, after string) (*openaiorgs.ListResponse[openaiorgs.ProjectApiKey], error) {
-	if m.ListProjectApiKeysFunc != nil {
-		return m.ListProjectApiKeysFunc(projectID, limit, after)
-	}
-	return nil, fmt.Errorf("not implemented")
-}
-
-func (m *mockProjectAPIKeyClientImpl) RetrieveProjectApiKey(projectID, apiKeyID string) (*openaiorgs.ProjectApiKey, error) {
-	if m.RetrieveProjectApiKeyFunc != nil {
-		return m.RetrieveProjectApiKeyFunc(projectID, apiKeyID)
-	}
-	return nil, fmt.Errorf("not implemented")
-}
-
-func (m *mockProjectAPIKeyClientImpl) DeleteProjectApiKey(projectID, apiKeyID string) error {
-	if m.DeleteProjectApiKeyFunc != nil {
-		return m.DeleteProjectApiKeyFunc(projectID, apiKeyID)
-	}
-	return fmt.Errorf("not implemented")
-}
-
-// Testable handlers
-
-func listProjectAPIKeysTableHandler(client mockProjectAPIKeyClient, projectID string, limit int, after string) error {
-	apiKeys, err := client.ListProjectApiKeys(projectID, limit, after)
-	if err != nil {
-		return fmt.Errorf("failed to list project API keys: %w", err)
-	}
-
-	data := TableData{
-		Headers: []string{"ID", "Name", "Created At", "Owner"},
-		Rows:    make([][]string, len(apiKeys.Data)),
-	}
-	for i, key := range apiKeys.Data {
-		data.Rows[i] = []string{
-			key.ID,
-			key.Name,
-			key.CreatedAt.String(),
-			key.Owner.String(),
-		}
-	}
-	printTableData(data)
-	return nil
-}
-
-func listProjectAPIKeysJSONHandler(client mockProjectAPIKeyClient, projectID string, limit int, after string) error {
-	apiKeys, err := client.ListProjectApiKeys(projectID, limit, after)
-	if err != nil {
-		return fmt.Errorf("failed to list project API keys: %w", err)
-	}
-
-	jsonData, err := json.Marshal(apiKeys)
-	if err != nil {
-		return fmt.Errorf("failed to marshal API keys: %w", err)
-	}
-	fmt.Println(string(jsonData))
-	return nil
-}
-
-func retrieveProjectAPIKeyTableHandler(client mockProjectAPIKeyClient, projectID, apiKeyID string) error {
-	apiKey, err := client.RetrieveProjectApiKey(projectID, apiKeyID)
-	if err != nil {
-		return fmt.Errorf("failed to retrieve project API key: %w", err)
-	}
-
-	data := TableData{
-		Headers: []string{"ID", "Name", "Created At", "Owner"},
-		Rows: [][]string{{
-			apiKey.ID,
-			apiKey.Name,
-			apiKey.CreatedAt.String(),
-			apiKey.Owner.String(),
-		}},
-	}
-	printTableData(data)
-	return nil
-}
-
-func deleteProjectAPIKeyHandler(client mockProjectAPIKeyClient, projectID, apiKeyID string) error {
-	err := client.DeleteProjectApiKey(projectID, apiKeyID)
-	if err != nil {
-		return fmt.Errorf("failed to delete project API key: %w", err)
-	}
-
-	fmt.Printf("Successfully deleted project API key %s\n", apiKeyID)
-	return nil
-}
 
 // Helper
 func createMockProjectApiKey(id, name string) openaiorgs.ProjectApiKey {
@@ -135,80 +32,63 @@ func createMockProjectApiKey(id, name string) openaiorgs.ProjectApiKey {
 	}
 }
 
-// Tests
-
-func TestListProjectAPIKeysTableHandler(t *testing.T) {
+func TestListProjectAPIKeysCommand(t *testing.T) {
 	tests := []struct {
 		name         string
-		projectID    string
-		limit        int
-		after        string
-		mockFn       func(*mockProjectAPIKeyClientImpl)
+		args         []string
+		statusCode   int
+		response     any
 		wantErr      bool
 		wantContains []string
 	}{
 		{
-			name:      "successful list pretty",
-			projectID: "proj_123",
-			limit:     10,
-			after:     "",
-			mockFn: func(m *mockProjectAPIKeyClientImpl) {
-				key := createMockProjectApiKey("key_1", "My API Key")
-				m.ListProjectApiKeysFunc = func(projectID string, limit int, after string) (*openaiorgs.ListResponse[openaiorgs.ProjectApiKey], error) {
-					if projectID != "proj_123" {
-						t.Errorf("unexpected projectID: %s", projectID)
-					}
-					return &openaiorgs.ListResponse[openaiorgs.ProjectApiKey]{
-						Object:  "list",
-						Data:    []openaiorgs.ProjectApiKey{key},
-						FirstID: "key_1",
-						LastID:  "key_1",
-						HasMore: false,
-					}, nil
-				}
+			name:       "successful list pretty",
+			args:       []string{"project-api-keys", "list", "--project-id", "proj_123"},
+			statusCode: 200,
+			response: openaiorgs.ListResponse[openaiorgs.ProjectApiKey]{
+				Object:  "list",
+				Data:    []openaiorgs.ProjectApiKey{createMockProjectApiKey("key_1", "My API Key")},
+				FirstID: "key_1",
+				LastID:  "key_1",
+				HasMore: false,
 			},
 			wantContains: []string{"ID | Name | Created At | Owner", "key_1", "My API Key"},
 		},
 		{
-			name:      "empty list",
-			projectID: "proj_123",
-			limit:     10,
-			after:     "",
-			mockFn: func(m *mockProjectAPIKeyClientImpl) {
-				m.ListProjectApiKeysFunc = func(projectID string, limit int, after string) (*openaiorgs.ListResponse[openaiorgs.ProjectApiKey], error) {
-					return &openaiorgs.ListResponse[openaiorgs.ProjectApiKey]{
-						Object: "list",
-						Data:   []openaiorgs.ProjectApiKey{},
-					}, nil
-				}
+			name:       "empty list",
+			args:       []string{"project-api-keys", "list", "--project-id", "proj_123"},
+			statusCode: 200,
+			response: openaiorgs.ListResponse[openaiorgs.ProjectApiKey]{
+				Object: "list",
+				Data:   []openaiorgs.ProjectApiKey{},
 			},
 			wantContains: []string{"ID | Name | Created At | Owner"},
 		},
 		{
-			name:      "error from client",
-			projectID: "proj_123",
-			limit:     10,
-			after:     "",
-			mockFn: func(m *mockProjectAPIKeyClientImpl) {
-				m.ListProjectApiKeysFunc = func(projectID string, limit int, after string) (*openaiorgs.ListResponse[openaiorgs.ProjectApiKey], error) {
-					return nil, fmt.Errorf("API error")
-				}
-			},
-			wantErr: true,
+			name:       "error from API",
+			args:       []string{"project-api-keys", "list", "--project-id", "proj_123"},
+			statusCode: 500,
+			response:   map[string]string{"error": "API error"},
+			wantErr:    true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock := &mockProjectAPIKeyClientImpl{}
-			tt.mockFn(mock)
+			h := newCmdTestHelper(t)
+			defer h.cleanup()
 
-			output := captureOutput(func() {
-				err := listProjectAPIKeysTableHandler(mock, tt.projectID, tt.limit, tt.after)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("listProjectAPIKeysTableHandler() error = %v, wantErr %v", err, tt.wantErr)
-				}
+			h.mockResponse("GET", "/organization/projects/proj_123/api_keys", tt.statusCode, tt.response)
+
+			var output string
+			var runErr error
+			output = captureOutput(func() {
+				runErr = h.runCmd(ProjectAPIKeysCommand(), tt.args)
 			})
+
+			if (runErr != nil) != tt.wantErr {
+				t.Errorf("runCmd() error = %v, wantErr %v", runErr, tt.wantErr)
+			}
 
 			for _, want := range tt.wantContains {
 				if !strings.Contains(output, want) {
@@ -219,121 +99,78 @@ func TestListProjectAPIKeysTableHandler(t *testing.T) {
 	}
 }
 
-func TestListProjectAPIKeysJSONHandler(t *testing.T) {
-	tests := []struct {
-		name      string
-		projectID string
-		limit     int
-		after     string
-		mockFn    func(*mockProjectAPIKeyClientImpl)
-		wantErr   bool
-	}{
-		{
-			name:      "successful list json",
-			projectID: "proj_123",
-			limit:     10,
-			after:     "",
-			mockFn: func(m *mockProjectAPIKeyClientImpl) {
-				key := createMockProjectApiKey("key_1", "My API Key")
-				m.ListProjectApiKeysFunc = func(projectID string, limit int, after string) (*openaiorgs.ListResponse[openaiorgs.ProjectApiKey], error) {
-					return &openaiorgs.ListResponse[openaiorgs.ProjectApiKey]{
-						Object:  "list",
-						Data:    []openaiorgs.ProjectApiKey{key},
-						FirstID: "key_1",
-						LastID:  "key_1",
-						HasMore: false,
-					}, nil
-				}
-			},
-		},
-		{
-			name:      "error from client json",
-			projectID: "proj_123",
-			limit:     10,
-			after:     "",
-			mockFn: func(m *mockProjectAPIKeyClientImpl) {
-				m.ListProjectApiKeysFunc = func(projectID string, limit int, after string) (*openaiorgs.ListResponse[openaiorgs.ProjectApiKey], error) {
-					return nil, fmt.Errorf("API error")
-				}
-			},
-			wantErr: true,
-		},
-	}
+func TestListProjectAPIKeysJSONCommand(t *testing.T) {
+	h := newCmdTestHelper(t)
+	defer h.cleanup()
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mock := &mockProjectAPIKeyClientImpl{}
-			tt.mockFn(mock)
-
-			output := captureOutput(func() {
-				err := listProjectAPIKeysJSONHandler(mock, tt.projectID, tt.limit, tt.after)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("listProjectAPIKeysJSONHandler() error = %v, wantErr %v", err, tt.wantErr)
-				}
-			})
-
-			if !tt.wantErr {
-				// Verify it's valid JSON
-				var result map[string]interface{}
-				if err := json.Unmarshal([]byte(strings.TrimSpace(output)), &result); err != nil {
-					t.Errorf("Expected valid JSON output, got: %s", output)
-				}
-				if !strings.Contains(output, "key_1") {
-					t.Errorf("Expected output to contain key_1, got: %s", output)
-				}
-			}
+	key := createMockProjectApiKey("key_1", "My API Key")
+	h.mockResponse("GET", "/organization/projects/proj_123/api_keys", 200,
+		openaiorgs.ListResponse[openaiorgs.ProjectApiKey]{
+			Object:  "list",
+			Data:    []openaiorgs.ProjectApiKey{key},
+			FirstID: "key_1",
+			LastID:  "key_1",
+			HasMore: false,
 		})
+
+	output := captureOutput(func() {
+		err := h.runCmd(ProjectAPIKeysCommand(), []string{"--output", "json", "project-api-keys", "list", "--project-id", "proj_123"})
+		if err != nil {
+			t.Errorf("runCmd() error = %v", err)
+		}
+	})
+
+	// Verify valid JSON output
+	var result map[string]interface{}
+	if err := json.Unmarshal([]byte(strings.TrimSpace(output)), &result); err != nil {
+		t.Errorf("Expected valid JSON output, got: %s", output)
+	}
+	if !strings.Contains(output, "key_1") {
+		t.Errorf("Expected output to contain key_1, got: %s", output)
 	}
 }
 
-func TestRetrieveProjectAPIKeyTableHandler(t *testing.T) {
+func TestRetrieveProjectAPIKeyCommand(t *testing.T) {
 	tests := []struct {
 		name         string
-		projectID    string
-		apiKeyID     string
-		mockFn       func(*mockProjectAPIKeyClientImpl)
+		args         []string
+		statusCode   int
+		response     any
 		wantErr      bool
 		wantContains []string
 	}{
 		{
-			name:      "successful retrieve",
-			projectID: "proj_123",
-			apiKeyID:  "key_1",
-			mockFn: func(m *mockProjectAPIKeyClientImpl) {
-				m.RetrieveProjectApiKeyFunc = func(projectID, apiKeyID string) (*openaiorgs.ProjectApiKey, error) {
-					if projectID != "proj_123" || apiKeyID != "key_1" {
-						t.Errorf("unexpected params: projectID=%s, apiKeyID=%s", projectID, apiKeyID)
-					}
-					key := createMockProjectApiKey("key_1", "My API Key")
-					return &key, nil
-				}
-			},
+			name:       "successful retrieve",
+			args:       []string{"project-api-keys", "retrieve", "--project-id", "proj_123", "--id", "key_1"},
+			statusCode: 200,
+			response:   createMockProjectApiKey("key_1", "My API Key"),
 			wantContains: []string{"ID | Name | Created At | Owner", "key_1", "My API Key"},
 		},
 		{
-			name:      "error from client",
-			projectID: "proj_123",
-			apiKeyID:  "key_1",
-			mockFn: func(m *mockProjectAPIKeyClientImpl) {
-				m.RetrieveProjectApiKeyFunc = func(projectID, apiKeyID string) (*openaiorgs.ProjectApiKey, error) {
-					return nil, fmt.Errorf("not found")
-				}
-			},
-			wantErr: true,
+			name:       "error from API",
+			args:       []string{"project-api-keys", "retrieve", "--project-id", "proj_123", "--id", "key_1"},
+			statusCode: 404,
+			response:   map[string]string{"error": "not found"},
+			wantErr:    true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock := &mockProjectAPIKeyClientImpl{}
-			tt.mockFn(mock)
+			h := newCmdTestHelper(t)
+			defer h.cleanup()
 
-			output := captureOutput(func() {
-				err := retrieveProjectAPIKeyTableHandler(mock, tt.projectID, tt.apiKeyID)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("retrieveProjectAPIKeyTableHandler() error = %v, wantErr %v", err, tt.wantErr)
-				}
+			h.mockResponse("GET", "/organization/projects/proj_123/api_keys/key_1", tt.statusCode, tt.response)
+
+			var output string
+			var runErr error
+			output = captureOutput(func() {
+				runErr = h.runCmd(ProjectAPIKeysCommand(), tt.args)
 			})
+
+			if (runErr != nil) != tt.wantErr {
+				t.Errorf("runCmd() error = %v, wantErr %v", runErr, tt.wantErr)
+			}
 
 			for _, want := range tt.wantContains {
 				if !strings.Contains(output, want) {
@@ -344,53 +181,47 @@ func TestRetrieveProjectAPIKeyTableHandler(t *testing.T) {
 	}
 }
 
-func TestDeleteProjectAPIKeyHandler(t *testing.T) {
+func TestDeleteProjectAPIKeyCommand(t *testing.T) {
 	tests := []struct {
 		name         string
-		projectID    string
-		apiKeyID     string
-		mockFn       func(*mockProjectAPIKeyClientImpl)
+		args         []string
+		statusCode   int
+		response     any
 		wantErr      bool
 		wantContains []string
 	}{
 		{
-			name:      "successful delete",
-			projectID: "proj_123",
-			apiKeyID:  "key_1",
-			mockFn: func(m *mockProjectAPIKeyClientImpl) {
-				m.DeleteProjectApiKeyFunc = func(projectID, apiKeyID string) error {
-					if projectID != "proj_123" || apiKeyID != "key_1" {
-						t.Errorf("unexpected params: projectID=%s, apiKeyID=%s", projectID, apiKeyID)
-					}
-					return nil
-				}
-			},
+			name:         "successful delete",
+			args:         []string{"project-api-keys", "delete", "--project-id", "proj_123", "--id", "key_1"},
+			statusCode:   200,
+			response:     nil,
 			wantContains: []string{"Successfully deleted project API key key_1"},
 		},
 		{
-			name:      "error from client",
-			projectID: "proj_123",
-			apiKeyID:  "key_1",
-			mockFn: func(m *mockProjectAPIKeyClientImpl) {
-				m.DeleteProjectApiKeyFunc = func(projectID, apiKeyID string) error {
-					return fmt.Errorf("delete failed")
-				}
-			},
-			wantErr: true,
+			name:       "error from API",
+			args:       []string{"project-api-keys", "delete", "--project-id", "proj_123", "--id", "key_1"},
+			statusCode: 500,
+			response:   map[string]string{"error": "delete failed"},
+			wantErr:    true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock := &mockProjectAPIKeyClientImpl{}
-			tt.mockFn(mock)
+			h := newCmdTestHelper(t)
+			defer h.cleanup()
 
-			output := captureOutput(func() {
-				err := deleteProjectAPIKeyHandler(mock, tt.projectID, tt.apiKeyID)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("deleteProjectAPIKeyHandler() error = %v, wantErr %v", err, tt.wantErr)
-				}
+			h.mockResponse("DELETE", "/organization/projects/proj_123/api_keys/key_1", tt.statusCode, tt.response)
+
+			var output string
+			var runErr error
+			output = captureOutput(func() {
+				runErr = h.runCmd(ProjectAPIKeysCommand(), tt.args)
 			})
+
+			if (runErr != nil) != tt.wantErr {
+				t.Errorf("runCmd() error = %v, wantErr %v", runErr, tt.wantErr)
+			}
 
 			for _, want := range tt.wantContains {
 				if !strings.Contains(output, want) {

@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 	"testing"
@@ -108,22 +106,6 @@ func (m *mockCertificateClientImpl) DeactivateProjectCertificates(projectID stri
 		return m.DeactivateProjectCertificatesFunc(projectID, certificateIDs)
 	}
 	return nil, fmt.Errorf("not implemented")
-}
-
-// Test helper to capture stdout
-func captureOutput(f func()) string {
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	f()
-
-	_ = w.Close()
-	os.Stdout = old
-
-	var buf bytes.Buffer
-	_, _ = io.Copy(&buf, r)
-	return buf.String()
 }
 
 // createMockCertificate creates a test certificate

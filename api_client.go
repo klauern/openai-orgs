@@ -3,6 +3,7 @@ package openaiorgs
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -53,6 +54,18 @@ func NewClient(baseURL, token string) *Client {
 		client:  client,
 		BaseURL: baseURL,
 	}
+}
+
+// SetRetryCount sets the number of retries for the underlying HTTP client.
+// This is useful in tests to disable retries by setting count to 0.
+func (c *Client) SetRetryCount(count int) {
+	c.client.SetRetryCount(count)
+}
+
+// GetHTTPClient returns the underlying *http.Client for use with httpmock
+// or other HTTP-level testing tools.
+func (c *Client) GetHTTPClient() *http.Client {
+	return c.client.GetClient()
 }
 
 // GetSingle makes a GET request to retrieve a single resource of type T.

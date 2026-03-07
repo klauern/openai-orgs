@@ -1,30 +1,12 @@
 package cmd
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 	"time"
 
 	openaiorgs "github.com/klauern/openai-orgs"
 )
-
-// Mock client interface for testing
-type mockAuditLogClient interface {
-	ListAuditLogs(params *openaiorgs.AuditLogListParams) (*openaiorgs.ListResponse[openaiorgs.AuditLog], error)
-}
-
-// Mock implementation
-type mockAuditLogClientImpl struct {
-	ListAuditLogsFunc func(params *openaiorgs.AuditLogListParams) (*openaiorgs.ListResponse[openaiorgs.AuditLog], error)
-}
-
-func (m *mockAuditLogClientImpl) ListAuditLogs(params *openaiorgs.AuditLogListParams) (*openaiorgs.ListResponse[openaiorgs.AuditLog], error) {
-	if m.ListAuditLogsFunc != nil {
-		return m.ListAuditLogsFunc(params)
-	}
-	return nil, fmt.Errorf("not implemented")
-}
 
 func createTestAuditLog(id, logType string, details interface{}) openaiorgs.AuditLog {
 	return openaiorgs.AuditLog{
@@ -51,15 +33,6 @@ func createTestResponse(logs ...openaiorgs.AuditLog) *openaiorgs.ListResponse[op
 		LastID:  "log_last",
 		HasMore: false,
 	}
-}
-
-// Testable handler - extracted business logic for list audit logs
-func listAuditLogsHandler(client mockAuditLogClient, params *openaiorgs.AuditLogListParams, outputFormat string, verbose bool) error {
-	logs, err := client.ListAuditLogs(params)
-	if err != nil {
-		return wrapError("list audit logs", err)
-	}
-	return outputResponse(logs, outputFormat, verbose)
 }
 
 func TestOutputJSON(t *testing.T) {
@@ -227,7 +200,6 @@ func TestOutputPrettyWithNilSession(t *testing.T) {
 	if !strings.Contains(output, "User Email:   apikey@example.com") {
 		t.Errorf("Expected API key user email in output, got: %s", output)
 	}
-	// Verify no panic occurred - if we got here, it's fine
 }
 
 func TestOutputPrettyWithNilDetails(t *testing.T) {
@@ -244,7 +216,6 @@ func TestOutputPrettyWithNilDetails(t *testing.T) {
 	if !strings.Contains(output, "log_nil_details") {
 		t.Errorf("Expected log ID in output, got: %s", output)
 	}
-	// Details section should not appear when nil
 	if strings.Contains(output, "Payload Details:") {
 		t.Errorf("Expected no payload details section for nil details, got: %s", output)
 	}
@@ -347,7 +318,6 @@ func TestOutputResponse_Routing(t *testing.T) {
 		name           string
 		format         string
 		expectedInOut  string
-		notExpectedOut string
 	}{
 		{
 			name:          "json format",
@@ -403,7 +373,6 @@ func TestEmptyAuditLogs(t *testing.T) {
 				t.Errorf("outputJSONL() error = %v", err)
 			}
 		})
-		// With no entries, output should be empty
 		if strings.TrimSpace(output) != "" {
 			t.Errorf("Expected empty JSONL output for no entries, got: %s", output)
 		}
@@ -416,7 +385,6 @@ func TestEmptyAuditLogs(t *testing.T) {
 				t.Errorf("outputJSONL() error = %v", err)
 			}
 		})
-		// Verbose should still show metadata
 		if !strings.Contains(output, `"total":0`) {
 			t.Errorf("Expected metadata with total:0, got: %s", output)
 		}
@@ -429,97 +397,45 @@ func TestEmptyAuditLogs(t *testing.T) {
 				t.Errorf("outputPretty() error = %v", err)
 			}
 		})
-		// Should not contain any entry markers
 		if strings.Contains(output, "=== Audit Log Entry ===") {
 			t.Errorf("Expected no log entry markers for empty data, got: %s", output)
 		}
 	})
 }
 
-func TestListAuditLogsHandler(t *testing.T) {
+func TestListAuditLogsCommand(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		mock := &mockAuditLogClientImpl{
-			ListAuditLogsFunc: func(params *openaiorgs.AuditLogListParams) (*openaiorgs.ListResponse[openaiorgs.AuditLog], error) {
-				if params.Limit != 10 {
-					t.Errorf("unexpected limit: %d", params.Limit)
-				}
-				log1 := createTestAuditLog("log_1", "api_key.created", nil)
-				return createTestResponse(log1), nil
-			},
-		}
+		h := newCmdTestHelper(t)
+		defer h.cleanup()
+
+		log1 := createTestAuditLog("log_1", "api_key.created", nil)
+		h.mockResponse("GET", "/organization/audit_logs", 200, createTestResponse(log1))
 
 		output := captureOutput(func() {
-			err := listAuditLogsHandler(mock, &openaiorgs.AuditLogListParams{Limit: 10}, "pretty", false)
+			err := h.runCmd(AuditLogsCommand(), []string{"audit-logs"})
 			if err != nil {
-				t.Errorf("listAuditLogsHandler() error = %v", err)
+				t.Errorf("runCmd() error = %v", err)
 			}
 		})
 
 		if !strings.Contains(output, "=== Audit Log Entry ===") {
 			t.Errorf("Expected log entry in output, got: %s", output)
 		}
+		h.assertRequest("GET", "/organization/audit_logs", 1)
 	})
 
 	t.Run("error", func(t *testing.T) {
-		mock := &mockAuditLogClientImpl{
-			ListAuditLogsFunc: func(params *openaiorgs.AuditLogListParams) (*openaiorgs.ListResponse[openaiorgs.AuditLog], error) {
-				return nil, fmt.Errorf("API error: rate limited")
-			},
-		}
+		h := newCmdTestHelper(t)
+		defer h.cleanup()
 
-		err := listAuditLogsHandler(mock, &openaiorgs.AuditLogListParams{Limit: 10}, "pretty", false)
+		h.mockResponse("GET", "/organization/audit_logs", 500, map[string]string{"error": "API error: rate limited"})
+
+		err := h.runCmd(AuditLogsCommand(), []string{"audit-logs"})
 		if err == nil {
 			t.Error("Expected error, got nil")
 		}
 		if !strings.Contains(err.Error(), "list audit logs") {
 			t.Errorf("Expected wrapped error message, got: %v", err)
-		}
-	})
-
-	t.Run("pagination", func(t *testing.T) {
-		callCount := 0
-		mock := &mockAuditLogClientImpl{
-			ListAuditLogsFunc: func(params *openaiorgs.AuditLogListParams) (*openaiorgs.ListResponse[openaiorgs.AuditLog], error) {
-				callCount++
-				if callCount == 1 {
-					return &openaiorgs.ListResponse[openaiorgs.AuditLog]{
-						Object:  "list",
-						Data:    []openaiorgs.AuditLog{createTestAuditLog("log_1", "api_key.created", nil)},
-						FirstID: "log_1",
-						LastID:  "log_1",
-						HasMore: true,
-					}, nil
-				}
-				return &openaiorgs.ListResponse[openaiorgs.AuditLog]{
-					Object:  "list",
-					Data:    []openaiorgs.AuditLog{createTestAuditLog("log_2", "invite.sent", nil)},
-					FirstID: "log_2",
-					LastID:  "",
-					HasMore: false,
-				}, nil
-			},
-		}
-
-		// Simulate pagination loop
-		var allLogs []openaiorgs.AuditLog
-		params := &openaiorgs.AuditLogListParams{Limit: 1}
-		for {
-			logs, err := mock.ListAuditLogs(params)
-			if err != nil {
-				t.Fatalf("ListAuditLogs() error = %v", err)
-			}
-			allLogs = append(allLogs, logs.Data...)
-			if logs.LastID == "" {
-				break
-			}
-			params.After = logs.LastID
-		}
-
-		if len(allLogs) != 2 {
-			t.Errorf("Expected 2 logs after pagination, got %d", len(allLogs))
-		}
-		if callCount != 2 {
-			t.Errorf("Expected 2 API calls for pagination, got %d", callCount)
 		}
 	})
 }

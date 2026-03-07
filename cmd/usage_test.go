@@ -1,101 +1,11 @@
 package cmd
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
 	openaiorgs "github.com/klauern/openai-orgs"
 )
-
-// Mock client interface for usage testing
-type mockUsageClient interface {
-	GetCompletionsUsage(params map[string]string) (*openaiorgs.CompletionsUsageResponse, error)
-	GetEmbeddingsUsage(params map[string]string) (*openaiorgs.EmbeddingsUsageResponse, error)
-	GetModerationsUsage(params map[string]string) (*openaiorgs.ModerationsUsageResponse, error)
-	GetImagesUsage(params map[string]string) (*openaiorgs.ImagesUsageResponse, error)
-	GetAudioSpeechesUsage(params map[string]string) (*openaiorgs.AudioSpeechesUsageResponse, error)
-	GetAudioTranscriptionsUsage(params map[string]string) (*openaiorgs.AudioTranscriptionsUsageResponse, error)
-	GetVectorStoresUsage(params map[string]string) (*openaiorgs.VectorStoresUsageResponse, error)
-	GetCodeInterpreterUsage(params map[string]string) (*openaiorgs.CodeInterpreterUsageResponse, error)
-	GetCostsUsage(params map[string]string) (*openaiorgs.CostsUsageResponse, error)
-}
-
-// Mock implementation
-type mockUsageClientImpl struct {
-	GetCompletionsUsageFunc         func(params map[string]string) (*openaiorgs.CompletionsUsageResponse, error)
-	GetEmbeddingsUsageFunc          func(params map[string]string) (*openaiorgs.EmbeddingsUsageResponse, error)
-	GetModerationsUsageFunc         func(params map[string]string) (*openaiorgs.ModerationsUsageResponse, error)
-	GetImagesUsageFunc              func(params map[string]string) (*openaiorgs.ImagesUsageResponse, error)
-	GetAudioSpeechesUsageFunc       func(params map[string]string) (*openaiorgs.AudioSpeechesUsageResponse, error)
-	GetAudioTranscriptionsUsageFunc func(params map[string]string) (*openaiorgs.AudioTranscriptionsUsageResponse, error)
-	GetVectorStoresUsageFunc        func(params map[string]string) (*openaiorgs.VectorStoresUsageResponse, error)
-	GetCodeInterpreterUsageFunc     func(params map[string]string) (*openaiorgs.CodeInterpreterUsageResponse, error)
-	GetCostsUsageFunc               func(params map[string]string) (*openaiorgs.CostsUsageResponse, error)
-}
-
-func (m *mockUsageClientImpl) GetCompletionsUsage(params map[string]string) (*openaiorgs.CompletionsUsageResponse, error) {
-	if m.GetCompletionsUsageFunc != nil {
-		return m.GetCompletionsUsageFunc(params)
-	}
-	return nil, fmt.Errorf("not implemented")
-}
-
-func (m *mockUsageClientImpl) GetEmbeddingsUsage(params map[string]string) (*openaiorgs.EmbeddingsUsageResponse, error) {
-	if m.GetEmbeddingsUsageFunc != nil {
-		return m.GetEmbeddingsUsageFunc(params)
-	}
-	return nil, fmt.Errorf("not implemented")
-}
-
-func (m *mockUsageClientImpl) GetModerationsUsage(params map[string]string) (*openaiorgs.ModerationsUsageResponse, error) {
-	if m.GetModerationsUsageFunc != nil {
-		return m.GetModerationsUsageFunc(params)
-	}
-	return nil, fmt.Errorf("not implemented")
-}
-
-func (m *mockUsageClientImpl) GetImagesUsage(params map[string]string) (*openaiorgs.ImagesUsageResponse, error) {
-	if m.GetImagesUsageFunc != nil {
-		return m.GetImagesUsageFunc(params)
-	}
-	return nil, fmt.Errorf("not implemented")
-}
-
-func (m *mockUsageClientImpl) GetAudioSpeechesUsage(params map[string]string) (*openaiorgs.AudioSpeechesUsageResponse, error) {
-	if m.GetAudioSpeechesUsageFunc != nil {
-		return m.GetAudioSpeechesUsageFunc(params)
-	}
-	return nil, fmt.Errorf("not implemented")
-}
-
-func (m *mockUsageClientImpl) GetAudioTranscriptionsUsage(params map[string]string) (*openaiorgs.AudioTranscriptionsUsageResponse, error) {
-	if m.GetAudioTranscriptionsUsageFunc != nil {
-		return m.GetAudioTranscriptionsUsageFunc(params)
-	}
-	return nil, fmt.Errorf("not implemented")
-}
-
-func (m *mockUsageClientImpl) GetVectorStoresUsage(params map[string]string) (*openaiorgs.VectorStoresUsageResponse, error) {
-	if m.GetVectorStoresUsageFunc != nil {
-		return m.GetVectorStoresUsageFunc(params)
-	}
-	return nil, fmt.Errorf("not implemented")
-}
-
-func (m *mockUsageClientImpl) GetCodeInterpreterUsage(params map[string]string) (*openaiorgs.CodeInterpreterUsageResponse, error) {
-	if m.GetCodeInterpreterUsageFunc != nil {
-		return m.GetCodeInterpreterUsageFunc(params)
-	}
-	return nil, fmt.Errorf("not implemented")
-}
-
-func (m *mockUsageClientImpl) GetCostsUsage(params map[string]string) (*openaiorgs.CostsUsageResponse, error) {
-	if m.GetCostsUsageFunc != nil {
-		return m.GetCostsUsageFunc(params)
-	}
-	return nil, fmt.Errorf("not implemented")
-}
 
 // Helper to create a test CompletionsUsageResponse
 func createTestCompletionsResponse(buckets ...openaiorgs.CompletionsUsageBucket) *openaiorgs.CompletionsUsageResponse {
@@ -125,15 +35,6 @@ func createTestCompletionsResult(inputTokens, outputTokens, numRequests int) ope
 		ProjectID:        "proj_test",
 		Model:            "gpt-4",
 	}
-}
-
-// Testable handler for completions usage
-func getCompletionsUsageHandler(client mockUsageClient, params map[string]string, outputFormat string, verbose bool) error {
-	usage, err := client.GetCompletionsUsage(params)
-	if err != nil {
-		return wrapError("get completions usage", err)
-	}
-	return outputCompletionsUsageResponse(usage, outputFormat, verbose)
 }
 
 func TestOutputCompletionsUsageJSON(t *testing.T) {
@@ -247,7 +148,6 @@ func TestOutputCompletionsUsageJSONL(t *testing.T) {
 		})
 
 		lines := strings.Split(strings.TrimSpace(output), "\n")
-		// Should have: 1 bucket info line + 1 result line
 		if len(lines) != 2 {
 			t.Errorf("Expected 2 lines, got %d: %s", len(lines), output)
 		}
@@ -272,7 +172,6 @@ func TestOutputCompletionsUsageJSONL(t *testing.T) {
 		})
 
 		lines := strings.Split(strings.TrimSpace(output), "\n")
-		// Should have: 1 metadata line + 1 bucket info line + 1 result line
 		if len(lines) != 3 {
 			t.Errorf("Expected 3 lines, got %d: %s", len(lines), output)
 		}
@@ -282,39 +181,35 @@ func TestOutputCompletionsUsageJSONL(t *testing.T) {
 	})
 }
 
-func TestGetCompletionsUsageHandler(t *testing.T) {
-	t.Run("success", func(t *testing.T) {
-		mock := &mockUsageClientImpl{
-			GetCompletionsUsageFunc: func(params map[string]string) (*openaiorgs.CompletionsUsageResponse, error) {
-				if params["start_time"] != "1700000000" {
-					t.Errorf("unexpected start_time: %s", params["start_time"])
-				}
-				result := createTestCompletionsResult(100, 50, 5)
-				bucket := createTestCompletionsBucket(1700000000, 1700003600, result)
-				return createTestCompletionsResponse(bucket), nil
-			},
-		}
+func TestGetCompletionsUsageCommand(t *testing.T) {
+	t.Run("success pretty", func(t *testing.T) {
+		h := newCmdTestHelper(t)
+		defer h.cleanup()
+
+		result := createTestCompletionsResult(100, 50, 5)
+		bucket := createTestCompletionsBucket(1700000000, 1700003600, result)
+		h.mockResponse("GET", "/organization/usage/completions", 200, createTestCompletionsResponse(bucket))
 
 		output := captureOutput(func() {
-			err := getCompletionsUsageHandler(mock, map[string]string{"start_time": "1700000000"}, "pretty", false)
+			err := h.runCmd(UsageCommand(), []string{"usage", "completions", "--start-date", "2023-11-14T22:13:20Z"})
 			if err != nil {
-				t.Errorf("getCompletionsUsageHandler() error = %v", err)
+				t.Errorf("runCmd() error = %v", err)
 			}
 		})
 
 		if !strings.Contains(output, "=== Time Bucket ===") {
 			t.Errorf("Expected time bucket header in output, got: %s", output)
 		}
+		h.assertRequest("GET", "/organization/usage/completions", 1)
 	})
 
 	t.Run("error", func(t *testing.T) {
-		mock := &mockUsageClientImpl{
-			GetCompletionsUsageFunc: func(params map[string]string) (*openaiorgs.CompletionsUsageResponse, error) {
-				return nil, fmt.Errorf("API error: unauthorized")
-			},
-		}
+		h := newCmdTestHelper(t)
+		defer h.cleanup()
 
-		err := getCompletionsUsageHandler(mock, map[string]string{"start_time": "1700000000"}, "pretty", false)
+		h.mockResponse("GET", "/organization/usage/completions", 500, map[string]string{"error": "API error: unauthorized"})
+
+		err := h.runCmd(UsageCommand(), []string{"usage", "completions", "--start-date", "2023-11-14T22:13:20Z"})
 		if err == nil {
 			t.Error("Expected error, got nil")
 		}
@@ -324,39 +219,22 @@ func TestGetCompletionsUsageHandler(t *testing.T) {
 	})
 
 	t.Run("json output", func(t *testing.T) {
-		mock := &mockUsageClientImpl{
-			GetCompletionsUsageFunc: func(params map[string]string) (*openaiorgs.CompletionsUsageResponse, error) {
-				result := createTestCompletionsResult(100, 50, 5)
-				bucket := createTestCompletionsBucket(1700000000, 1700003600, result)
-				return createTestCompletionsResponse(bucket), nil
-			},
-		}
+		h := newCmdTestHelper(t)
+		defer h.cleanup()
+
+		result := createTestCompletionsResult(100, 50, 5)
+		bucket := createTestCompletionsBucket(1700000000, 1700003600, result)
+		h.mockResponse("GET", "/organization/usage/completions", 200, createTestCompletionsResponse(bucket))
 
 		output := captureOutput(func() {
-			err := getCompletionsUsageHandler(mock, map[string]string{"start_time": "1700000000"}, "json", false)
+			err := h.runCmd(UsageCommand(), []string{"usage", "completions", "--start-date", "2023-11-14T22:13:20Z", "--output", "json"})
 			if err != nil {
-				t.Errorf("getCompletionsUsageHandler() error = %v", err)
+				t.Errorf("runCmd() error = %v", err)
 			}
 		})
 
 		if !strings.Contains(output, `"input_tokens"`) {
 			t.Errorf("Expected JSON output with input_tokens, got: %s", output)
-		}
-	})
-
-	t.Run("unknown format", func(t *testing.T) {
-		mock := &mockUsageClientImpl{
-			GetCompletionsUsageFunc: func(params map[string]string) (*openaiorgs.CompletionsUsageResponse, error) {
-				return createTestCompletionsResponse(), nil
-			},
-		}
-
-		err := getCompletionsUsageHandler(mock, map[string]string{"start_time": "1700000000"}, "xml", false)
-		if err == nil {
-			t.Error("Expected error for unknown format, got nil")
-		}
-		if !strings.Contains(err.Error(), "unknown output format: xml") {
-			t.Errorf("Expected descriptive error, got: %v", err)
 		}
 	})
 }

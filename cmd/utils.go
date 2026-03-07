@@ -101,8 +101,16 @@ func (b *BaseCommand) Subcommands() []*cli.Command {
 	return b.Commands
 }
 
-func newClient(_ context.Context, cmd *cli.Command) *openaiorgs.Client {
+// newClientFunc is the function used to create API clients. It can be overridden in tests
+// to inject an httpmock-backed client.
+var newClientFunc = defaultNewClient
+
+func defaultNewClient(_ context.Context, cmd *cli.Command) *openaiorgs.Client {
 	return openaiorgs.NewClient(openaiorgs.DefaultBaseURL, cmd.String("api-key"))
+}
+
+func newClient(ctx context.Context, cmd *cli.Command) *openaiorgs.Client {
+	return newClientFunc(ctx, cmd)
 }
 
 func printTableData(data TableData) {
