@@ -30,7 +30,7 @@ const (
 type resourceHandler func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error)
 
 // AddResources adds static resource capabilities to the MCP server
-func AddResources(s *server.MCPServer) {
+func AddResources(s *server.MCPServer, ctx context.Context) {
 	resources := []struct {
 		uri      string
 		name     string
@@ -74,18 +74,18 @@ func AddResources(s *server.MCPServer) {
 	}
 
 	// Start background polling for changes
-	go pollForChanges(context.Background())
+	go pollForChanges(ctx)
 }
 
 // createResourceHandler creates a standard MCP handler from our resource handler
 func createResourceHandler(h resourceHandler, mimeType string) func(context.Context, mcp.ReadResourceRequest) ([]mcp.ResourceContents, error) {
 	return func(ctx context.Context, request mcp.ReadResourceRequest) ([]mcp.ResourceContents, error) {
-		authToken := ctx.Value(authToken{}).(string)
-		if authToken == "" {
+		token, ok := ctx.Value(authToken{}).(string)
+		if !ok || token == "" {
 			return nil, ErrNoAuthToken
 		}
 
-		client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, authToken)
+		client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, token)
 
 		// Extract pagination and other parameters
 		params := make(map[string]any)
@@ -179,21 +179,29 @@ func getPaginationFromParams(params map[string]any) (limit int, after string) {
 }
 
 // Subscription management
+type subscription struct {
+	ch   chan mcp.ResourceContents
+	done chan struct{}
+}
+
 type subscriptionManager struct {
-	sync.RWMutex
-	subscribers map[string][]chan mcp.ResourceContents
+	sync.Mutex
+	subscribers map[string][]*subscription
 }
 
 var subManager = &subscriptionManager{
-	subscribers: make(map[string][]chan mcp.ResourceContents),
+	subscribers: make(map[string][]*subscription),
 }
 
 func (sm *subscriptionManager) subscribe(uri string) chan mcp.ResourceContents {
 	sm.Lock()
 	defer sm.Unlock()
-	ch := make(chan mcp.ResourceContents, 1)
-	sm.subscribers[uri] = append(sm.subscribers[uri], ch)
-	return ch
+	sub := &subscription{
+		ch:   make(chan mcp.ResourceContents, 1),
+		done: make(chan struct{}),
+	}
+	sm.subscribers[uri] = append(sm.subscribers[uri], sub)
+	return sub.ch
 }
 
 func (sm *subscriptionManager) unsubscribe(uri string, ch chan mcp.ResourceContents) {
@@ -201,7 +209,8 @@ func (sm *subscriptionManager) unsubscribe(uri string, ch chan mcp.ResourceConte
 	defer sm.Unlock()
 	subs := sm.subscribers[uri]
 	for i, sub := range subs {
-		if sub == ch {
+		if sub.ch == ch {
+			close(sub.done)
 			sm.subscribers[uri] = append(subs[:i], subs[i+1:]...)
 			close(ch)
 			break
@@ -210,13 +219,17 @@ func (sm *subscriptionManager) unsubscribe(uri string, ch chan mcp.ResourceConte
 }
 
 func (sm *subscriptionManager) notify(uri string, contents mcp.ResourceContents) {
-	sm.RLock()
-	defer sm.RUnlock()
-	for _, ch := range sm.subscribers[uri] {
+	sm.Lock()
+	defer sm.Unlock()
+	for _, sub := range sm.subscribers[uri] {
 		select {
-		case ch <- contents:
+		case <-sub.done:
+			continue
 		default:
-			// Channel is full, skip notification
+			select {
+			case sub.ch <- contents:
+			default:
+			}
 		}
 	}
 }
@@ -237,8 +250,8 @@ func pollForChanges(ctx context.Context) {
 }
 
 func checkForResourceChanges(ctx context.Context) {
-	subManager.RLock()
-	defer subManager.RUnlock()
+	subManager.Lock()
+	defer subManager.Unlock()
 
 	for uri := range subManager.subscribers {
 		parsedURI, err := ParseURI(uri)
@@ -259,12 +272,12 @@ func checkForResourceChanges(ctx context.Context) {
 
 // Update functions for each resource type
 func updateActiveProjects(ctx context.Context) {
-	authToken := ctx.Value(authToken{}).(string)
-	if authToken == "" {
+	token, ok := ctx.Value(authToken{}).(string)
+	if !ok || token == "" {
 		return
 	}
 
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, authToken)
+	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, token)
 	projects, err := client.ListProjects(defaultPageSize, "", true)
 	if err != nil {
 		return
@@ -285,12 +298,12 @@ func updateActiveProjects(ctx context.Context) {
 }
 
 func updateCurrentMembers(ctx context.Context) {
-	authToken := ctx.Value(authToken{}).(string)
-	if authToken == "" {
+	token, ok := ctx.Value(authToken{}).(string)
+	if !ok || token == "" {
 		return
 	}
 
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, authToken)
+	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, token)
 	members, err := client.ListUsers(defaultPageSize, "")
 	if err != nil {
 		return
@@ -311,12 +324,12 @@ func updateCurrentMembers(ctx context.Context) {
 }
 
 func updateUsageDashboard(ctx context.Context) {
-	authToken := ctx.Value(authToken{}).(string)
-	if authToken == "" {
+	token, ok := ctx.Value(authToken{}).(string)
+	if !ok || token == "" {
 		return
 	}
 
-	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, authToken)
+	client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, token)
 	startTime := time.Now().AddDate(0, -1, 0).Format(time.RFC3339)
 	params := map[string]string{"start_time": startTime}
 

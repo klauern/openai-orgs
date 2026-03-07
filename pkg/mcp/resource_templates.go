@@ -82,8 +82,8 @@ func AddResourceTemplates(s *server.MCPServer) {
 // createTemplateHandler creates a standard MCP handler from our template handler
 func createTemplateHandler(h templateHandler, mimeType string) func(context.Context, mcp.ReadResourceRequest) ([]mcp.ResourceContents, error) {
 	return func(ctx context.Context, request mcp.ReadResourceRequest) ([]mcp.ResourceContents, error) {
-		authToken := ctx.Value(authToken{}).(string)
-		if authToken == "" {
+		token, ok := ctx.Value(authToken{}).(string)
+		if !ok || token == "" {
 			return nil, ErrNoAuthToken
 		}
 
@@ -92,7 +92,7 @@ func createTemplateHandler(h templateHandler, mimeType string) func(context.Cont
 			return nil, fmt.Errorf("invalid URI: %w", err)
 		}
 
-		client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, authToken)
+		client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, token)
 
 		data, err := h(ctx, client, uri)
 		if err != nil {

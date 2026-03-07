@@ -143,8 +143,11 @@ func GenericToolHandler(handler ToolHandlerFunc, paramSchema ParamSchema) func(c
 		if err != nil {
 			return nil, err
 		}
-		authToken := ctx.Value(authToken{}).(string)
-		client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, authToken)
+		token, err := authTokenFromContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+		client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, token)
 		result, err := handler(ctx, client, params)
 		if err != nil {
 			return nil, err
@@ -180,16 +183,22 @@ func AddTools(s *server.MCPServer) {
 			GenericToolHandler(
 				func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
 					limit := 100
-					if v, ok := params["limit"]; ok {
-						limit = int(v.(float64)) // MCP sends numbers as float64
+					if v, ok, err := optionalIntFromFloat(params, "limit"); err != nil {
+						return nil, err
+					} else if ok {
+						limit = v
 					}
 					after := ""
-					if v, ok := params["after"]; ok {
-						after = v.(string)
+					if v, ok, err := optionalString(params, "after"); err != nil {
+						return nil, err
+					} else if ok {
+						after = v
 					}
 					activeOnly := false
-					if v, ok := params["activeOnly"]; ok {
-						activeOnly = v.(bool)
+					if v, ok, err := optionalBool(params, "activeOnly"); err != nil {
+						return nil, err
+					} else if ok {
+						activeOnly = v
 					}
 					projects, err := client.ListProjects(limit, after, activeOnly)
 					if err != nil {
@@ -217,7 +226,10 @@ func AddTools(s *server.MCPServer) {
 		),
 			GenericToolHandler(
 				func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-					name := params["name"].(string)
+					name, err := requireString(params, "name")
+					if err != nil {
+						return nil, err
+					}
 					project, err := client.CreateProject(name)
 					if err != nil {
 						return nil, fmt.Errorf("failed to create project: %w", err)
@@ -237,7 +249,10 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				id := params["id"].(string)
+				id, err := requireString(params, "id")
+				if err != nil {
+					return nil, err
+				}
 				project, err := client.RetrieveProject(id)
 				if err != nil {
 					return nil, fmt.Errorf("failed to retrieve project: %w", err)
@@ -260,8 +275,14 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				id := params["id"].(string)
-				name := params["name"].(string)
+				id, err := requireString(params, "id")
+				if err != nil {
+					return nil, err
+				}
+				name, err := requireString(params, "name")
+				if err != nil {
+					return nil, err
+				}
 				project, err := client.ModifyProject(id, name)
 				if err != nil {
 					return nil, fmt.Errorf("failed to modify project: %w", err)
@@ -284,7 +305,10 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				id := params["id"].(string)
+				id, err := requireString(params, "id")
+				if err != nil {
+					return nil, err
+				}
 				project, err := client.ArchiveProject(id)
 				if err != nil {
 					return nil, fmt.Errorf("failed to archive project: %w", err)
@@ -317,14 +341,21 @@ func AddTools(s *server.MCPServer) {
 		),
 			GenericToolHandler(
 				func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-					projectID := params["projectId"].(string)
+					projectID, err := requireString(params, "projectId")
+					if err != nil {
+						return nil, err
+					}
 					limit := 0
-					if v, ok := params["limit"]; ok {
-						limit = int(v.(float64))
+					if v, ok, err := optionalIntFromFloat(params, "limit"); err != nil {
+						return nil, err
+					} else if ok {
+						limit = v
 					}
 					after := ""
-					if v, ok := params["after"]; ok {
-						after = v.(string)
+					if v, ok, err := optionalString(params, "after"); err != nil {
+						return nil, err
+					} else if ok {
+						after = v
 					}
 					users, err := client.ListProjectUsers(projectID, limit, after)
 					if err != nil {
@@ -354,9 +385,18 @@ func AddTools(s *server.MCPServer) {
 		),
 			GenericToolHandler(
 				func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-					projectID := params["projectId"].(string)
-					userID := params["userId"].(string)
-					role := params["role"].(string)
+					projectID, err := requireString(params, "projectId")
+					if err != nil {
+						return nil, err
+					}
+					userID, err := requireString(params, "userId")
+					if err != nil {
+						return nil, err
+					}
+					role, err := requireString(params, "role")
+					if err != nil {
+						return nil, err
+					}
 					user, err := client.CreateProjectUser(projectID, userID, role)
 					if err != nil {
 						return nil, fmt.Errorf("failed to add project user: %w", err)
@@ -383,9 +423,15 @@ func AddTools(s *server.MCPServer) {
 		),
 			GenericToolHandler(
 				func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-					projectID := params["projectId"].(string)
-					userID := params["userId"].(string)
-					err := client.DeleteProjectUser(projectID, userID)
+					projectID, err := requireString(params, "projectId")
+					if err != nil {
+						return nil, err
+					}
+					userID, err := requireString(params, "userId")
+					if err != nil {
+						return nil, err
+					}
+					err = client.DeleteProjectUser(projectID, userID)
 					if err != nil {
 						return nil, fmt.Errorf("failed to remove project user: %w", err)
 					}
@@ -411,8 +457,14 @@ func AddTools(s *server.MCPServer) {
 		),
 			GenericToolHandler(
 				func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-					projectID := params["projectId"].(string)
-					userID := params["userId"].(string)
+					projectID, err := requireString(params, "projectId")
+					if err != nil {
+						return nil, err
+					}
+					userID, err := requireString(params, "userId")
+					if err != nil {
+						return nil, err
+					}
 					user, err := client.RetrieveProjectUser(projectID, userID)
 					if err != nil {
 						return nil, fmt.Errorf("failed to retrieve project user: %w", err)
@@ -441,9 +493,18 @@ func AddTools(s *server.MCPServer) {
 		),
 			GenericToolHandler(
 				func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-					projectID := params["projectId"].(string)
-					userID := params["userId"].(string)
-					role := params["role"].(string)
+					projectID, err := requireString(params, "projectId")
+					if err != nil {
+						return nil, err
+					}
+					userID, err := requireString(params, "userId")
+					if err != nil {
+						return nil, err
+					}
+					role, err := requireString(params, "role")
+					if err != nil {
+						return nil, err
+					}
 					user, err := client.ModifyProjectUser(projectID, userID, role)
 					if err != nil {
 						return nil, fmt.Errorf("failed to modify project user: %w", err)
@@ -473,14 +534,21 @@ func AddTools(s *server.MCPServer) {
 		),
 			GenericToolHandler(
 				func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-					projectID := params["projectId"].(string)
+					projectID, err := requireString(params, "projectId")
+					if err != nil {
+						return nil, err
+					}
 					limit := 0
-					if v, ok := params["limit"]; ok {
-						limit = int(v.(float64))
+					if v, ok, err := optionalIntFromFloat(params, "limit"); err != nil {
+						return nil, err
+					} else if ok {
+						limit = v
 					}
 					after := ""
-					if v, ok := params["after"]; ok {
-						after = v.(string)
+					if v, ok, err := optionalString(params, "after"); err != nil {
+						return nil, err
+					} else if ok {
+						after = v
 					}
 					keys, err := client.ListProjectApiKeys(projectID, limit, after)
 					if err != nil {
@@ -508,9 +576,15 @@ func AddTools(s *server.MCPServer) {
 		),
 			GenericToolHandler(
 				func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-					projectID := params["projectId"].(string)
-					apiKeyID := params["apiKeyId"].(string)
-					err := client.DeleteProjectApiKey(projectID, apiKeyID)
+					projectID, err := requireString(params, "projectId")
+					if err != nil {
+						return nil, err
+					}
+					apiKeyID, err := requireString(params, "apiKeyId")
+					if err != nil {
+						return nil, err
+					}
+					err = client.DeleteProjectApiKey(projectID, apiKeyID)
 					if err != nil {
 						return nil, fmt.Errorf("failed to delete project API key: %w", err)
 					}
@@ -539,14 +613,21 @@ func AddTools(s *server.MCPServer) {
 		),
 			GenericToolHandler(
 				func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-					projectID := params["projectId"].(string)
+					projectID, err := requireString(params, "projectId")
+					if err != nil {
+						return nil, err
+					}
 					limit := 0
-					if v, ok := params["limit"]; ok {
-						limit = int(v.(float64))
+					if v, ok, err := optionalIntFromFloat(params, "limit"); err != nil {
+						return nil, err
+					} else if ok {
+						limit = v
 					}
 					after := ""
-					if v, ok := params["after"]; ok {
-						after = v.(string)
+					if v, ok, err := optionalString(params, "after"); err != nil {
+						return nil, err
+					} else if ok {
+						after = v
 					}
 					accounts, err := client.ListProjectServiceAccounts(projectID, limit, after)
 					if err != nil {
@@ -574,8 +655,14 @@ func AddTools(s *server.MCPServer) {
 		),
 			GenericToolHandler(
 				func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-					projectID := params["projectId"].(string)
-					name := params["name"].(string)
+					projectID, err := requireString(params, "projectId")
+					if err != nil {
+						return nil, err
+					}
+					name, err := requireString(params, "name")
+					if err != nil {
+						return nil, err
+					}
 					account, err := client.CreateProjectServiceAccount(projectID, name)
 					if err != nil {
 						return nil, fmt.Errorf("failed to create project service account: %w", err)
@@ -602,9 +689,15 @@ func AddTools(s *server.MCPServer) {
 		),
 			GenericToolHandler(
 				func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-					projectID := params["projectId"].(string)
-					serviceAccountID := params["serviceAccountId"].(string)
-					err := client.DeleteProjectServiceAccount(projectID, serviceAccountID)
+					projectID, err := requireString(params, "projectId")
+					if err != nil {
+						return nil, err
+					}
+					serviceAccountID, err := requireString(params, "serviceAccountId")
+					if err != nil {
+						return nil, err
+					}
+					err = client.DeleteProjectServiceAccount(projectID, serviceAccountID)
 					if err != nil {
 						return nil, fmt.Errorf("failed to delete project service account: %w", err)
 					}
@@ -632,12 +725,16 @@ func AddTools(s *server.MCPServer) {
 			GenericToolHandler(
 				func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
 					limit := 0
-					if v, ok := params["limit"]; ok {
-						limit = int(v.(float64))
+					if v, ok, err := optionalIntFromFloat(params, "limit"); err != nil {
+						return nil, err
+					} else if ok {
+						limit = v
 					}
 					after := ""
-					if v, ok := params["after"]; ok {
-						after = v.(string)
+					if v, ok, err := optionalString(params, "after"); err != nil {
+						return nil, err
+					} else if ok {
+						after = v
 					}
 					users, err := client.ListUsers(limit, after)
 					if err != nil {
@@ -656,7 +753,10 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				userID := params["userId"].(string)
+				userID, err := requireString(params, "userId")
+				if err != nil {
+					return nil, err
+				}
 				user, err := client.RetrieveUser(userID)
 				if err != nil {
 					return nil, fmt.Errorf("failed to retrieve user: %w", err)
@@ -677,8 +777,11 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				userID := params["userId"].(string)
-				err := client.DeleteUser(userID)
+				userID, err := requireString(params, "userId")
+				if err != nil {
+					return nil, err
+				}
+				err = client.DeleteUser(userID)
 				if err != nil {
 					return nil, fmt.Errorf("failed to delete user: %w", err)
 				}
@@ -698,9 +801,15 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				userID := params["userId"].(string)
-				role := params["role"].(string)
-				err := client.ModifyUserRole(userID, role)
+				userID, err := requireString(params, "userId")
+				if err != nil {
+					return nil, err
+				}
+				role, err := requireString(params, "role")
+				if err != nil {
+					return nil, err
+				}
+				err = client.ModifyUserRole(userID, role)
 				if err != nil {
 					return nil, fmt.Errorf("failed to modify user role: %w", err)
 				}
@@ -732,12 +841,16 @@ func AddTools(s *server.MCPServer) {
 			GenericToolHandler(
 				func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
 					limit := 100
-					if v, ok := params["limit"]; ok {
-						limit = int(v.(float64))
+					if v, ok, err := optionalIntFromFloat(params, "limit"); err != nil {
+						return nil, err
+					} else if ok {
+						limit = v
 					}
 					after := ""
-					if v, ok := params["after"]; ok {
-						after = v.(string)
+					if v, ok, err := optionalString(params, "after"); err != nil {
+						return nil, err
+					} else if ok {
+						after = v
 					}
 					invites, err := client.ListInvites(limit, after)
 					if err != nil {
@@ -756,8 +869,14 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				email := params["email"].(string)
-				role := params["role"].(string)
+				email, err := requireString(params, "email")
+				if err != nil {
+					return nil, err
+				}
+				role, err := requireString(params, "role")
+				if err != nil {
+					return nil, err
+				}
 				invite, err := client.CreateInvite(email, role)
 				if err != nil {
 					return nil, fmt.Errorf("failed to create invite: %w", err)
@@ -779,7 +898,10 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				inviteID := params["inviteId"].(string)
+				inviteID, err := requireString(params, "inviteId")
+				if err != nil {
+					return nil, err
+				}
 				invite, err := client.RetrieveInvite(inviteID)
 				if err != nil {
 					return nil, fmt.Errorf("failed to retrieve invite: %w", err)
@@ -800,8 +922,11 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				inviteID := params["inviteId"].(string)
-				err := client.DeleteInvite(inviteID)
+				inviteID, err := requireString(params, "inviteId")
+				if err != nil {
+					return nil, err
+				}
+				err = client.DeleteInvite(inviteID)
 				if err != nil {
 					return nil, fmt.Errorf("failed to delete invite: %w", err)
 				}
@@ -833,14 +958,21 @@ func AddTools(s *server.MCPServer) {
 		),
 			GenericToolHandler(
 				func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-					typeStr := params["type"].(string)
+					typeStr, err := requireString(params, "type")
+					if err != nil {
+						return nil, err
+					}
 					startTime := ""
-					if v, ok := params["startTime"]; ok {
-						startTime = v.(string)
+					if v, ok, err := optionalString(params, "startTime"); err != nil {
+						return nil, err
+					} else if ok {
+						startTime = v
 					}
 					endTime := ""
-					if v, ok := params["endTime"]; ok {
-						endTime = v.(string)
+					if v, ok, err := optionalString(params, "endTime"); err != nil {
+						return nil, err
+					} else if ok {
+						endTime = v
 					}
 					queryParams := map[string]string{}
 					if startTime != "" {
@@ -919,8 +1051,14 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				projectID := params["projectId"].(string)
-				apiKeyID := params["apiKeyId"].(string)
+				projectID, err := requireString(params, "projectId")
+				if err != nil {
+					return nil, err
+				}
+				apiKeyID, err := requireString(params, "apiKeyId")
+				if err != nil {
+					return nil, err
+				}
 				key, err := client.RetrieveProjectApiKey(projectID, apiKeyID)
 				if err != nil {
 					return nil, fmt.Errorf("failed to retrieve project API key: %w", err)
@@ -942,8 +1080,14 @@ func AddTools(s *server.MCPServer) {
 	),
 		GenericToolHandler(
 			func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-				projectID := params["projectId"].(string)
-				serviceAccountID := params["serviceAccountId"].(string)
+				projectID, err := requireString(params, "projectId")
+				if err != nil {
+					return nil, err
+				}
+				serviceAccountID, err := requireString(params, "serviceAccountId")
+				if err != nil {
+					return nil, err
+				}
 				account, err := client.RetrieveProjectServiceAccount(projectID, serviceAccountID)
 				if err != nil {
 					return nil, fmt.Errorf("failed to retrieve project service account: %w", err)
