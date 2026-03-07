@@ -35,7 +35,7 @@ This is a Go CLI tool and API client for managing OpenAI Platform Administration
 ### API Client Design
 
 The core API client (`api_client.go`) uses Go generics for type-safe operations:
-- `Get[T]`, `GetSingle[T]`, `Post[T]`, `Delete[T]` for common HTTP operations
+- `Get[T]`, `GetSingle[T]`, `Post[T]` for common HTTP operations; `Delete` (non-generic, returns only error)
 - Conservative retry strategy: 20 retries, 5-second wait, max 5-minute backoff
 - Generic `ListResponse[T]` for paginated API responses
 
@@ -85,7 +85,7 @@ Each resource follows consistent patterns: list, create, retrieve, modify, delet
 
 - **Interface Design**: `OpenAIOrgsClient` interface in [interfaces.go](interfaces.go) defines all operations for easy testing and dependency injection
 - **Generic Operations**: Type-safe HTTP operations using Go generics in [api_client.go](api_client.go)
-  - `Get[T]`, `GetSingle[T]`, `Post[T]`, `Delete[T]` for common HTTP operations
+  - `Get[T]`, `GetSingle[T]`, `Post[T]` for common HTTP operations; `Delete` (non-generic, returns only error)
   - All use `*resty.Client` as first parameter for testability
 - **Consistent CLI Structure**: Each resource has list/create/retrieve/modify/delete subcommands
   - Output formats: `--output pretty|json|jsonl` (default: pretty)

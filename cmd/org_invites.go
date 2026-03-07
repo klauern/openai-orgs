@@ -64,38 +64,31 @@ func deleteInviteCommand() *cli.Command {
 func listInvites(ctx context.Context, cmd *cli.Command) error {
 	client := newClient(ctx, cmd)
 
-	data := TableData{
-		Headers: []string{"ID", "Email", "Role", "Status", "Created At", "Expires At", "Accepted At"},
+	limit := int(cmd.Int("limit"))
+	resp, err := client.ListInvites(limit, cmd.String("after"))
+	if err != nil {
+		return wrapError("list invites", err)
 	}
 
-	limit := int(cmd.Int("limit"))
-	after := cmd.String("after")
-	for {
-		resp, err := client.ListInvites(limit, after)
-		if err != nil {
-			return wrapError("list invites", err)
-		}
+	data := TableData{
+		Headers: []string{"ID", "Email", "Role", "Status", "Created At", "Expires At", "Accepted At"},
+		Rows:    make([][]string, len(resp.Data)),
+	}
 
-		for _, invite := range resp.Data {
-			acceptedAt := "N/A"
-			if invite.AcceptedAt != nil {
-				acceptedAt = invite.AcceptedAt.String()
-			}
-			data.Rows = append(data.Rows, []string{
-				invite.ID,
-				invite.Email,
-				invite.Role,
-				invite.Status,
-				invite.CreatedAt.String(),
-				invite.ExpiresAt.String(),
-				acceptedAt,
-			})
+	for i, invite := range resp.Data {
+		acceptedAt := "N/A"
+		if invite.AcceptedAt != nil {
+			acceptedAt = invite.AcceptedAt.String()
 		}
-
-		if !resp.HasMore {
-			break
+		data.Rows[i] = []string{
+			invite.ID,
+			invite.Email,
+			invite.Role,
+			invite.Status,
+			invite.CreatedAt.String(),
+			invite.ExpiresAt.String(),
+			acceptedAt,
 		}
-		after = resp.LastID
 	}
 
 	printTableData(data)

@@ -718,30 +718,32 @@ func AddTools(s *server.MCPServer) {
 	// --- Invites ---
 	{
 		schema := ParamSchema{
-			Fields: []ParamField{},
+			Fields: []ParamField{
+				{Name: "limit", Required: false, Type: reflect.Float64, Description: "Maximum number of invites to return"},
+				{Name: "after", Required: false, Type: reflect.String, Description: "Invite ID to start after (for pagination)"},
+			},
 		}
 		s.AddTool(mcp.NewTool(
 			"list_invites",
-			mcp.WithDescription("Lists all pending invites in the organization"),
+			mcp.WithDescription("Lists pending invites in the organization"),
+			mcp.WithNumber("limit", mcp.Description("Maximum number of invites to return (default 100)")),
+			mcp.WithString("after", mcp.Description("Invite ID to start after (for pagination)")),
 		),
 			GenericToolHandler(
 				func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-					var result string
-					after := ""
-					for {
-						invites, err := client.ListInvites(100, after)
-						if err != nil {
-							return nil, fmt.Errorf("failed to list invites: %w", err)
-						}
-						for _, invite := range invites.Data {
-							result += invite.String() + "\n"
-						}
-						if !invites.HasMore {
-							break
-						}
-						after = invites.LastID
+					limit := 100
+					if v, ok := params["limit"]; ok {
+						limit = int(v.(float64))
 					}
-					return result, nil
+					after := ""
+					if v, ok := params["after"]; ok {
+						after = v.(string)
+					}
+					invites, err := client.ListInvites(limit, after)
+					if err != nil {
+						return nil, fmt.Errorf("failed to list invites: %w", err)
+					}
+					return invites.String(), nil
 				},
 				schema,
 			),
