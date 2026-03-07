@@ -132,5 +132,5 @@ func (c *Client) RetrieveProjectServiceAccount(projectID string, serviceAccountI
 // This operation cannot be undone, and any applications using the service account's
 // API key will lose access immediately.
 func (c *Client) DeleteProjectServiceAccount(projectID string, serviceAccountID string) error {
-	return Delete[ProjectServiceAccount](c.client, fmt.Sprintf(ProjectServiceAccountsListEndpoint+"/%s", projectID, serviceAccountID))
+	return Delete(c.client, fmt.Sprintf(ProjectServiceAccountsListEndpoint+"/%s", projectID, serviceAccountID))
 }

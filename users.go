@@ -61,7 +61,7 @@ func (c *Client) RetrieveUser(id string) (*User, error) {
 //
 // Returns an error if deletion fails or nil on success.
 func (c *Client) DeleteUser(id string) error {
-	err := Delete[User](c.client, UsersListEndpoint+"/"+id)
+	err := Delete(c.client, UsersListEndpoint+"/"+id)
 	if err != nil {
 		return fmt.Errorf("failed to delete user: %w", err)
 	}

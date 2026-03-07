@@ -47,6 +47,18 @@ type OpenAIOrgsClient interface {
 
 	// Project Rate Limits
 	ListProjectRateLimits(limit int, after string, projectId string) (*ListResponse[ProjectRateLimit], error)
+	ModifyProjectRateLimit(projectId, rateLimitId string, fields ProjectRateLimitRequestFields) (*ProjectRateLimit, error)
+
+	// Usage
+	GetCompletionsUsage(queryParams map[string]string) (*CompletionsUsageResponse, error)
+	GetEmbeddingsUsage(queryParams map[string]string) (*EmbeddingsUsageResponse, error)
+	GetModerationsUsage(queryParams map[string]string) (*ModerationsUsageResponse, error)
+	GetImagesUsage(queryParams map[string]string) (*ImagesUsageResponse, error)
+	GetAudioSpeechesUsage(queryParams map[string]string) (*AudioSpeechesUsageResponse, error)
+	GetAudioTranscriptionsUsage(queryParams map[string]string) (*AudioTranscriptionsUsageResponse, error)
+	GetVectorStoresUsage(queryParams map[string]string) (*VectorStoresUsageResponse, error)
+	GetCodeInterpreterUsage(queryParams map[string]string) (*CodeInterpreterUsageResponse, error)
+	GetCostsUsage(queryParams map[string]string) (*CostsUsageResponse, error)
 
 	// Audit Logs
 	ListAuditLogs(params *AuditLogListParams) (*ListResponse[AuditLog], error)

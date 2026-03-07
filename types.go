@@ -73,6 +73,12 @@ const (
 	RoleTypeOwner RoleType = "owner"
 	// RoleTypeMember grants standard member access.
 	RoleTypeMember RoleType = "member"
+	// RoleTypeAdmin grants project-level administrative access.
+	RoleTypeAdmin RoleType = "admin"
+	// RoleTypeDeveloper grants project-level developer access.
+	RoleTypeDeveloper RoleType = "developer"
+	// RoleTypeViewer grants project-level read-only access.
+	RoleTypeViewer RoleType = "viewer"
 )
 
 // ParseRoleType converts a string to a RoleType.
@@ -83,6 +89,12 @@ func ParseRoleType(s string) RoleType {
 		return RoleTypeOwner
 	case "member":
 		return RoleTypeMember
+	case "admin":
+		return RoleTypeAdmin
+	case "developer":
+		return RoleTypeDeveloper
+	case "viewer":
+		return RoleTypeViewer
 	default:
 		return ""
 	}

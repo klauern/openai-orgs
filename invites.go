@@ -28,33 +28,22 @@ type Invite struct {
 // InviteListEndpoint is the base endpoint for invitation management operations.
 const InviteListEndpoint = "/organization/invites"
 
-// ListInvites retrieves all invitations in the organization.
-// It automatically handles pagination to fetch all available invites.
+// ListInvites retrieves a paginated list of invitations in the organization.
 //
-// Returns a slice of all Invite objects or an error if the retrieval fails.
-func (c *Client) ListInvites() ([]Invite, error) {
-	var allInvites []Invite
-	queryParams := map[string]string{
-		"limit": "100",
+// Parameters:
+//   - limit: Maximum number of invites to return (0 for default)
+//   - after: Pagination cursor for fetching the next page (empty string for first page)
+//
+// Returns a ListResponse containing Invite objects and pagination metadata, or an error.
+func (c *Client) ListInvites(limit int, after string) (*ListResponse[Invite], error) {
+	queryParams := make(map[string]string)
+	if limit > 0 {
+		queryParams["limit"] = fmt.Sprintf("%d", limit)
 	}
-
-	for {
-		resp, err := Get[Invite](c.client, InviteListEndpoint, queryParams)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get invites: %w", err)
-		}
-
-		allInvites = append(allInvites, resp.Data...)
-
-		if !resp.HasMore {
-			break
-		}
-
-		fmt.Println("Getting more invites after", resp.LastID)
-		queryParams["after"] = resp.LastID
+	if after != "" {
+		queryParams["after"] = after
 	}
-
-	return allInvites, nil
+	return Get[Invite](c.client, InviteListEndpoint, queryParams)
 }
 
 // CreateInvite sends a new invitation to join the organization.
@@ -100,7 +89,7 @@ func (c *Client) RetrieveInvite(id string) (*Invite, error) {
 //
 // Returns an error if deletion fails or nil on success.
 func (c *Client) DeleteInvite(id string) error {
-	err := Delete[Invite](c.client, InviteListEndpoint+"/"+id)
+	err := Delete(c.client, InviteListEndpoint+"/"+id)
 	if err != nil {
 		return fmt.Errorf("failed to delete invite: %w", err)
 	}

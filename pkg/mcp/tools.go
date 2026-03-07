@@ -726,13 +726,20 @@ func AddTools(s *server.MCPServer) {
 		),
 			GenericToolHandler(
 				func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
-					invites, err := client.ListInvites()
-					if err != nil {
-						return nil, fmt.Errorf("failed to list invites: %w", err)
-					}
 					var result string
-					for _, invite := range invites {
-						result += invite.String() + "\n"
+					after := ""
+					for {
+						invites, err := client.ListInvites(100, after)
+						if err != nil {
+							return nil, fmt.Errorf("failed to list invites: %w", err)
+						}
+						for _, invite := range invites.Data {
+							result += invite.String() + "\n"
+						}
+						if !invites.HasMore {
+							break
+						}
+						after = invites.LastID
 					}
 					return result, nil
 				},

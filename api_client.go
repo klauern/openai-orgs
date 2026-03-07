@@ -11,6 +11,9 @@ import (
 // DefaultBaseURL is the default endpoint for the OpenAI Organizations API.
 const DefaultBaseURL = "https://api.openai.com/v1"
 
+// Compile-time check that *Client satisfies the OpenAIOrgsClient interface.
+var _ OpenAIOrgsClient = (*Client)(nil)
+
 // Client represents an OpenAI Organizations API client.
 // It handles authentication, request retries, and provides methods for interacting with the API.
 type Client struct {
@@ -128,7 +131,7 @@ func Post[T any](client *resty.Client, endpoint string, body any) (*T, error) {
 
 // Delete makes a DELETE request to remove a resource.
 // It returns an error if the request fails or returns a non-2xx status code.
-func Delete[T any](client *resty.Client, endpoint string) error {
+func Delete(client *resty.Client, endpoint string) error {
 	resp, err := client.R().Delete(endpoint)
 	if err != nil {
 		return fmt.Errorf("error making DELETE request: %v", err)
