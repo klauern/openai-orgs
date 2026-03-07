@@ -97,10 +97,10 @@ func TestCreateProjectUserCommand(t *testing.T) {
 		wantContains []string
 	}{
 		{
-			name:       "successful create",
-			args:       []string{"project-users", "create", "--project-id", "proj_123", "--id", "user_1", "--role", "member"},
-			statusCode: 200,
-			response:   createMockProjectUser("user_1", "Alice", "alice@example.com", "member"),
+			name:         "successful create",
+			args:         []string{"project-users", "create", "--project-id", "proj_123", "--id", "user_1", "--role", "member"},
+			statusCode:   200,
+			response:     createMockProjectUser("user_1", "Alice", "alice@example.com", "member"),
 			wantContains: []string{"Project User created:", "user_1", "alice@example.com", "Alice", "member"},
 		},
 		{
@@ -148,10 +148,10 @@ func TestRetrieveProjectUserCommand(t *testing.T) {
 		wantContains []string
 	}{
 		{
-			name:       "successful retrieve",
-			args:       []string{"project-users", "retrieve", "--project-id", "proj_123", "--id", "user_1"},
-			statusCode: 200,
-			response:   createMockProjectUser("user_1", "Alice", "alice@example.com", "owner"),
+			name:         "successful retrieve",
+			args:         []string{"project-users", "retrieve", "--project-id", "proj_123", "--id", "user_1"},
+			statusCode:   200,
+			response:     createMockProjectUser("user_1", "Alice", "alice@example.com", "owner"),
 			wantContains: []string{"Project User details:", "user_1", "alice@example.com", "Alice", "owner"},
 		},
 		{
@@ -199,10 +199,10 @@ func TestModifyProjectUserCommand(t *testing.T) {
 		wantContains []string
 	}{
 		{
-			name:       "successful modify",
-			args:       []string{"project-users", "modify", "--project-id", "proj_123", "--id", "user_1", "--role", "owner"},
-			statusCode: 200,
-			response:   createMockProjectUser("user_1", "Alice", "alice@example.com", "owner"),
+			name:         "successful modify",
+			args:         []string{"project-users", "modify", "--project-id", "proj_123", "--id", "user_1", "--role", "owner"},
+			statusCode:   200,
+			response:     createMockProjectUser("user_1", "Alice", "alice@example.com", "owner"),
 			wantContains: []string{"Project User modified:", "user_1", "owner"},
 		},
 		{

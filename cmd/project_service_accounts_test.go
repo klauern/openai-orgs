@@ -96,10 +96,10 @@ func TestCreateProjectServiceAccountCommand(t *testing.T) {
 		wantContains []string
 	}{
 		{
-			name:       "successful create",
-			args:       []string{"project-service-accounts", "create", "--project-id", "proj_123", "--name", "New SA"},
-			statusCode: 200,
-			response:   createMockProjectServiceAccount("sa_new", "New SA"),
+			name:         "successful create",
+			args:         []string{"project-service-accounts", "create", "--project-id", "proj_123", "--name", "New SA"},
+			statusCode:   200,
+			response:     createMockProjectServiceAccount("sa_new", "New SA"),
 			wantContains: []string{"Project Service Account created:", "sa_new", "New SA"},
 		},
 		{
@@ -147,10 +147,10 @@ func TestRetrieveProjectServiceAccountCommand(t *testing.T) {
 		wantContains []string
 	}{
 		{
-			name:       "successful retrieve",
-			args:       []string{"project-service-accounts", "retrieve", "--project-id", "proj_123", "--id", "sa_1"},
-			statusCode: 200,
-			response:   createMockProjectServiceAccount("sa_1", "My SA"),
+			name:         "successful retrieve",
+			args:         []string{"project-service-accounts", "retrieve", "--project-id", "proj_123", "--id", "sa_1"},
+			statusCode:   200,
+			response:     createMockProjectServiceAccount("sa_1", "My SA"),
 			wantContains: []string{"Project Service Account details:", "sa_1", "My SA"},
 		},
 		{

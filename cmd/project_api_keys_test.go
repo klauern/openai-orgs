@@ -140,10 +140,10 @@ func TestRetrieveProjectAPIKeyCommand(t *testing.T) {
 		wantContains []string
 	}{
 		{
-			name:       "successful retrieve",
-			args:       []string{"project-api-keys", "retrieve", "--project-id", "proj_123", "--id", "key_1"},
-			statusCode: 200,
-			response:   createMockProjectApiKey("key_1", "My API Key"),
+			name:         "successful retrieve",
+			args:         []string{"project-api-keys", "retrieve", "--project-id", "proj_123", "--id", "key_1"},
+			statusCode:   200,
+			response:     createMockProjectApiKey("key_1", "My API Key"),
 			wantContains: []string{"ID | Name | Created At | Owner", "key_1", "My API Key"},
 		},
 		{

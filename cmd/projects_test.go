@@ -119,10 +119,10 @@ func TestCreateProjectCommand(t *testing.T) {
 		wantContains []string
 	}{
 		{
-			name:       "successful create",
-			args:       []string{"projects", "create", "--name", "New Project"},
-			statusCode: 200,
-			response:   createMockProject("proj_new", "New Project", "active", false),
+			name:         "successful create",
+			args:         []string{"projects", "create", "--name", "New Project"},
+			statusCode:   200,
+			response:     createMockProject("proj_new", "New Project", "active", false),
 			wantContains: []string{"Project created:", "proj_new", "New Project", "active"},
 		},
 		{
@@ -170,17 +170,17 @@ func TestRetrieveProjectCommand(t *testing.T) {
 		wantContains []string
 	}{
 		{
-			name:       "successful retrieve without archived",
-			args:       []string{"projects", "retrieve", "--id", "proj_123"},
-			statusCode: 200,
-			response:   createMockProject("proj_123", "My Project", "active", false),
+			name:         "successful retrieve without archived",
+			args:         []string{"projects", "retrieve", "--id", "proj_123"},
+			statusCode:   200,
+			response:     createMockProject("proj_123", "My Project", "active", false),
 			wantContains: []string{"Project details:", "proj_123", "My Project", "active"},
 		},
 		{
-			name:       "successful retrieve with archived",
-			args:       []string{"projects", "retrieve", "--id", "proj_456"},
-			statusCode: 200,
-			response:   createMockProject("proj_456", "Archived Project", "archived", true),
+			name:         "successful retrieve with archived",
+			args:         []string{"projects", "retrieve", "--id", "proj_456"},
+			statusCode:   200,
+			response:     createMockProject("proj_456", "Archived Project", "archived", true),
 			wantContains: []string{"Project details:", "proj_456", "Archived At:"},
 		},
 	}
@@ -223,10 +223,10 @@ func TestModifyProjectCommand(t *testing.T) {
 		wantContains []string
 	}{
 		{
-			name:       "successful modify",
-			args:       []string{"projects", "modify", "--id", "proj_123", "--name", "Updated Name"},
-			statusCode: 200,
-			response:   createMockProject("proj_123", "Updated Name", "active", false),
+			name:         "successful modify",
+			args:         []string{"projects", "modify", "--id", "proj_123", "--name", "Updated Name"},
+			statusCode:   200,
+			response:     createMockProject("proj_123", "Updated Name", "active", false),
 			wantContains: []string{"Project modified:", "proj_123", "Updated Name"},
 		},
 		{
@@ -274,10 +274,10 @@ func TestArchiveProjectCommand(t *testing.T) {
 		wantContains []string
 	}{
 		{
-			name:       "successful archive",
-			args:       []string{"projects", "archive", "--id", "proj_123"},
-			statusCode: 200,
-			response:   createMockProject("proj_123", "My Project", "archived", true),
+			name:         "successful archive",
+			args:         []string{"projects", "archive", "--id", "proj_123"},
+			statusCode:   200,
+			response:     createMockProject("proj_123", "My Project", "archived", true),
 			wantContains: []string{"Project archived:", "proj_123", "My Project", "archived"},
 		},
 		{

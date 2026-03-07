@@ -102,11 +102,11 @@ func TestListProjectRateLimitsTableCommand(t *testing.T) {
 
 func TestListProjectRateLimitsJSONCommand(t *testing.T) {
 	tests := []struct {
-		name      string
-		args      []string
+		name       string
+		args       []string
 		statusCode int
 		response   any
-		wantErr   bool
+		wantErr    bool
 	}{
 		{
 			name:       "successful list json",
@@ -232,11 +232,11 @@ func TestModifyProjectRateLimitTableCommand(t *testing.T) {
 
 func TestModifyProjectRateLimitJSONCommand(t *testing.T) {
 	tests := []struct {
-		name      string
-		args      []string
+		name       string
+		args       []string
 		statusCode int
 		response   any
-		wantErr   bool
+		wantErr    bool
 	}{
 		{
 			name: "successful modify json",

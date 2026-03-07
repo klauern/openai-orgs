@@ -315,9 +315,9 @@ func TestOutputResponse_Routing(t *testing.T) {
 	response := createTestResponse(log1)
 
 	tests := []struct {
-		name           string
-		format         string
-		expectedInOut  string
+		name          string
+		format        string
+		expectedInOut string
 	}{
 		{
 			name:          "json format",
