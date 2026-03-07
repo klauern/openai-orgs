@@ -59,6 +59,52 @@ func TestListInvites(t *testing.T) {
 	h.assertRequest("GET", InviteListEndpoint, 1)
 }
 
+func TestListInvitesWithPagination(t *testing.T) {
+	h := newTestHelper(t)
+	defer h.cleanup()
+
+	now := time.Now()
+	mockInvites := []Invite{
+		{
+			ObjectType: "organization.invite",
+			ID:         "invite_456",
+			Email:      "page2@example.com",
+			Role:       "member",
+			Status:     "pending",
+			CreatedAt:  UnixSeconds(now),
+			ExpiresAt:  UnixSeconds(now.Add(24 * time.Hour)),
+		},
+	}
+
+	response := ListResponse[Invite]{
+		Object:  "list",
+		Data:    mockInvites,
+		FirstID: "invite_456",
+		LastID:  "invite_456",
+		HasMore: false,
+	}
+	h.mockResponse("GET", InviteListEndpoint, 200, response)
+
+	resp, err := h.client.ListInvites(50, "invite_123")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+	if resp == nil {
+		t.Error("Expected response, got nil")
+		return
+	}
+	if len(resp.Data) != 1 {
+		t.Errorf("Expected 1 invite, got %d", len(resp.Data))
+		return
+	}
+	if resp.Data[0].ID != "invite_456" {
+		t.Errorf("Expected ID invite_456, got %s", resp.Data[0].ID)
+	}
+
+	h.assertRequest("GET", InviteListEndpoint, 1)
+}
+
 func TestCreateInvite(t *testing.T) {
 	h := newTestHelper(t)
 	defer h.cleanup()
