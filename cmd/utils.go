@@ -103,6 +103,9 @@ func (b *BaseCommand) Subcommands() []*cli.Command {
 
 // newClientFunc is the function used to create API clients. It can be overridden in tests
 // to inject an httpmock-backed client.
+//
+// NOTE: This variable is not safe for concurrent access. Tests that override this value
+// via newCmdTestHelper must NOT use t.Parallel(), as concurrent reads/writes would race.
 var newClientFunc = defaultNewClient
 
 func defaultNewClient(_ context.Context, cmd *cli.Command) *openaiorgs.Client {

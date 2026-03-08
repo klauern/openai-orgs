@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"net/http"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/jarcoal/httpmock"
 	openaiorgs "github.com/klauern/openai-orgs"
 )
 
@@ -26,13 +28,16 @@ func createTestAuditLog(id, logType string, details interface{}) openaiorgs.Audi
 }
 
 func createTestResponse(logs ...openaiorgs.AuditLog) *openaiorgs.ListResponse[openaiorgs.AuditLog] {
-	return &openaiorgs.ListResponse[openaiorgs.AuditLog]{
+	resp := &openaiorgs.ListResponse[openaiorgs.AuditLog]{
 		Object:  "list",
 		Data:    logs,
-		FirstID: "log_first",
-		LastID:  "log_last",
 		HasMore: false,
 	}
+	if len(logs) > 0 {
+		resp.FirstID = logs[0].ID
+		resp.LastID = logs[len(logs)-1].ID
+	}
+	return resp
 }
 
 func TestOutputJSON(t *testing.T) {
@@ -436,6 +441,57 @@ func TestListAuditLogsCommand(t *testing.T) {
 		}
 		if !strings.Contains(err.Error(), "list audit logs") {
 			t.Errorf("Expected wrapped error message, got: %v", err)
+		}
+		h.assertRequest("GET", "/organization/audit_logs", 1)
+	})
+
+	t.Run("paginate", func(t *testing.T) {
+		h := newCmdTestHelper(t)
+		defer h.cleanup()
+
+		log1 := createTestAuditLog("log_page1", "api_key.created", nil)
+		log2 := createTestAuditLog("log_page2", "api_key.deleted", nil)
+
+		page1 := &openaiorgs.ListResponse[openaiorgs.AuditLog]{
+			Object:  "list",
+			Data:    []openaiorgs.AuditLog{log1},
+			FirstID: "log_page1",
+			LastID:  "log_page1",
+			HasMore: true,
+		}
+		page2 := &openaiorgs.ListResponse[openaiorgs.AuditLog]{
+			Object:  "list",
+			Data:    []openaiorgs.AuditLog{log2},
+			FirstID: "log_page2",
+			LastID:  "",
+			HasMore: false,
+		}
+
+		callCount := 0
+		httpmock.RegisterResponder("GET", testBaseURL+"/organization/audit_logs",
+			func(req *http.Request) (*http.Response, error) {
+				callCount++
+				if callCount == 1 {
+					return httpmock.NewJsonResponse(200, page1)
+				}
+				return httpmock.NewJsonResponse(200, page2)
+			},
+		)
+
+		output := captureOutput(func() {
+			err := h.runCmd(AuditLogsCommand(), []string{"audit-logs", "--paginate"})
+			if err != nil {
+				t.Errorf("runCmd() error = %v", err)
+			}
+		})
+
+		h.assertRequest("GET", "/organization/audit_logs", 2)
+
+		if !strings.Contains(output, "log_page1") {
+			t.Errorf("Expected log_page1 in output, got: %s", output)
+		}
+		if !strings.Contains(output, "log_page2") {
+			t.Errorf("Expected log_page2 in output, got: %s", output)
 		}
 	})
 }
