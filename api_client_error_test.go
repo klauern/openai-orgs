@@ -125,4 +125,23 @@ func TestNewClient_EdgeCases(t *testing.T) {
 			t.Error("Expected client to be created even with empty API key")
 		}
 	})
+
+	t.Run("SetRetryCount", func(t *testing.T) {
+		client := NewClient("https://api.openai.com/v1", "test-token")
+		// Should not panic
+		client.SetRetryCount(0)
+		client.SetRetryCount(5)
+	})
+
+	t.Run("GetHTTPClient", func(t *testing.T) {
+		client := NewClient("https://api.openai.com/v1", "test-token")
+		httpClient := client.GetHTTPClient()
+		if httpClient == nil {
+			t.Error("Expected non-nil http.Client")
+		}
+		// Verify it returns a real *http.Client
+		if _, ok := interface{}(httpClient).(*http.Client); !ok {
+			t.Error("Expected *http.Client type")
+		}
+	})
 }

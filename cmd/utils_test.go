@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -109,6 +110,54 @@ func TestPrintTableData(t *testing.T) {
 			})
 			tt.check(t, output)
 		})
+	}
+}
+
+func TestDefaultNewClient(t *testing.T) {
+	// Build a minimal CLI command with the api-key flag
+	cmd := &cli.Command{
+		Name: "test",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:  "api-key",
+				Value: "test-token",
+			},
+		},
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			client := defaultNewClient(ctx, cmd)
+			if client == nil {
+				t.Fatal("expected non-nil client")
+			}
+			return nil
+		},
+	}
+	err := cmd.Run(context.Background(), []string{"test"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestNewClientFunc(t *testing.T) {
+	// Verify newClientFunc is defaultNewClient by default
+	cmd := &cli.Command{
+		Name: "test",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:  "api-key",
+				Value: "test-token",
+			},
+		},
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			client := newClient(ctx, cmd)
+			if client == nil {
+				t.Fatal("expected non-nil client")
+			}
+			return nil
+		},
+	}
+	err := cmd.Run(context.Background(), []string{"test"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
 

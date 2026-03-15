@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
@@ -74,7 +75,7 @@ func (h *cmdTestHelper) assertRequest(method, endpoint string, times int) {
 	// Also check for calls with query parameters
 	if times > count {
 		for key, c := range httpmock.GetCallCountInfo() {
-			if key != fullURL && len(key) > len(fullURL) && key[:len(fullURL)] == fullURL {
+			if key != fullURL && strings.HasPrefix(key, fullURL+"?") {
 				count += c
 			}
 		}
@@ -114,7 +115,10 @@ func (h *cmdTestHelper) runCmd(command *cli.Command, args []string) error {
 // captureOutput captures stdout during the execution of f and returns it as a string.
 func captureOutput(f func()) string {
 	old := os.Stdout
-	r, w, _ := os.Pipe()
+	r, w, err := os.Pipe()
+	if err != nil {
+		return ""
+	}
 	os.Stdout = w
 
 	f()
@@ -124,5 +128,6 @@ func captureOutput(f func()) string {
 
 	var buf bytes.Buffer
 	_, _ = io.Copy(&buf, r)
+	_ = r.Close()
 	return buf.String()
 }

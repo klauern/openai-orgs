@@ -135,6 +135,15 @@ func (ps *ParamSchema) ExtractAndValidate(req mcp.CallToolRequest) (map[string]a
 // Returns: result (any) and error
 type ToolHandlerFunc func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error)
 
+// newToolClient creates an API client for tool handlers. Tests can override this
+// to inject a mock client.
+//
+// NOTE: This variable is not safe for concurrent access. Tests that override it
+// must NOT use t.Parallel().
+var newToolClient = func(token string) *openaiorgs.Client {
+	return openaiorgs.NewClient(openaiorgs.DefaultBaseURL, token)
+}
+
 // GenericToolHandler wraps a ToolHandlerFunc for MCP
 // Handles parameter extraction/validation, client instantiation, error handling, and result formatting
 func GenericToolHandler(handler ToolHandlerFunc, paramSchema ParamSchema) func(context.Context, mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -147,7 +156,7 @@ func GenericToolHandler(handler ToolHandlerFunc, paramSchema ParamSchema) func(c
 		if err != nil {
 			return nil, err
 		}
-		client := openaiorgs.NewClient(openaiorgs.DefaultBaseURL, token)
+		client := newToolClient(token)
 		result, err := handler(ctx, client, params)
 		if err != nil {
 			return nil, err
