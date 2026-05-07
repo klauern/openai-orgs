@@ -34,24 +34,74 @@ func TestListInvites(t *testing.T) {
 	h.mockResponse("GET", InviteListEndpoint, 200, response)
 
 	// Make the API call
-	invites, err := h.client.ListInvites()
+	resp, err := h.client.ListInvites(100, "")
 	// Assert results
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 		return
 	}
-	if len(invites) != 1 {
-		t.Errorf("Expected 1 invite, got %d", len(invites))
+	if resp == nil {
+		t.Error("Expected response, got nil")
 		return
 	}
-	if mockInvites[0].ID != invites[0].ID {
-		t.Errorf("Expected ID %s, got %s", mockInvites[0].ID, invites[0].ID)
+	if len(resp.Data) != 1 {
+		t.Errorf("Expected 1 invite, got %d", len(resp.Data))
+		return
 	}
-	if mockInvites[0].Email != invites[0].Email {
-		t.Errorf("Expected Email %s, got %s", mockInvites[0].Email, invites[0].Email)
+	if mockInvites[0].ID != resp.Data[0].ID {
+		t.Errorf("Expected ID %s, got %s", mockInvites[0].ID, resp.Data[0].ID)
+	}
+	if mockInvites[0].Email != resp.Data[0].Email {
+		t.Errorf("Expected Email %s, got %s", mockInvites[0].Email, resp.Data[0].Email)
 	}
 
 	// Verify the request was made
+	h.assertRequest("GET", InviteListEndpoint, 1)
+}
+
+func TestListInvitesWithPagination(t *testing.T) {
+	h := newTestHelper(t)
+	defer h.cleanup()
+
+	now := time.Now()
+	mockInvites := []Invite{
+		{
+			ObjectType: "organization.invite",
+			ID:         "invite_456",
+			Email:      "page2@example.com",
+			Role:       "member",
+			Status:     "pending",
+			CreatedAt:  UnixSeconds(now),
+			ExpiresAt:  UnixSeconds(now.Add(24 * time.Hour)),
+		},
+	}
+
+	response := ListResponse[Invite]{
+		Object:  "list",
+		Data:    mockInvites,
+		FirstID: "invite_456",
+		LastID:  "invite_456",
+		HasMore: false,
+	}
+	h.mockResponse("GET", InviteListEndpoint, 200, response)
+
+	resp, err := h.client.ListInvites(50, "invite_123")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+	if resp == nil {
+		t.Error("Expected response, got nil")
+		return
+	}
+	if len(resp.Data) != 1 {
+		t.Errorf("Expected 1 invite, got %d", len(resp.Data))
+		return
+	}
+	if resp.Data[0].ID != "invite_456" {
+		t.Errorf("Expected ID invite_456, got %s", resp.Data[0].ID)
+	}
+
 	h.assertRequest("GET", InviteListEndpoint, 1)
 }
 

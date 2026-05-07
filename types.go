@@ -24,14 +24,14 @@ type ListResponse[T any] struct {
 // It includes all metadata and a formatted list of all items in the Data field.
 func (lr *ListResponse[T]) String() string {
 	var result strings.Builder
-	result.WriteString(fmt.Sprintf("Object: %s\n", lr.Object))
-	result.WriteString(fmt.Sprintf("First ID: %s\n", lr.FirstID))
-	result.WriteString(fmt.Sprintf("Last ID: %s\n", lr.LastID))
-	result.WriteString(fmt.Sprintf("Has More: %v\n", lr.HasMore))
+	fmt.Fprintf(&result, "Object: %s\n", lr.Object)
+	fmt.Fprintf(&result, "First ID: %s\n", lr.FirstID)
+	fmt.Fprintf(&result, "Last ID: %s\n", lr.LastID)
+	fmt.Fprintf(&result, "Has More: %v\n", lr.HasMore)
 	result.WriteString("Data:\n")
 
 	for i, item := range lr.Data {
-		result.WriteString(fmt.Sprintf("  [%d] %+v\n", i, item))
+		fmt.Fprintf(&result, "  [%d] %+v\n", i, item)
 	}
 
 	return result.String()
@@ -73,6 +73,12 @@ const (
 	RoleTypeOwner RoleType = "owner"
 	// RoleTypeMember grants standard member access.
 	RoleTypeMember RoleType = "member"
+	// RoleTypeAdmin grants project-level administrative access.
+	RoleTypeAdmin RoleType = "admin"
+	// RoleTypeDeveloper grants project-level developer access.
+	RoleTypeDeveloper RoleType = "developer"
+	// RoleTypeViewer grants project-level read-only access.
+	RoleTypeViewer RoleType = "viewer"
 )
 
 // ParseRoleType converts a string to a RoleType.
@@ -83,6 +89,12 @@ func ParseRoleType(s string) RoleType {
 		return RoleTypeOwner
 	case "member":
 		return RoleTypeMember
+	case "admin":
+		return RoleTypeAdmin
+	case "developer":
+		return RoleTypeDeveloper
+	case "viewer":
+		return RoleTypeViewer
 	default:
 		return ""
 	}

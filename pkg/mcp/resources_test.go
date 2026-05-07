@@ -2,6 +2,7 @@ package mcp
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
@@ -250,4 +251,85 @@ func (p *testResourceProvider) GetResource(ctx context.Context, uri string, para
 func (p *testResourceProvider) Subscribe(uri string) (<-chan mcp.ResourceContents, func()) {
 	ch := make(chan mcp.ResourceContents, 1)
 	return ch, func() { close(ch) }
+}
+
+func TestSubscriptionManager_ConcurrentNotifyUnsubscribe(t *testing.T) {
+	sm := &subscriptionManager{
+		subscribers: make(map[string][]*subscription),
+	}
+	uri := "openai-orgs://test-concurrent"
+
+	// Create several subscribers
+	channels := make([]chan mcp.ResourceContents, 10)
+	for i := 0; i < 10; i++ {
+		channels[i] = sm.subscribe(uri)
+	}
+
+	// Concurrently notify and unsubscribe
+	var wg sync.WaitGroup
+	for i := 0; i < 10; i++ {
+		wg.Add(2)
+		ch := channels[i]
+		go func() {
+			defer wg.Done()
+			for j := 0; j < 100; j++ {
+				sm.notify(uri, &mcp.TextResourceContents{
+					URI:  uri,
+					Text: "test",
+				})
+			}
+		}()
+		go func() {
+			defer wg.Done()
+			// Small delay to let some notifications through
+			sm.unsubscribe(uri, ch)
+		}()
+	}
+	wg.Wait()
+	// If we get here without panic, the race condition is fixed
+}
+
+func TestGetPaginationFromParams(t *testing.T) {
+	tests := []struct {
+		name      string
+		params    map[string]any
+		wantLimit int
+		wantAfter string
+	}{
+		{"default values", map[string]any{}, defaultPageSize, ""},
+		{"custom limit", map[string]any{"pagination": map[string]any{"limit": float64(50)}}, 50, ""},
+		{"custom after", map[string]any{"pagination": map[string]any{"after": "cursor_123"}}, defaultPageSize, "cursor_123"},
+		{"both set", map[string]any{"pagination": map[string]any{"limit": float64(30), "after": "cursor_456"}}, 30, "cursor_456"},
+		{"negative limit uses default", map[string]any{"pagination": map[string]any{"limit": float64(-5)}}, defaultPageSize, ""},
+		{"limit over max capped", map[string]any{"pagination": map[string]any{"limit": float64(500)}}, maxPageSize, ""},
+		{"zero limit uses default", map[string]any{"pagination": map[string]any{"limit": float64(0)}}, defaultPageSize, ""},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			limit, after := getPaginationFromParams(tc.params)
+			if limit != tc.wantLimit {
+				t.Errorf("limit = %d, want %d", limit, tc.wantLimit)
+			}
+			if after != tc.wantAfter {
+				t.Errorf("after = %q, want %q", after, tc.wantAfter)
+			}
+		})
+	}
+}
+
+func TestPollForChanges_CancellableContext(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan struct{})
+	go func() {
+		pollForChanges(ctx)
+		close(done)
+	}()
+	cancel()
+	select {
+	case <-done:
+		// pollForChanges exited as expected
+	case <-time.After(5 * time.Second):
+		t.Fatal("pollForChanges did not exit after context cancellation")
+	}
 }

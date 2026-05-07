@@ -115,7 +115,8 @@ func createAdminAPIKey(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	fmt.Printf("API Key created:\n")
-	fmt.Printf("ID: %s\nName: %s\nRedacted Value: %s\nCreated At: %s\n",
+	fmt.Printf(
+		"ID: %s\nName: %s\nRedacted Value: %s\nCreated At: %s\n",
 		apiKey.ID,
 		apiKey.Name,
 		apiKey.RedactedValue,
@@ -135,7 +136,8 @@ func retrieveAdminAPIKey(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	fmt.Printf("API Key details:\n")
-	fmt.Printf("ID: %s\nName: %s\nRedacted Value: %s\nCreated At: %s\n",
+	fmt.Printf(
+		"ID: %s\nName: %s\nRedacted Value: %s\nCreated At: %s\n",
 		apiKey.ID,
 		apiKey.Name,
 		apiKey.RedactedValue,

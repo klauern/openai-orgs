@@ -129,7 +129,8 @@ func createProjectUser(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	fmt.Printf("Project User created:\n")
-	fmt.Printf("ID: %s\nEmail: %s\nName: %s\nRole: %s\nAdded At: %s\n",
+	fmt.Printf(
+		"ID: %s\nEmail: %s\nName: %s\nRole: %s\nAdded At: %s\n",
 		projectUser.ID,
 		projectUser.Email,
 		projectUser.Name,
@@ -152,7 +153,8 @@ func retrieveProjectUser(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	fmt.Printf("Project User details:\n")
-	fmt.Printf("ID: %s\nEmail: %s\nName: %s\nRole: %s\nAdded At: %s\n",
+	fmt.Printf(
+		"ID: %s\nEmail: %s\nName: %s\nRole: %s\nAdded At: %s\n",
 		projectUser.ID,
 		projectUser.Email,
 		projectUser.Name,
@@ -176,7 +178,8 @@ func modifyProjectUser(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	fmt.Printf("Project User modified:\n")
-	fmt.Printf("ID: %s\nEmail: %s\nName: %s\nNew Role: %s\nAdded At: %s\n",
+	fmt.Printf(
+		"ID: %s\nEmail: %s\nName: %s\nNew Role: %s\nAdded At: %s\n",
 		projectUser.ID,
 		projectUser.Email,
 		projectUser.Name,

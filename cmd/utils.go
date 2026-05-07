@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 
 	openaiorgs "github.com/klauern/openai-orgs"
 	"github.com/urfave/cli/v3"
@@ -101,8 +102,39 @@ func (b *BaseCommand) Subcommands() []*cli.Command {
 	return b.Commands
 }
 
-func newClient(_ context.Context, cmd *cli.Command) *openaiorgs.Client {
+// clientFactory is the function signature used to construct API clients.
+type clientFactory func(context.Context, *cli.Command) *openaiorgs.Client
+
+// newClientFunc is guarded by newClientFuncMu so tests can override it
+// from any goroutine (including parallel tests) without racing callers.
+var (
+	newClientFuncMu sync.RWMutex
+	newClientFunc   clientFactory = defaultNewClient
+)
+
+func defaultNewClient(_ context.Context, cmd *cli.Command) *openaiorgs.Client {
 	return openaiorgs.NewClient(openaiorgs.DefaultBaseURL, cmd.String("api-key"))
+}
+
+func newClient(ctx context.Context, cmd *cli.Command) *openaiorgs.Client {
+	newClientFuncMu.RLock()
+	fn := newClientFunc
+	newClientFuncMu.RUnlock()
+	return fn(ctx, cmd)
+}
+
+// setNewClientFunc swaps in a test client factory. Test-only helper.
+func setNewClientFunc(fn clientFactory) {
+	newClientFuncMu.Lock()
+	newClientFunc = fn
+	newClientFuncMu.Unlock()
+}
+
+// resetNewClientFunc restores the production client factory. Test-only helper.
+func resetNewClientFunc() {
+	newClientFuncMu.Lock()
+	newClientFunc = defaultNewClient
+	newClientFuncMu.Unlock()
 }
 
 func printTableData(data TableData) {

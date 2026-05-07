@@ -93,6 +93,21 @@ func TestParseRoleType(t *testing.T) {
 			want: RoleTypeMember,
 		},
 		{
+			name: "admin",
+			args: args{s: "admin"},
+			want: RoleTypeAdmin,
+		},
+		{
+			name: "developer",
+			args: args{s: "developer"},
+			want: RoleTypeDeveloper,
+		},
+		{
+			name: "viewer",
+			args: args{s: "viewer"},
+			want: RoleTypeViewer,
+		},
+		{
 			name: "unknown",
 			args: args{s: "unknown"},
 			want: "",

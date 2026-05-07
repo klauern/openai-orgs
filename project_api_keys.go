@@ -74,5 +74,5 @@ func (c *Client) RetrieveProjectApiKey(projectID string, apiKeyID string) (*Proj
 //
 // Returns an error if the deletion fails or the key doesn't exist.
 func (c *Client) DeleteProjectApiKey(projectID string, apiKeyID string) error {
-	return Delete[ProjectApiKey](c.client, fmt.Sprintf(ProjectApiKeysListEndpoint+"/%s", projectID, apiKeyID))
+	return Delete(c.client, fmt.Sprintf(ProjectApiKeysListEndpoint+"/%s", projectID, apiKeyID))
 }

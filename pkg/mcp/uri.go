@@ -35,16 +35,18 @@ func ParseURI(uri string) (*ResourceURI, error) {
 
 	switch r.Type {
 	case "project":
-		if len(parts) >= 2 {
-			r.ProjectID = parts[1]
+		if len(parts) < 2 || parts[1] == "" {
+			return nil, fmt.Errorf("invalid URI: project type requires an ID")
 		}
+		r.ProjectID = parts[1]
 		if len(parts) >= 4 && parts[2] == "service-account" {
 			r.ServiceAccount = parts[3]
 		}
 	case "members":
-		if len(parts) >= 2 {
-			r.MemberID = parts[1]
+		if len(parts) < 2 || parts[1] == "" {
+			return nil, fmt.Errorf("invalid URI: members type requires an ID")
 		}
+		r.MemberID = parts[1]
 	case "active-projects", "current-members", "usage-dashboard":
 		// These are valid static resources with no additional parsing needed
 	default:

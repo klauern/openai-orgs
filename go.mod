@@ -1,6 +1,6 @@
 module github.com/klauern/openai-orgs
 
-go 1.24.1
+go 1.25
 
 require (
 	github.com/go-resty/resty/v2 v2.17.0
@@ -12,6 +12,7 @@ require (
 
 require (
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/spf13/cast v1.7.1 // indirect
 	github.com/yosida95/uritemplate/v3 v3.0.2 // indirect
 	golang.org/x/mod v0.27.0 // indirect

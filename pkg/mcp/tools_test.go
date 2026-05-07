@@ -4,7 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"testing"
+
+	openaiorgs "github.com/klauern/openai-orgs"
+	"github.com/mark3labs/mcp-go/mcp"
 )
 
 // mockProjects is a helper type for fake project list results
@@ -138,4 +142,93 @@ func (m *mockClientImpl) ListProjects(limit int, after string, activeOnly bool) 
 		return m.ListProjectsFunc(limit, after, activeOnly)
 	}
 	return mockProjects{"default"}, nil
+}
+
+func TestGenericToolHandler_NoAuthToken(t *testing.T) {
+	schema := ParamSchema{}
+	handler := GenericToolHandler(
+		func(ctx context.Context, client *openaiorgs.Client, params map[string]any) (any, error) {
+			return "ok", nil
+		},
+		schema,
+	)
+	// Call with a context that has NO auth token set
+	ctx := context.Background()
+	req := mcp.CallToolRequest{}
+	_, err := handler(ctx, req)
+	if err == nil {
+		t.Fatal("expected error when auth token is missing, got nil")
+	}
+	if err.Error() != ErrNoAuthToken.Error() {
+		t.Errorf("expected ErrNoAuthToken, got: %v", err)
+	}
+}
+
+func TestParamSchema_ToMCPParameterSchema(t *testing.T) {
+	schema := ParamSchema{
+		Fields: []ParamField{
+			{Name: "name", Required: true, Type: reflect.String, Description: "A name"},
+			{Name: "count", Required: false, Type: reflect.Float64, Description: "A count"},
+			{Name: "active", Required: false, Type: reflect.Bool, Description: "Active flag"},
+		},
+	}
+
+	result := schema.ToMCPParameterSchema()
+
+	// Check type
+	if result["type"] != "object" {
+		t.Errorf("expected type 'object', got %v", result["type"])
+	}
+
+	// Check properties exist
+	props, ok := result["properties"].(map[string]any)
+	if !ok {
+		t.Fatal("properties is not a map")
+	}
+
+	if len(props) != 3 {
+		t.Errorf("expected 3 properties, got %d", len(props))
+	}
+
+	// Check required
+	required, ok := result["required"].([]string)
+	if !ok {
+		t.Fatal("required is not a string slice")
+	}
+	if len(required) != 1 || required[0] != "name" {
+		t.Errorf("expected required=[name], got %v", required)
+	}
+}
+
+func TestParamSchema_ExtractAndValidate(t *testing.T) {
+	schema := ParamSchema{
+		Fields: []ParamField{
+			{Name: "name", Required: true, Type: reflect.String, Description: "Name"},
+			{Name: "count", Required: false, Type: reflect.Float64, Description: "Count"},
+		},
+	}
+
+	tests := []struct {
+		name    string
+		args    map[string]any
+		wantErr bool
+	}{
+		{"valid with all params", map[string]any{"name": "test", "count": float64(5)}, false},
+		{"valid with required only", map[string]any{"name": "test"}, false},
+		{"missing required", map[string]any{"count": float64(5)}, true},
+		{"wrong type for required", map[string]any{"name": 123}, true},
+		{"nil arguments", nil, true},
+		{"extra params ignored", map[string]any{"name": "test", "extra": "value"}, false},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			req := mcp.CallToolRequest{}
+			req.Params.Arguments = tc.args
+			_, err := schema.ExtractAndValidate(req)
+			if (err != nil) != tc.wantErr {
+				t.Errorf("ExtractAndValidate() error = %v, wantErr %v", err, tc.wantErr)
+			}
+		})
+	}
 }

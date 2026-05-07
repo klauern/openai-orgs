@@ -129,7 +129,8 @@ func createProject(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	fmt.Printf("Project created:\n")
-	fmt.Printf("ID: %s\nName: %s\nCreated At: %s\nStatus: %s\n",
+	fmt.Printf(
+		"ID: %s\nName: %s\nCreated At: %s\nStatus: %s\n",
 		project.ID,
 		project.Name,
 		project.CreatedAt.String(),
@@ -150,7 +151,8 @@ func retrieveProject(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	fmt.Printf("Project details:\n")
-	fmt.Printf("ID: %s\nName: %s\nCreated At: %s\nStatus: %s\n",
+	fmt.Printf(
+		"ID: %s\nName: %s\nCreated At: %s\nStatus: %s\n",
 		project.ID,
 		project.Name,
 		project.CreatedAt.String(),
@@ -175,7 +177,8 @@ func modifyProject(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	fmt.Printf("Project modified:\n")
-	fmt.Printf("ID: %s\nNew Name: %s\nCreated At: %s\nStatus: %s\n",
+	fmt.Printf(
+		"ID: %s\nNew Name: %s\nCreated At: %s\nStatus: %s\n",
 		project.ID,
 		project.Name,
 		project.CreatedAt.String(),
@@ -196,7 +199,8 @@ func archiveProject(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	fmt.Printf("Project archived:\n")
-	fmt.Printf("ID: %s\nName: %s\nCreated At: %s\nArchived At: %s\nStatus: %s\n",
+	fmt.Printf(
+		"ID: %s\nName: %s\nCreated At: %s\nArchived At: %s\nStatus: %s\n",
 		project.ID,
 		project.Name,
 		project.CreatedAt.String(),

@@ -1,6 +1,8 @@
 package mcp
 
 import (
+	"context"
+
 	"github.com/mark3labs/mcp-go/server"
 )
 
@@ -12,7 +14,7 @@ const (
 	`
 )
 
-func NewMCPServer() *server.MCPServer {
+func NewMCPServer(ctx context.Context) *server.MCPServer {
 	mcpServer := server.NewMCPServer(
 		serverName,
 		version,
@@ -23,7 +25,7 @@ func NewMCPServer() *server.MCPServer {
 	)
 
 	AddTools(mcpServer)
-	AddResources(mcpServer)
+	AddResources(mcpServer, ctx)
 	AddResourceTemplates(mcpServer)
 	return mcpServer
 }

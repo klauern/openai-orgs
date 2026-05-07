@@ -118,7 +118,7 @@ func (c *Client) ModifyProjectUser(projectID string, userID string, role string)
 // Returns an error if the deletion fails or if the caller lacks permission.
 // The last owner of a project cannot be removed.
 func (c *Client) DeleteProjectUser(projectID string, userID string) error {
-	return Delete[ProjectUser](c.client, fmt.Sprintf(ProjectUsersListEndpoint+"/%s", projectID, userID))
+	return Delete(c.client, fmt.Sprintf(ProjectUsersListEndpoint+"/%s", projectID, userID))
 }
 
 // String returns a human-readable string representation of the ProjectUser.

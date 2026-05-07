@@ -22,8 +22,12 @@ func InvitesCommand() *cli.Command {
 
 func listInvitesCommand() *cli.Command {
 	return &cli.Command{
-		Name:   "list",
-		Usage:  "List all invites",
+		Name:  "list",
+		Usage: "List all invites",
+		Flags: []cli.Flag{
+			limitFlag,
+			afterFlag,
+		},
 		Action: listInvites,
 	}
 }
@@ -60,17 +64,18 @@ func deleteInviteCommand() *cli.Command {
 func listInvites(ctx context.Context, cmd *cli.Command) error {
 	client := newClient(ctx, cmd)
 
-	invites, err := client.ListInvites()
+	limit := int(cmd.Int("limit"))
+	resp, err := client.ListInvites(limit, cmd.String("after"))
 	if err != nil {
 		return wrapError("list invites", err)
 	}
 
 	data := TableData{
 		Headers: []string{"ID", "Email", "Role", "Status", "Created At", "Expires At", "Accepted At"},
-		Rows:    make([][]string, len(invites)),
+		Rows:    make([][]string, len(resp.Data)),
 	}
 
-	for i, invite := range invites {
+	for i, invite := range resp.Data {
 		acceptedAt := "N/A"
 		if invite.AcceptedAt != nil {
 			acceptedAt = invite.AcceptedAt.String()
@@ -102,7 +107,8 @@ func createInvite(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	fmt.Printf("Invite created:\n")
-	fmt.Printf("ID: %s\nEmail: %s\nRole: %s\nCreated At: %s\nExpires At: %s\n",
+	fmt.Printf(
+		"ID: %s\nEmail: %s\nRole: %s\nCreated At: %s\nExpires At: %s\n",
 		invite.ID,
 		invite.Email,
 		invite.Role,
@@ -122,7 +128,8 @@ func retrieveInvite(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	fmt.Printf("Invite details:\n")
-	fmt.Printf("ID: %s\nEmail: %s\nRole: %s\nCreated At: %s\nExpires At: %s\n",
+	fmt.Printf(
+		"ID: %s\nEmail: %s\nRole: %s\nCreated At: %s\nExpires At: %s\n",
 		invite.ID,
 		invite.Email,
 		invite.Role,

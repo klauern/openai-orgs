@@ -3,6 +3,7 @@ package openaiorgs
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -10,6 +11,9 @@ import (
 
 // DefaultBaseURL is the default endpoint for the OpenAI Organizations API.
 const DefaultBaseURL = "https://api.openai.com/v1"
+
+// Compile-time check that *Client satisfies the OpenAIOrgsClient interface.
+var _ OpenAIOrgsClient = (*Client)(nil)
 
 // Client represents an OpenAI Organizations API client.
 // It handles authentication, request retries, and provides methods for interacting with the API.
@@ -50,6 +54,18 @@ func NewClient(baseURL, token string) *Client {
 		client:  client,
 		BaseURL: baseURL,
 	}
+}
+
+// SetRetryCount sets the number of retries for the underlying HTTP client.
+// This is useful in tests to disable retries by setting count to 0.
+func (c *Client) SetRetryCount(count int) {
+	c.client.SetRetryCount(count)
+}
+
+// GetHTTPClient returns the underlying *http.Client for use with httpmock
+// or other HTTP-level testing tools.
+func (c *Client) GetHTTPClient() *http.Client {
+	return c.client.GetClient()
 }
 
 // GetSingle makes a GET request to retrieve a single resource of type T.
@@ -128,7 +144,7 @@ func Post[T any](client *resty.Client, endpoint string, body any) (*T, error) {
 
 // Delete makes a DELETE request to remove a resource.
 // It returns an error if the request fails or returns a non-2xx status code.
-func Delete[T any](client *resty.Client, endpoint string) error {
+func Delete(client *resty.Client, endpoint string) error {
 	resp, err := client.R().Delete(endpoint)
 	if err != nil {
 		return fmt.Errorf("error making DELETE request: %v", err)

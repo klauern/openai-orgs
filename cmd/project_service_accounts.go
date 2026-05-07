@@ -111,7 +111,8 @@ func createProjectServiceAccount(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	fmt.Printf("Project Service Account created:\n")
-	fmt.Printf("ID: %s\nName: %s\nCreated At: %s\n",
+	fmt.Printf(
+		"ID: %s\nName: %s\nCreated At: %s\n",
 		serviceAccount.ID,
 		serviceAccount.Name,
 		serviceAccount.CreatedAt.String(),
@@ -132,7 +133,8 @@ func retrieveProjectServiceAccount(ctx context.Context, cmd *cli.Command) error 
 	}
 
 	fmt.Printf("Project Service Account details:\n")
-	fmt.Printf("ID: %s\nName: %s\nCreated At: %s\n",
+	fmt.Printf(
+		"ID: %s\nName: %s\nCreated At: %s\n",
 		serviceAccount.ID,
 		serviceAccount.Name,
 		serviceAccount.CreatedAt.String(),

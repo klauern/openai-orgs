@@ -80,7 +80,7 @@ func (c *Client) RetrieveAdminAPIKey(apiKeyID string) (*AdminAPIKey, error) {
 //
 // Returns an error if deletion fails or nil on success.
 func (c *Client) DeleteAdminAPIKey(apiKeyID string) error {
-	return Delete[AdminAPIKey](c.client, fmt.Sprintf("%s/%s", AdminAPIKeysEndpoint, apiKeyID))
+	return Delete(c.client, fmt.Sprintf("%s/%s", AdminAPIKeysEndpoint, apiKeyID))
 }
 
 // String returns a human-readable string representation of the AdminAPIKey.
