@@ -139,9 +139,5 @@ func TestNewClient_EdgeCases(t *testing.T) {
 		if httpClient == nil {
 			t.Error("Expected non-nil http.Client")
 		}
-		// Verify it returns a real *http.Client
-		if _, ok := interface{}(httpClient).(*http.Client); !ok {
-			t.Error("Expected *http.Client type")
-		}
 	})
 }

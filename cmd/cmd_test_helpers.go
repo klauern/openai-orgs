@@ -37,9 +37,9 @@ func newCmdTestHelper(t *testing.T) *cmdTestHelper {
 	httpmock.ActivateNonDefault(client.GetHTTPClient())
 
 	// Override the client factory so CLI actions use our mocked client
-	newClientFunc = func(_ context.Context, _ *cli.Command) *openaiorgs.Client {
+	setNewClientFunc(func(_ context.Context, _ *cli.Command) *openaiorgs.Client {
 		return client
-	}
+	})
 
 	return &cmdTestHelper{
 		client: client,
@@ -62,7 +62,7 @@ func (h *cmdTestHelper) mockResponse(method, endpoint string, statusCode int, re
 
 // cleanup restores the original newClientFunc and resets all httpmock state.
 func (h *cmdTestHelper) cleanup() {
-	newClientFunc = defaultNewClient
+	resetNewClientFunc()
 	httpmock.DeactivateAndReset()
 }
 
@@ -72,12 +72,10 @@ func (h *cmdTestHelper) assertRequest(method, endpoint string, times int) {
 	fullURL := method + " " + testBaseURL + endpoint
 	count := httpmock.GetCallCountInfo()[fullURL]
 
-	// Also check for calls with query parameters
-	if times > count {
-		for key, c := range httpmock.GetCallCountInfo() {
-			if key != fullURL && strings.HasPrefix(key, fullURL+"?") {
-				count += c
-			}
+	// Also accumulate calls that matched with query parameters.
+	for key, c := range httpmock.GetCallCountInfo() {
+		if key != fullURL && strings.HasPrefix(key, fullURL+"?") {
+			count += c
 		}
 	}
 
@@ -120,11 +118,13 @@ func captureOutput(f func()) string {
 		return ""
 	}
 	os.Stdout = w
+	defer func() {
+		os.Stdout = old
+	}()
 
 	f()
 
 	_ = w.Close()
-	os.Stdout = old
 
 	var buf bytes.Buffer
 	_, _ = io.Copy(&buf, r)
