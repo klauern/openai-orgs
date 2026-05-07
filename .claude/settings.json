@@ -1,24 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "Bash(rg:*)",
-      "Bash(go build:*)",
-      "Bash(go test:*)",
-      "Bash(git checkout:*)",
-      "Bash(git pull:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(gh pr view:*)",
-      "Bash(gh api:*)",
-      "Bash(find:*)",
-      "Bash(go mod:*)",
-      "Bash(go tool cover:*)",
-      "Bash(go list:*)",
       "Skill(pull-requests:pr)",
       "Skill(dev-utilities:gh-checks)",
-      "Bash(grep:*)"
+      "Bash(gofumpt:*)",
+      "Bash(gofmt:*)"
     ],
     "deny": []
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r 'select(.tool_input.file_path | test(\"\\\\.go$\")) | .tool_input.file_path' | while read -r f; do [ -n \"$f\" ] && gofumpt -w \"$f\" 2>/dev/null || gofmt -s -w \"$f\" 2>/dev/null; done; exit 0"
+          }
+        ]
+      }
+    ]
   }
 }
