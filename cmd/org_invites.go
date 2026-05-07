@@ -107,7 +107,8 @@ func createInvite(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	fmt.Printf("Invite created:\n")
-	fmt.Printf("ID: %s\nEmail: %s\nRole: %s\nCreated At: %s\nExpires At: %s\n",
+	fmt.Printf(
+		"ID: %s\nEmail: %s\nRole: %s\nCreated At: %s\nExpires At: %s\n",
 		invite.ID,
 		invite.Email,
 		invite.Role,
@@ -127,7 +128,8 @@ func retrieveInvite(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	fmt.Printf("Invite details:\n")
-	fmt.Printf("ID: %s\nEmail: %s\nRole: %s\nCreated At: %s\nExpires At: %s\n",
+	fmt.Printf(
+		"ID: %s\nEmail: %s\nRole: %s\nCreated At: %s\nExpires At: %s\n",
 		invite.ID,
 		invite.Email,
 		invite.Role,

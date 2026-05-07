@@ -468,7 +468,8 @@ func TestListAuditLogsCommand(t *testing.T) {
 		}
 
 		callCount := 0
-		httpmock.RegisterResponder("GET", testBaseURL+"/organization/audit_logs",
+		httpmock.RegisterResponder(
+			"GET", testBaseURL+"/organization/audit_logs",
 			func(req *http.Request) (*http.Response, error) {
 				callCount++
 				if callCount == 1 {

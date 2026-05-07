@@ -105,7 +105,8 @@ func retrieveUser(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	fmt.Printf("User details:\n")
-	fmt.Printf("ID: %s\nEmail: %s\nName: %s\nRole: %s\n",
+	fmt.Printf(
+		"ID: %s\nEmail: %s\nName: %s\nRole: %s\n",
 		user.ID,
 		user.Email,
 		user.Name,
@@ -145,7 +146,8 @@ func modifyUserRole(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	fmt.Printf("User role modified:\n")
-	fmt.Printf("ID: %s\nEmail: %s\nName: %s\nNew Role: %s\n",
+	fmt.Printf(
+		"ID: %s\nEmail: %s\nName: %s\nNew Role: %s\n",
 		user.ID,
 		user.Email,
 		user.Name,
