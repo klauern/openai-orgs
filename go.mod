@@ -5,7 +5,7 @@ go 1.25.5
 require (
 	github.com/go-resty/resty/v2 v2.17.2
 	github.com/jarcoal/httpmock v1.4.1
-	github.com/mark3labs/mcp-go v0.55.0
+	github.com/mark3labs/mcp-go v0.55.1
 	github.com/urfave/cli/v3 v3.10.0
 	go.uber.org/mock v0.6.0
 )
